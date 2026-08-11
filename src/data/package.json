@@ -1,0 +1,9 @@
+{
+  "name": "data",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "devDependencies": {
+    "@buildone/swat-data": "24.3.0-VG.394"
+  }
+}

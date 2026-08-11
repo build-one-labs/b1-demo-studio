@@ -1,0 +1,41 @@
+{
+  "private": true,
+  "name": "app",
+  "version": "1.0.0",
+  "repository": "https://github.com/build-one-labs/starter.git",
+  "author": "Build.One",
+  "license": "MIT",
+  "scripts": {
+    "lint:check": "yarn workspaces foreach -A run lint",
+    "lint:fix": "yarn workspaces foreach -A run lint:fix",
+    "audit:ws": "yarn npm audit --all",
+    "ncu:ws": "yarn dlx npm-check-updates -ws",
+    "syncpack:check": "yarn dlx syncpack list-mismatches",
+    "syncpack:fix": "yarn dlx syncpack fix-mismatches"
+  },
+  "devDependencies": {
+    "@buildone/swat-cli": "24.3.0-VG.394",
+    "@buildone/swat-vscode": "24.3.0-VG.394",
+    "@eslint/js": "^9.14.0",
+    "eslint": "^9.19.0",
+    "eslint-config-prettier": "^10.0.1",
+    "eslint-plugin-import": "^2.31.0",
+    "eslint-plugin-json": "^4.0.1",
+    "eslint-plugin-n": "^17.12.0",
+    "eslint-plugin-prettier": "^5.2.1",
+    "eslint-plugin-security": "^3.0.1",
+    "eslint-plugin-unicorn": "^56.0.1",
+    "eslint-plugin-vue": "^9.30.0",
+    "globals": "^15.11.0",
+    "gts": "^6.0.2",
+    "prettier": "^3.3.3",
+    "typescript": "^5.7.3",
+    "typescript-eslint": "^8.12.2"
+  },
+  "packageManager": "yarn@4.1.1",
+  "workspaces": [
+    "src/app-server-ts",
+    "src/data",
+    "src/web-app"
+  ]
+}

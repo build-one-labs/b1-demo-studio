@@ -1,0 +1,338 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "generationVars": {
+      "description": "Environment variables resolved by the generator, when the compose file is written, rather than left for docker compose or Portainer to interpolate when the stack comes up. Name one here and every ${NAME} and ${NAME:-default} in this definition is replaced with its value from the generator's own environment; a name that is not listed is copied through untouched, which is how ${VERSION} and the service environment keep reaching compose and Portainer. Layers concatenate, so a repository or a custom deployment type adds to the list without restating it. A listed variable that is referenced but resolves to nothing — unset, and no default given — aborts generation naming the variable and the file, rather than writing a compose file with a hole in it.",
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+      }
+    },
+    "options": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "authenticationServerType": {
+          "type": "string",
+          "enum": [
+            "local",
+            "remote",
+            "${AUTHENTICATION_SERVER_TYPE}",
+            "${AUTHENTICATION_SERVER_TYPE:-local}",
+            "${AUTHENTICATION_SERVER_TYPE:-remote}"
+          ]
+        },
+        "databaseServerType": {
+          "type": "string",
+          "enum": [
+            "local",
+            "neon",
+            "${DATABASE_SERVER_TYPE}",
+            "${DATABASE_SERVER_TYPE:-local}",
+            "${DATABASE_SERVER_TYPE:-neon}"
+          ]
+        }
+      }
+    },
+    "globals": {
+      "type": "object",
+      "properties": {
+        "authenticationUrl": {
+          "type": "string"
+        },
+        "dataImage": {
+          "type": "string"
+        },
+        "appServerTsImage": {
+          "type": "string"
+        },
+        "webAppImage": {
+          "type": "string"
+        }
+      },
+      "patternProperties": {
+        "^.*$": {
+          "type": "string"
+        }
+      }
+    },
+    "networks": {
+      "anyOf": [
+        {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        {
+          "type": "object",
+          "patternProperties": {
+            "^.*$": {
+              "anyOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "driver": {
+                      "type": "string"
+                    },
+                    "driver_opts": {
+                      "type": "object"
+                    },
+                    "external": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "volumes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "services": {
+      "type": "object",
+      "patternProperties": {
+        "^.*$": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "image": {
+              "type": "string"
+            },
+            "user": {
+              "type": "string"
+            },
+            "build": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "context": {
+                  "type": "string"
+                },
+                "dockerfile": {
+                  "type": "string"
+                }
+              }
+            },
+            "init": {
+              "type": "boolean"
+            },
+            "working_dir": {
+              "type": "string"
+            },
+            "restart": {
+              "type": "string",
+              "enum": [
+                "no",
+                "always",
+                "unless-stopped"
+              ]
+            },
+            "healthcheck": {
+              "type": "object",
+              "properties": {
+                "test": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "scale": {
+              "type": "string"
+            },
+            "profiles": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "ports": {
+              "type": "object",
+              "patternProperties": {
+                "^.*$": {
+                  "type": "string"
+                }
+              }
+            },
+            "ulimits": {
+              "type": "object",
+              "properties": {
+                "nofile": {
+                  "type": "object",
+                  "properties": {
+                    "soft": {
+                      "type": "number"
+                    },
+                    "hard": {
+                      "type": "number"
+                    }
+                  }
+                }
+              }
+            },
+            "deploy": {
+              "type": "object",
+              "resources": {
+                "type": "object",
+                "limits": {
+                  "type": "object",
+                  "cpus": {
+                    "type": "string"
+                  },
+                  "memory": {
+                    "type": "string"
+                  }
+                },
+                "reservations": {
+                  "type": "object",
+                  "cpus": {
+                    "type": "string"
+                  },
+                  "memory": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "environment": {
+              "type": "object",
+              "additionalProperties": false,
+              "patternProperties": {
+                "^.*$": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "labels": {
+              "type": "object",
+              "additionalProperties": false,
+              "patternProperties": {
+                "^.*$": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    }
+                  ]
+                }
+              }
+            },
+            "volumes": {
+              "type": "object",
+              "additionalProperties": false,
+              "patternProperties": {
+                "^.*$": {
+                  "anyOf": [
+                    {
+                      "type": "null"
+                    },
+                    {
+                      "type": "string"
+                    }
+                  ]
+                }
+              }
+            },
+            "depends_on": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "object",
+                  "patternProperties": {
+                    "^.*$": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "condition": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            },
+            "networks": {
+              "anyOf": [
+                {
+                  "type": "object",
+                  "patternProperties": {
+                    "^.*$": {
+                      "type": "null"
+                    }
+                  }
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              ]
+            },
+            "command": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              ]
+            },
+            "entrypoint": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              ]
+            },
+            "stop_grace_period": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}

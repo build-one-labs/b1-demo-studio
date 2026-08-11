@@ -1,0 +1,185 @@
+name: Deploy Release
+run-name: Deploy Release ${{ inputs.version }}
+
+# Dispatched by the Release & Deploy screen's "Deploy" action. Deploys a released
+# version to a Portainer stack — either updating an existing stack (`stack-id`) or
+# creating a new one (`stack-name` + `endpoint-id` + `domain`).
+on:
+  workflow_dispatch:
+    inputs:
+      stack-id:
+        description: 'Portainer stack ID (update an existing stack; leave blank to create a new one)'
+        required: false
+        default: ''
+      stack-name:
+        description: 'New stack name (create a new stack; requires endpoint-id + domain)'
+        required: false
+        default: ''
+      endpoint-id:
+        description: 'Portainer endpoint id (required when creating a new stack)'
+        required: false
+        default: ''
+      domain:
+        description: 'Domain for the new stack, e.g. test.example.com (required when creating)'
+        required: false
+        default: ''
+      repository:
+        description: 'Source repository (org/repo) recorded on the new stack'
+        required: false
+        default: ''
+      version:
+        description: 'Version to deploy (use "auto" for the latest tag)'
+        required: true
+        default: auto
+      deployment-config:
+        description: 'Deployment config file name (under .deploy/)'
+        required: false
+        default: standalone.docker-compose.yml
+      portainer-url:
+        description: 'Portainer URL (leave empty for the PORTAINER_URL secret)'
+        required: false
+        default: ''
+      portainer-api-key:
+        description: 'Portainer API key (leave empty for the PORTAINER_API_KEY secret)'
+        required: false
+        default: ''
+      env-vars:
+        description: 'Stack env vars, one per line: NAME=value, NAME= (empty), NAME- (remove). Not for secrets — these are visible in the run.'
+        required: false
+        default: ''
+      env-secrets:
+        description: 'Names of repository secrets to set as stack env vars (comma or newline separated). Names only — the values are resolved in the job.'
+        required: false
+        default: ''
+  workflow_call:
+    inputs:
+      stack-id:
+        type: string
+        required: false
+        default: ''
+      stack-name:
+        type: string
+        required: false
+        default: ''
+      endpoint-id:
+        type: string
+        required: false
+        default: ''
+      domain:
+        type: string
+        required: false
+        default: ''
+      repository:
+        type: string
+        required: false
+        default: ''
+      version:
+        type: string
+        required: false
+        default: auto
+      deployment-config:
+        type: string
+        required: false
+        default: standalone.docker-compose.yml
+      portainer-url:
+        type: string
+        required: false
+        default: ''
+      portainer-api-key:
+        type: string
+        required: false
+        default: ''
+      env-vars:
+        type: string
+        required: false
+        default: ''
+      env-secrets:
+        type: string
+        required: false
+        default: ''
+    secrets:
+      B1_ACCESS_KEY_ID:
+        required: false
+      B1_SECRET_ACCESS_KEY:
+        required: false
+      PORTAINER_URL:
+        required: false
+      PORTAINER_API_KEY:
+        required: false
+      PUBLISH_DOCKER_REPOSITORY:
+        required: false
+      PUBLISH_APP_NAME:
+        required: false
+      AUTH_URL:
+        required: false
+      B1_ORG_API_KEY:
+        required: false
+
+permissions:
+  contents: read
+
+env:
+  AWS_REGION: eu-central-1
+
+jobs:
+  deploy:
+    env:
+      B1_ORG_API_KEY: ${{ secrets.B1_ORG_API_KEY }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      # Provisioned secrets from the auth server's store, with one organization
+      # API key. Skipped until that key is set, and every value below then
+      # falls back to the Actions secret it has always used.
+      # See .github/actions/b1-secrets.
+      - uses: ./.github/actions/b1-secrets
+        if: env.B1_ORG_API_KEY != ''
+        with:
+          auth-url: ${{ secrets.AUTH_URL }}
+          api-key: ${{ secrets.B1_ORG_API_KEY }}
+          require: B1_ACCESS_KEY_ID B1_SECRET_ACCESS_KEY PORTAINER_API_KEY PORTAINER_URL PUBLISH_APP_NAME PUBLISH_DOCKER_REPOSITORY
+      - uses: ./.github/actions/setup-node
+        with:
+          aws-access-key-id: ${{ env.B1_ACCESS_KEY_ID || secrets.B1_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.B1_SECRET_ACCESS_KEY || secrets.B1_SECRET_ACCESS_KEY }}
+      - name: Resolve version
+        id: version
+        run: |
+          VERSION="${{ inputs.version }}"
+          if [ -z "$VERSION" ] || [ "$VERSION" = "auto" ]; then
+            VERSION=$(git describe --tags --abbrev=0)
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+      - name: Generate deployment files
+        env:
+          WORKSPACE_ROOT: .
+        run: npx b1 generate deployment
+      - name: Deploy to Portainer
+        env:
+          WORKSPACE_ROOT: .
+          PUBLISH_DOCKER_REPOSITORY: ${{ env.PUBLISH_DOCKER_REPOSITORY || secrets.PUBLISH_DOCKER_REPOSITORY }}
+          PUBLISH_APP_NAME: ${{ env.PUBLISH_APP_NAME || secrets.PUBLISH_APP_NAME }}
+          # Stack env vars reach the deploy through the environment, not the command
+          # line the runner echoes. `secrets` cannot be indexed by a name computed
+          # at run time, so the whole context is passed and b1 deploy picks out only
+          # the names asked for.
+          B1_DEPLOY_ENV_VARS: ${{ inputs.env-vars }}
+          B1_DEPLOY_ENV_SECRETS: ${{ inputs.env-secrets }}
+          B1_DEPLOY_SECRETS_JSON: ${{ toJSON(secrets) }}
+        run: |
+          PORTAINER_URL="${{ inputs.portainer-url }}"
+          PORTAINER_KEY="${{ inputs.portainer-api-key }}"
+          [ -z "$PORTAINER_URL" ] && PORTAINER_URL="${{ env.PORTAINER_URL || secrets.PORTAINER_URL }}"
+          [ -z "$PORTAINER_KEY" ] && PORTAINER_KEY="${{ env.PORTAINER_API_KEY || secrets.PORTAINER_API_KEY }}"
+          npx b1 deploy \
+            "${{ steps.version.outputs.version }}" \
+            ".deploy/${{ inputs.deployment-config }}" \
+            "${{ inputs.stack-id }}" \
+            "$PORTAINER_URL" \
+            "$PORTAINER_KEY" \
+            --stack-name="${{ inputs.stack-name }}" \
+            --endpoint-id="${{ inputs.endpoint-id }}" \
+            --domain="${{ inputs.domain }}" \
+            --repository="${{ inputs.repository }}"

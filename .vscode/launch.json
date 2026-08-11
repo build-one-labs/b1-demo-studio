@@ -1,0 +1,16 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug APP App Server",
+      "type": "node",
+      "request": "attach",
+      "address": "localhost",
+      "port": 3011,
+      "restart": true,
+      "localRoot": "${workspaceFolder}",
+      "remoteRoot": "/workspace",
+      "skipFiles": ["<node_internals>/**"]
+    }
+  ]
+}

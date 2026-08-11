@@ -1,0 +1,4 @@
+# Claude Code skills copied from swat-cli (b1- prefix)
+b1-*/
+# Keep project-specific b1 skills
+!b1-sync-from-template/

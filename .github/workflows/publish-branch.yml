@@ -1,0 +1,289 @@
+name: Publish Branch
+run-name: Publish Branch ${{ inputs.version }}
+
+# Dispatched by the Release & Deploy screen's "Create Release" action. Computes the
+# version (GitVersion, or the exact `version` for "custom" mode), creates & pushes the
+# tag, AND builds & publishes every image in the same run. Tagging alone (tag.yml) is
+# avoided for this path because a GITHUB_TOKEN tag push does not fire publish.yml's
+# push trigger, which would leave the tag un-built.
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Exact tag to publish (or "auto" to compute from the branch)'
+        required: false
+        default: auto
+  workflow_call:
+    inputs:
+      version:
+        type: string
+        required: false
+        default: auto
+    secrets:
+      B1_ACCESS_KEY_ID:
+        required: false
+      B1_SECRET_ACCESS_KEY:
+        required: false
+      PUBLISH_DOCKER_REPOSITORY:
+        required: false
+      PUBLISH_APP_NAME:
+        required: false
+      AUTH_URL:
+        required: false
+      B1_ORG_API_KEY:
+        required: false
+
+# `contents: write` so the version job can push the tag; `statuses: write` so the
+# marker job can set the commit status.
+permissions:
+  contents: write
+  statuses: write
+
+env:
+  AWS_REGION: eu-central-1
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Compute the version and create + push the tag on the dispatched branch.
+  # ---------------------------------------------------------------------------
+  version:
+    env:
+      B1_ORG_API_KEY: ${{ secrets.B1_ORG_API_KEY }}
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      # Provisioned secrets from the auth server's store, with one organization
+      # API key. Skipped until that key is set, and every value below then
+      # falls back to the Actions secret it has always used.
+      # See .github/actions/b1-secrets.
+      - uses: ./.github/actions/b1-secrets
+        if: env.B1_ORG_API_KEY != ''
+        with:
+          auth-url: ${{ secrets.AUTH_URL }}
+          api-key: ${{ secrets.B1_ORG_API_KEY }}
+          require: B1_ACCESS_KEY_ID B1_SECRET_ACCESS_KEY
+      - uses: ./.github/actions/setup-node
+        with:
+          aws-access-key-id: ${{ env.B1_ACCESS_KEY_ID || secrets.B1_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.B1_SECRET_ACCESS_KEY || secrets.B1_SECRET_ACCESS_KEY }}
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+      - name: Create tag
+        id: version
+        env:
+          WORKSPACE_ROOT: .
+          INPUT_VERSION: ${{ inputs.version }}
+        run: |
+          # "auto" (or empty) lets `b1 tag` compute the version from the branch;
+          # an explicit value is used verbatim (the screen's "custom" mode).
+          npx b1 tag "${INPUT_VERSION:-auto}"
+          git push --tags
+          # The newest tag reachable from HEAD is the one just created.
+          VERSION=$(git describe --tags --abbrev=0)
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Tagged $VERSION"
+
+  publish-app-server-ts:
+    needs: version
+    runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ needs.version.outputs.version }}
+      B1_ORG_API_KEY: ${{ secrets.B1_ORG_API_KEY }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ needs.version.outputs.version }}
+      # Provisioned secrets from the auth server's store, with one organization
+      # API key. Skipped until that key is set, and every value below then
+      # falls back to the Actions secret it has always used.
+      # See .github/actions/b1-secrets.
+      - uses: ./.github/actions/b1-secrets
+        if: env.B1_ORG_API_KEY != ''
+        with:
+          auth-url: ${{ secrets.AUTH_URL }}
+          api-key: ${{ secrets.B1_ORG_API_KEY }}
+          require: B1_ACCESS_KEY_ID B1_SECRET_ACCESS_KEY PUBLISH_APP_NAME PUBLISH_DOCKER_REPOSITORY
+      - uses: ./.github/actions/setup-node
+        with:
+          aws-access-key-id: ${{ env.B1_ACCESS_KEY_ID || secrets.B1_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.B1_SECRET_ACCESS_KEY || secrets.B1_SECRET_ACCESS_KEY }}
+          focus-workspaces: app app-server-ts data
+      - name: Build
+        run: yarn workspace app-server-ts build
+      - name: Prune to production dependencies
+        run: yarn workspaces focus app-server-ts --production
+      - name: Prepare Dockerfile
+        run: cp src/app-server-ts/Dockerfile ./Dockerfile
+      - uses: aws-actions/configure-aws-credentials@v5
+        with:
+          aws-access-key-id: ${{ env.B1_ACCESS_KEY_ID || secrets.B1_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.B1_SECRET_ACCESS_KEY || secrets.B1_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+      - uses: aws-actions/amazon-ecr-login@v2
+      - name: Build and push image
+        env:
+          DOCKER_REPOSITORY: ${{ env.PUBLISH_DOCKER_REPOSITORY || secrets.PUBLISH_DOCKER_REPOSITORY }}
+          APP_NAME: ${{ env.PUBLISH_APP_NAME || secrets.PUBLISH_APP_NAME }}
+        run: |
+          if [ -z "${DOCKER_REPOSITORY}" ] || [ -z "${APP_NAME}" ]; then
+            echo "DOCKER_REPOSITORY / APP_NAME are empty — is the auth server's" >&2
+            echo "publish-docker-repository / publish-app-name pair provisioned," >&2
+            echo "or PUBLISH_DOCKER_REPOSITORY / PUBLISH_APP_NAME set as secrets?" >&2
+            exit 1
+          fi
+          IMAGE="${DOCKER_REPOSITORY}/${APP_NAME}-app-server-ts"
+          docker build . -t "${IMAGE}:${VERSION}" \
+            --build-arg BUILD_VERSION="${VERSION}" \
+            --build-arg BUILD_DATE="$(date)" \
+            --build-arg BUILD_NAME="${APP_NAME}-app-server-ts" \
+            --build-arg BUILD_IMAGE="${IMAGE}"
+          docker push "${IMAGE}:${VERSION}"
+
+  publish-web-app:
+    needs: version
+    runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ needs.version.outputs.version }}
+      B1_ORG_API_KEY: ${{ secrets.B1_ORG_API_KEY }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ needs.version.outputs.version }}
+      # Provisioned secrets from the auth server's store, with one organization
+      # API key. Skipped until that key is set, and every value below then
+      # falls back to the Actions secret it has always used.
+      # See .github/actions/b1-secrets.
+      - uses: ./.github/actions/b1-secrets
+        if: env.B1_ORG_API_KEY != ''
+        with:
+          auth-url: ${{ secrets.AUTH_URL }}
+          api-key: ${{ secrets.B1_ORG_API_KEY }}
+          require: B1_ACCESS_KEY_ID B1_SECRET_ACCESS_KEY PUBLISH_APP_NAME PUBLISH_DOCKER_REPOSITORY
+      - uses: ./.github/actions/setup-node
+        with:
+          aws-access-key-id: ${{ env.B1_ACCESS_KEY_ID || secrets.B1_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.B1_SECRET_ACCESS_KEY || secrets.B1_SECRET_ACCESS_KEY }}
+          focus-workspaces: app web-app
+      - name: Build
+        run: yarn workspace web-app build
+      - name: Prepare Dockerfile
+        run: cp src/web-app/Dockerfile ./Dockerfile
+      - uses: aws-actions/configure-aws-credentials@v5
+        with:
+          aws-access-key-id: ${{ env.B1_ACCESS_KEY_ID || secrets.B1_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.B1_SECRET_ACCESS_KEY || secrets.B1_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+      - uses: aws-actions/amazon-ecr-login@v2
+      - name: Build and push image
+        env:
+          DOCKER_REPOSITORY: ${{ env.PUBLISH_DOCKER_REPOSITORY || secrets.PUBLISH_DOCKER_REPOSITORY }}
+          APP_NAME: ${{ env.PUBLISH_APP_NAME || secrets.PUBLISH_APP_NAME }}
+        run: |
+          if [ -z "${DOCKER_REPOSITORY}" ] || [ -z "${APP_NAME}" ]; then
+            echo "DOCKER_REPOSITORY / APP_NAME are empty — is the auth server's" >&2
+            echo "publish-docker-repository / publish-app-name pair provisioned," >&2
+            echo "or PUBLISH_DOCKER_REPOSITORY / PUBLISH_APP_NAME set as secrets?" >&2
+            exit 1
+          fi
+          IMAGE="${DOCKER_REPOSITORY}/${APP_NAME}-web-app"
+          docker build . -t "${IMAGE}:${VERSION}" \
+            --build-arg BUILD_VERSION="${VERSION}" \
+            --build-arg BUILD_DATE="$(date)" \
+            --build-arg BUILD_NAME="${APP_NAME}-web-app" \
+            --build-arg BUILD_IMAGE="${IMAGE}"
+          docker push "${IMAGE}:${VERSION}"
+
+  publish-data:
+    needs: version
+    runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ needs.version.outputs.version }}
+      B1_ORG_API_KEY: ${{ secrets.B1_ORG_API_KEY }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ needs.version.outputs.version }}
+      # Provisioned secrets from the auth server's store, with one organization
+      # API key. Skipped until that key is set, and every value below then
+      # falls back to the Actions secret it has always used.
+      # See .github/actions/b1-secrets.
+      - uses: ./.github/actions/b1-secrets
+        if: env.B1_ORG_API_KEY != ''
+        with:
+          auth-url: ${{ secrets.AUTH_URL }}
+          api-key: ${{ secrets.B1_ORG_API_KEY }}
+          require: B1_ACCESS_KEY_ID B1_SECRET_ACCESS_KEY PUBLISH_APP_NAME PUBLISH_DOCKER_REPOSITORY
+      - uses: ./.github/actions/setup-node
+        with:
+          aws-access-key-id: ${{ env.B1_ACCESS_KEY_ID || secrets.B1_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.B1_SECRET_ACCESS_KEY || secrets.B1_SECRET_ACCESS_KEY }}
+          focus-workspaces: app data
+      - name: Prepare Dockerfile
+        run: cp src/data/Dockerfile ./Dockerfile
+      - uses: aws-actions/configure-aws-credentials@v5
+        with:
+          aws-access-key-id: ${{ env.B1_ACCESS_KEY_ID || secrets.B1_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.B1_SECRET_ACCESS_KEY || secrets.B1_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+      - uses: aws-actions/amazon-ecr-login@v2
+      - name: Build and push image
+        env:
+          DOCKER_REPOSITORY: ${{ env.PUBLISH_DOCKER_REPOSITORY || secrets.PUBLISH_DOCKER_REPOSITORY }}
+          APP_NAME: ${{ env.PUBLISH_APP_NAME || secrets.PUBLISH_APP_NAME }}
+        run: |
+          if [ -z "${DOCKER_REPOSITORY}" ] || [ -z "${APP_NAME}" ]; then
+            echo "DOCKER_REPOSITORY / APP_NAME are empty — is the auth server's" >&2
+            echo "publish-docker-repository / publish-app-name pair provisioned," >&2
+            echo "or PUBLISH_DOCKER_REPOSITORY / PUBLISH_APP_NAME set as secrets?" >&2
+            exit 1
+          fi
+          IMAGE="${DOCKER_REPOSITORY}/${APP_NAME}-data"
+          docker build . -t "${IMAGE}:${VERSION}" \
+            --build-arg BUILD_VERSION="${VERSION}" \
+            --build-arg BUILD_DATE="$(date)" \
+            --build-arg BUILD_NAME="${APP_NAME}-data" \
+            --build-arg BUILD_IMAGE="${IMAGE}"
+          docker push "${IMAGE}:${VERSION}"
+
+  # ---------------------------------------------------------------------------
+  # Publish marker — sets the `build-one/publish` commit status on the tag's commit
+  # once the image jobs finish (see publish.yml for the rationale).
+  # ---------------------------------------------------------------------------
+  mark-publish-status:
+    name: Mark publish commit status
+    needs:
+      - version
+      - publish-app-server-ts
+      - publish-web-app
+      - publish-data
+    if: always() && needs.version.result == 'success'
+    runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ needs.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ needs.version.outputs.version }}
+      - name: Set build-one/publish commit status
+        env:
+          GH_TOKEN: ${{ github.token }}
+          # `version` is 'success' here (gated by the `if`), so it never flips STATE.
+          RESULTS: ${{ join(needs.*.result, ',') }}
+        run: |
+          SHA=$(git rev-parse HEAD)
+          if echo "$RESULTS" | grep -qE 'failure|cancelled'; then
+            STATE=failure
+          else
+            STATE=success
+          fi
+          echo "Images ${STATE} for ${VERSION} (${SHA}); job results: ${RESULTS}"
+          gh api -X POST "repos/${{ github.repository }}/statuses/${SHA}" \
+            -f state="${STATE}" \
+            -f context="build-one/publish" \
+            -f description="Images ${STATE} for ${VERSION}"

@@ -1,0 +1,57 @@
+name: App Server Authorization Model Tests
+model_file: ./model.fga
+
+tuples:
+  # Alice is a finance_viewer on sales_rep 1 and 2.
+  - user: user:alice@example.com
+    relation: finance_viewer
+    object: sales_rep:1
+  - user: user:alice@example.com
+    relation: finance_viewer
+    object: sales_rep:2
+
+  # Bob has no grants.
+
+tests:
+  - name: Granted user can see financial data for their assigned reps
+    check:
+      - user: user:alice@example.com
+        object: sales_rep:1
+        assertions:
+          finance_viewer: true
+          can_see_financial_data: true
+      - user: user:alice@example.com
+        object: sales_rep:2
+        assertions:
+          can_see_financial_data: true
+
+  - name: Granted user cannot see financials for unassigned reps
+    check:
+      - user: user:alice@example.com
+        object: sales_rep:3
+        assertions:
+          finance_viewer: false
+          can_see_financial_data: false
+
+  - name: Ungranted user has no access anywhere
+    check:
+      - user: user:bob@example.com
+        object: sales_rep:1
+        assertions:
+          can_see_financial_data: false
+      - user: user:bob@example.com
+        object: sales_rep:2
+        assertions:
+          can_see_financial_data: false
+
+    list_objects:
+      - user: user:alice@example.com
+        type: sales_rep
+        assertions:
+          can_see_financial_data:
+            - sales_rep:1
+            - sales_rep:2
+      - user: user:bob@example.com
+        type: sales_rep
+        assertions:
+          can_see_financial_data: []

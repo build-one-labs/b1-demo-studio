@@ -1,0 +1,61 @@
+name: 'B1 secrets'
+description: >
+  Fetch this repository's secrets from the B1 auth server with one organization
+  API key, mask them, and export them to the job environment.
+
+# WHY
+# Every provisioned value used to need its own Actions secret, kept in step by
+# hand with the same value in the auth server's store. This asks the store for
+# everything the key can see, exactly as a workspace does at startup, so
+# provisioning a secret centrally is enough for CI to have it too.
+#
+# An ORGANIZATION key is the right principal here. A user key would work, but CI
+# is not a person: no workflow runs anything that needs an acting user (the MCP
+# servers, the agent runner and the layout/surface converters are the only things
+# that do, and none of them run in CI). An org key resolves organization ->
+# global, is shared by every member, and is read-only.
+#
+# MASKING
+# A fetched value is NOT an Actions secret, so nothing redacts it automatically —
+# a `set -x` or a failing step would print it in full. Everything is masked
+# before it reaches the environment, which is why this is a script rather than a
+# few lines of YAML.
+
+inputs:
+  auth-url:
+    description: 'Auth server to fetch from (must be https://). The key must have been minted there.'
+    required: true
+  api-key:
+    description: 'Organization API key (b1o_…). A user key (b1k_…) also works.'
+    required: true
+  scope:
+    description: >
+      Secret scope to resolve. Defaults to this repository, so a value stored for
+      it wins over the general one. Pass an empty string to resolve unscoped.
+    required: false
+    default: ${{ github.repository }}
+  require:
+    description: >
+      Whitespace-separated variable names that must end up set (e.g.
+      "B1_ACCESS_KEY_ID B1_SECRET_ACCESS_KEY"). The step fails naming the ones
+      that are missing, instead of a later step failing for an unrelated-looking
+      reason.
+    required: false
+    default: ''
+
+outputs:
+  count:
+    description: 'How many secrets were exported.'
+    value: ${{ steps.fetch.outputs.count }}
+
+runs:
+  using: 'composite'
+  steps:
+    - id: fetch
+      shell: bash
+      env:
+        B1_SECRETS_AUTH_URL: ${{ inputs.auth-url }}
+        B1_SECRETS_API_KEY: ${{ inputs.api-key }}
+        B1_SECRETS_SCOPE: ${{ inputs.scope }}
+        B1_SECRETS_REQUIRE: ${{ inputs.require }}
+      run: ${GITHUB_ACTION_PATH}/fetch-secrets.sh

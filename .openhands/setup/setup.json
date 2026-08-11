@@ -1,0 +1,38 @@
+[
+  {
+    "description": "Installing AWS CLI",
+    "script": "if ! command -v aws &>/dev/null; then curl -s 'https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip' -o /tmp/awscliv2.zip && unzip -q /tmp/awscliv2.zip -d /tmp && sudo /tmp/aws/install && rm -rf /tmp/awscliv2.zip /tmp/aws && echo 'AWS CLI installed'; else echo 'AWS CLI already installed'; fi"
+  },
+  {
+    "description": "Validating registry credentials",
+    "script": "if [ -z \"${BUILDONE_USER:-}\" ] || [ -z \"${BUILDONE_TOKEN:-}\" ] || [ -z \"${WORKSPACE_ROOT:-}\" ]; then echo 'Missing BUILDONE_USER, BUILDONE_TOKEN, or WORKSPACE_ROOT'; exit 1; fi && echo 'Credentials validated'"
+  },
+  {
+    "description": "Installing dependencies",
+    "script": "cd ${WORKSPACE_ROOT} && yarn install && chmod -R +x ${WORKSPACE_ROOT}/node_modules/@buildone/swat-cli/scripts/openhands ${WORKSPACE_ROOT}/node_modules/@buildone/swat-cli/scripts/devcontainer"
+  },
+  {
+    "description": "Validating environment variables",
+    "script": "${WORKSPACE_ROOT}/node_modules/@buildone/swat-cli/scripts/openhands/validate-env.sh"
+  },
+  {
+    "description": "Bootstrapping Neon databases",
+    "script": "${WORKSPACE_ROOT}/node_modules/@buildone/swat-cli/scripts/openhands/bootstrap-neon.sh"
+  },
+  {
+    "description": "Starting workspace stack",
+    "script": "${WORKSPACE_ROOT}/node_modules/@buildone/swat-cli/scripts/openhands/start-stack.sh"
+  },
+  {
+    "description": "Waiting for services to be healthy",
+    "script": "${WORKSPACE_ROOT}/node_modules/@buildone/swat-cli/scripts/openhands/wait-for-services.sh"
+  },
+  {
+    "description": "Importing data",
+    "script": "${WORKSPACE_ROOT}/node_modules/@buildone/swat-cli/scripts/openhands/import-data.sh"
+  },
+  {
+    "description": "Configuring B1 MCP authentication",
+    "script": "${WORKSPACE_ROOT}/node_modules/@buildone/swat-cli/scripts/openhands/configure-mcp.sh"
+  }
+]

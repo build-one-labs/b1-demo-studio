@@ -1,0 +1,9 @@
+model
+  schema 1.1
+
+type user
+
+type sales_rep
+  relations
+    define finance_viewer: [user]
+    define can_see_financial_data: finance_viewer

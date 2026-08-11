@@ -1,0 +1,16 @@
+{
+  "$schema": "deployment.config.schema.json",
+  "globals": {
+    "dataImage": "${PUBLISH_DOCKER_REPOSITORY}/${PUBLISH_APP_NAME}-data:${VERSION}",
+    "appServerTsImage": "${PUBLISH_DOCKER_REPOSITORY}/${PUBLISH_APP_NAME}-app-server-ts:${VERSION}",
+    "webAppImage": "${PUBLISH_DOCKER_REPOSITORY}/${PUBLISH_APP_NAME}-web-app:${VERSION}"
+  },
+  "services": {
+    "swat_app_server_ts": {
+      "environment": {
+        "B1_DEFAULT_APP": "${B1_DEFAULT_APP:-sample-app}",
+        "REPOSITORY": "build-one-labs/starter"
+      }
+    }
+  }
+}

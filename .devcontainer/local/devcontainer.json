@@ -1,0 +1,166 @@
+{
+  "name": "Local Dev Container",
+
+  // Base image
+  "build": {
+    "context": "..",
+    "dockerfile": "../Dockerfile"
+  },
+
+  // Mount .env.secrets file into container
+  "runArgs": ["--env-file", ".env.secrets"],
+
+  // Ensure ssh-agent is running before container starts
+  "initializeCommand": "bash -c 'eval $(ssh-agent -s) > /dev/null 2>&1 || true'",
+
+  // Mount SSH agent socket for git operations, Docker socket for shared daemon, and Claude config for persistence
+  "mounts": [
+    "type=bind,source=${localEnv:HOME}${localEnv:USERPROFILE}/.ssh,target=/home/vscode/.ssh,readonly",
+    "source=vanguard-claude-config,target=/home/vscode/.claude,type=volume"
+  ],
+
+  // Development tools and runtime features
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "24"
+    },
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {
+      "moby": true,
+      "azureDnsAutoDetection": true,
+      "installDockerBuildx": true,
+      "installDockerComposeSwitch": true,
+      "version": "latest",
+      "dockerDashComposeVersion": "latest"
+    },
+    "ghcr.io/devcontainers/features/aws-cli:1": {
+      "version": "latest"
+    },
+    "ghcr.io/devcontainers/features/sshd:1": {
+      "version": "latest"
+    }
+  },
+
+  // VS Code extensions and settings
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "Vue.volar",
+        "Vue.vscode-typescript-vue-plugin",
+        "esbenp.prettier-vscode",
+        "bradlc.vscode-tailwindcss",
+        "rvest.vs-code-prettier-eslint",
+        "ms-playwright.playwright",
+        "yoavbls.pretty-ts-errors",
+        "usernamehw.errorlens",
+        "eamodio.gitlens",
+        "mhutchie.git-graph",
+        "ms-vsliveshare.vsliveshare",
+        "CircleCI.circleci",
+        "Anthropic.claude-code"
+      ],
+      "settings": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.codeActionsOnSave": {
+          "source.fixAll.eslint": "explicit"
+        },
+        "eslint.validate": ["javascript", "typescript", "vue"],
+        "typescript.tsdk": "node_modules/typescript/lib",
+        "vue.server.hybridMode": true
+      }
+    }
+  },
+
+  // Lifecycle hooks
+  // onCreateCommand: Runs once when container is first created (dependency installation, initial build)
+  "onCreateCommand": "./.devcontainer/setup/prebuild.sh",
+  // postCreateCommand: Set up SSH permissions, fix workspace and Claude config ownership, and configure docker-compose user
+  "postCreateCommand": "bash -c 'chmod 600 ~/.ssh/* 2>/dev/null || true && sudo chown -R vscode:vscode ${containerWorkspaceFolder} /home/vscode/.claude 2>/dev/null || true && node_modules/@buildone/swat-cli/scripts/devcontainer/lib/configure-docker-user.sh'",
+  // postStartCommand: Runs each time the container starts
+  "postStartCommand": "node_modules/@buildone/swat-cli/scripts/devcontainer/orchestrators/poststart.sh",
+  // postAttachCommand: Runs when you attach to the container
+  // Dev tasks auto-start via runOn:folderOpen. If they don't trigger, run "Start All Dev Tasks" from the command palette.
+  "postAttachCommand": "echo 'Container ready. Dev tasks are starting automatically...'",
+
+  // Port forwarding
+  "forwardPorts": [
+    2021, // DB Admin
+    3000, // App Server
+    3001, // SWAT App Server
+    3002, // Web App Dev
+    3010, // App Server Debug
+    3011, // SWAT App Server Debug
+    5432, // B1 DB Server
+    5173, // Web Docs
+    8080, // Main Application
+    15432 // App DB Server
+  ],
+  "portsAttributes": {
+    "2021": {
+      "label": "DB Admin",
+      "onAutoForward": "notify"
+    },
+    "3000": {
+      "label": "App Server",
+      "onAutoForward": "notify"
+    },
+    "3001": {
+      "label": "SWAT App Server",
+      "onAutoForward": "notify"
+    },
+    "3002": {
+      "label": "Web App Dev",
+      "onAutoForward": "notify"
+    },
+    "3010": {
+      "label": "App Server Debug",
+      "onAutoForward": "notify"
+    },
+    "3011": {
+      "label": "SWAT App Server Debug",
+      "onAutoForward": "notify"
+    },
+    "5173": {
+      "label": "Web Docs Dev",
+      "onAutoForward": "notify"
+    },
+    "5432": {
+      "label": "B1 DB Server",
+      "onAutoForward": "notify"
+    },
+    "8080": {
+      "label": "Main Application",
+      "onAutoForward": "notify"
+    },
+    "15432": {
+      "label": "App DB Server",
+      "onAutoForward": "notify"
+    }
+  },
+
+  // Environment variables
+  "remoteEnv": {
+    "NODE_OPTIONS": "--max-old-space-size=8192",
+    "WORKSPACE_ROOT": "${containerWorkspaceFolder}",
+    "PATH": "${containerWorkspaceFolder}/node_modules/.bin:${containerEnv:HOME}/.local/bin:${containerEnv:PATH}",
+    "COREPACK_ENABLE_DOWNLOAD_PROMPT": "0",
+    "PUID": "1000",
+    "PGID": "1000",
+    "CLEAR_PREBUILD_CACHE": "false",
+    "B1_WORKSPACE": "true",
+    "LOCAL_DEVCONTAINER": "true",
+    "AWS_REGION": "eu-central-1"
+  },
+
+  // Security and signal handling
+  // In local WSL, match the host user's UID for seamless file permissions
+  // The docker-compose services will adapt to match this UID
+  "remoteUser": "vscode",
+  "containerUser": "vscode",
+  "updateRemoteUserUID": true,
+
+  // Workspace paths
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspaces/${localWorkspaceFolderBasename},type=bind,consistency=delegated"
+}

@@ -1,0 +1,115 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Stack Startup",
+      "type": "shell",
+      "command": "[ \"$OPENHANDS\" = \"true\" ] && exec node_modules/@buildone/swat-cli/scripts/openhands/skip-stack.sh; node_modules/@buildone/swat-cli/scripts/devcontainer/lib/task-runner.sh start_stack",
+      "isBackground": true,
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "focus": false
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "App Appserver",
+      "type": "shell",
+      "command": "node_modules/@buildone/swat-cli/scripts/devcontainer/lib/task-runner.sh watch_app_server_ts",
+      "isBackground": true,
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "focus": false
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Web App",
+      "type": "shell",
+      "command": "node_modules/@buildone/swat-cli/scripts/devcontainer/lib/task-runner.sh watch_web_app",
+      "isBackground": true,
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "focus": false
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Claude",
+      "type": "shell",
+      "command": "node_modules/@buildone/swat-cli/scripts/devcontainer/lib/task-runner.sh start_claude",
+      "isBackground": true,
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "focus": false
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Host Terminal",
+      "type": "shell",
+      "command": "node_modules/@buildone/swat-cli/scripts/devcontainer/lib/task-runner.sh start_host_terminal",
+      "isBackground": true,
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "focus": false
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Install Dependencies",
+      "type": "shell",
+      "command": "export AWS_ACCESS_KEY_ID=\"${AWS_ACCESS_KEY_ID:-${B1_ACCESS_KEY_ID:-}}\" && export AWS_SECRET_ACCESS_KEY=\"${AWS_SECRET_ACCESS_KEY:-${B1_SECRET_ACCESS_KEY:-}}\" && { [ -n \"${CODEARTIFACT_AUTH_TOKEN:-}\" ] || export CODEARTIFACT_AUTH_TOKEN=$(aws codeartifact get-authorization-token --domain buildone --domain-owner 653306034207 --region \"${AWS_REGION:-eu-central-1}\" --query authorizationToken --output text); } && yarn install && find node_modules/@buildone/swat-cli/scripts/ -name '*.sh' -exec chmod +x {} +",
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "focus": false
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Dev Tasks",
+      "dependsOn": ["Stack Startup", "App Appserver", "Web App", "Claude"],
+      "dependsOrder": "parallel",
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Start All Dev Tasks",
+      "dependsOn": ["Install Dependencies", "Dev Tasks"],
+      "dependsOrder": "sequence",
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Check Should Auto Start",
+      "type": "shell",
+      "command": "[ \"$LOCAL_DEVCONTAINER\" = \"true\" ] || [ \"$OPENHANDS\" = \"true\" ]",
+      "presentation": {
+        "reveal": "never",
+        "close": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Auto Start Dev Environment",
+      "dependsOn": ["Check Should Auto Start", "Start All Dev Tasks"],
+      "dependsOrder": "sequence",
+      "runOptions": {
+        "runOn": "folderOpen"
+      },
+      "problemMatcher": []
+    }
+  ]
+}

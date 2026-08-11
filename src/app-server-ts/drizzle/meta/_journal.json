@@ -1,0 +1,104 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1749816830492,
+      "tag": "0000_13229_init_schema",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1749816876341,
+      "tag": "0001_13229_init_data",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1749817625813,
+      "tag": "0002_13229_update_product",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1750863473863,
+      "tag": "0003_addedFieldsClients",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1750864905838,
+      "tag": "0004_fillClientsData",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1751625560866,
+      "tag": "0005_updateOffersAndInvoices",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1737453600000,
+      "tag": "0006_createMarkdownFiles",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1769172092673,
+      "tag": "0007_overconfident_shiver_man",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1769432985382,
+      "tag": "0008_change_sla_expiration_date_to_date",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1773058710197,
+      "tag": "0009_cascade_delete_client_invoices",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1776585600000,
+      "tag": "0010_flatten_client_country_representative",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1776838316875,
+      "tag": "0011_add_sales_rep_user_grants_and_melange",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1776900074689,
+      "tag": "0012_seed_sales_reps_for_client_reps",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1776914823332,
+      "tag": "0013_seed_sales_rep_user_grants",
+      "breakpoints": true
+    }
+  ]
+}

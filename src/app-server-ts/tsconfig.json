@@ -1,0 +1,36 @@
+{
+  "compilerOptions": {
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "declaration": true,
+    "removeComments": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "allowSyntheticDefaultImports": true,
+    "target": "ES2022",
+    "sourceMap": true,
+    "inlineSources": true,
+    "esModuleInterop": true,
+    "noEmit": false,
+    "outDir": "./dist",
+    "baseUrl": "./",
+    "incremental": false,
+    "skipLibCheck": true,
+    // Type checking - gradually increasing strictness
+    "strictNullChecks": false, // TODO: Enable in future for better null safety
+    "noImplicitAny": false, // TODO: Enable gradually to catch type errors
+    "strictBindCallApply": true, // Enabled: Better function call safety
+    "strictPropertyInitialization": false, // NestJS DI makes this difficult
+    "noImplicitThis": true, // Enabled: Catch this binding issues
+    "alwaysStrict": true, // Enabled: Use strict mode
+    // Code quality checks - now enabled
+    "forceConsistentCasingInFileNames": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUnusedLocals": false, // Let ESLint handle this
+    "noUnusedParameters": false, // Let ESLint handle this
+    "noImplicitReturns": true, // Enabled: Catch missing return statements
+    "paths": {
+      "@/*": ["src/*"]
+    }
+  }
+}

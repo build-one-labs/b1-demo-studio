@@ -1,0 +1,164 @@
+{
+  "name": "GitHub Codespace",
+
+  // Base image
+  "build": {
+    "context": ".",
+    "dockerfile": "Dockerfile"
+  },
+
+  // Development tools and runtime features
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "24",
+      "pnpmVersion": "none"
+    },
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {
+      "moby": true,
+      "azureDnsAutoDetection": true,
+      "installDockerBuildx": true,
+      "installDockerComposeSwitch": true,
+      "version": "latest",
+      "dockerDashComposeVersion": "latest"
+    },
+    "ghcr.io/devcontainers/features/aws-cli:1": {
+      "version": "latest"
+    },
+    "ghcr.io/devcontainers/features/sshd:1": {
+      "version": "latest"
+    }
+  },
+
+  // VS Code extensions and settings
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "Vue.volar",
+        "Vue.vscode-typescript-vue-plugin",
+        "esbenp.prettier-vscode",
+        "bradlc.vscode-tailwindcss",
+        "rvest.vs-code-prettier-eslint",
+        "ms-playwright.playwright",
+        "yoavbls.pretty-ts-errors",
+        "usernamehw.errorlens",
+        "eamodio.gitlens",
+        "mhutchie.git-graph",
+        "ms-vsliveshare.vsliveshare",
+        "CircleCI.circleci"
+      ],
+      "settings": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.codeActionsOnSave": {
+          "source.fixAll.eslint": "explicit"
+        },
+        "eslint.validate": ["javascript", "typescript", "vue"],
+        "typescript.tsdk": "node_modules/typescript/lib",
+        "vue.server.hybridMode": true,
+        "terminal.integrated.hideOnStartup": "always"
+      }
+    }
+  },
+
+  // Lifecycle hooks
+  // onCreateCommand: Runs once when container is first created (dependency installation, initial build)
+  "onCreateCommand": "./.devcontainer/setup/prebuild.sh",
+  // postStartCommand: Runs each time the container starts
+  "postStartCommand": "node_modules/@buildone/swat-cli/scripts/devcontainer/orchestrators/poststart.sh",
+  // postAttachCommand: Runs when you attach to the container (parallel background tasks)
+  "postAttachCommand": {
+    "Stack Startup": ["${containerWorkspaceFolder}/.devcontainer/scripts/orchestrators/codespace-startup.sh"],
+    "Appserver": ["node_modules/@buildone/swat-cli/scripts/devcontainer/lib/task-runner.sh", "watch_app_server_ts"],
+    "Web App": ["node_modules/@buildone/swat-cli/scripts/devcontainer/lib/task-runner.sh", "watch_web_app"],
+    "Claude": ["node_modules/@buildone/swat-cli/scripts/devcontainer/lib/task-runner.sh", "start_claude"],
+    "Host Terminal": [
+      "node_modules/@buildone/swat-cli/scripts/devcontainer/lib/task-runner.sh",
+      "start_host_terminal"
+    ]
+  },
+
+  // Port forwarding
+  "forwardPorts": [
+    2021, // DB Admin
+    3000, // App Server
+    3001, // SWAT App Server
+    3002, // Web App Dev
+    3010, // App Server Debug
+    3011, // SWAT App Server Debug
+    5432, // B1 DB Server
+    5173, // Web Docs
+    8080, // Main Application
+    15432 // App DB Server
+  ],
+  "portsAttributes": {
+    "2021": {
+      "label": "DB Admin",
+      "onAutoForward": "notify"
+    },
+    "3000": {
+      "label": "App Server",
+      "onAutoForward": "notify"
+    },
+    "3001": {
+      "label": "SWAT App Server",
+      "onAutoForward": "notify"
+    },
+    "3002": {
+      "label": "Web App Dev",
+      "onAutoForward": "notify"
+    },
+    "3010": {
+      "label": "App Server Debug",
+      "onAutoForward": "notify"
+    },
+    "3011": {
+      "label": "SWAT App Server Debug",
+      "onAutoForward": "notify"
+    },
+    "5173": {
+      "label": "Web Docs Dev",
+      "onAutoForward": "notify"
+    },
+    "5432": {
+      "label": "B1 DB Server",
+      "onAutoForward": "notify"
+    },
+    "8080": {
+      "label": "Main Application",
+      "onAutoForward": "notify"
+    },
+    "15432": {
+      "label": "App DB Server",
+      "onAutoForward": "notify"
+    }
+  },
+
+  // Environment variables
+  "remoteEnv": {
+    "NODE_OPTIONS": "--max-old-space-size=8192",
+    "WORKSPACE_ROOT": "${containerWorkspaceFolder}",
+    "PATH": "${containerWorkspaceFolder}/node_modules/.bin:${remoteEnv:HOME}/.local/bin:${containerEnv:PATH}",
+    "COREPACK_ENABLE_DOWNLOAD_PROMPT": "0",
+    "CLEAR_PREBUILD_CACHE": "true",
+    "B1_WORKSPACE": "true",
+    "AWS_REGION": "eu-central-1"
+  },
+
+  // Host machine requirements for Codespaces (dev only, not prebuilds)
+  // Prebuilds use 2-core machines by default - configure in GitHub Settings if needed
+  "hostRequirements": {
+    "cpus": 4,
+    "memory": "16gb",
+    "storage": "32gb"
+  },
+
+  // Security and signal handling
+  "remoteUser": "vscode",
+  "containerUser": "vscode",
+  "updateRemoteUserUID": true,
+
+  // Workspace paths
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspaces/${localWorkspaceFolderBasename},type=bind,consistency=cached"
+}

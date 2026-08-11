@@ -1,0 +1,4 @@
+The compose files are a result of a merge process of multiple docker compose files.
+They have been removed from the codebase due to increasing issues with conflicts and "phantom" changes.
+Access to the files will currently be limited to the workspaces.
+To access the files, you will need to launch a development workspace, where the files will be available in the same location as before, this folder, .deploy.
