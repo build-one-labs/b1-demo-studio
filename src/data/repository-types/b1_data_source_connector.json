@@ -1,0 +1,75 @@
+{
+  "abstractType": false,
+  "active": true,
+  "classTypeGuid": "fd175260-faa7-c08c-0214-d78ac43436e0",
+  "containerType": false,
+  "extendsObjectTypeGuid": "171ce169-e586-495a-9257-0982d1bc4eb0",
+  "howToUse": "Use for third-party API integrations registered with the B1 DataConnector framework (e.g. Salesforce, OpenHands, SpaceX). The DSO carries `provider` (registered connector name), `object` (external object/entity name), and `serverType` (\"app\" for app-server-ts, \"swat\" for swat-app-server-ts; defaults to \"app\"). Routed through the DataConnectorDataAdapter at /service/<serverType>/api/connector/<dsoName>; the controller resolves the DSO blueprint server-side to dispatch to the connector implementation.",
+  "label": "Connector Data Source",
+  "maintenanceMenu": "",
+  "objectTypeDescription": "Data source backed by a registered B1 DataConnector provider",
+  "objectTypeGuid": "dd75836c-6c73-4b8e-9ed4-60626d1ee526",
+  "objectTypeName": "b1_data_source_connector",
+  "status": "Active",
+  "storeInstances": "",
+  "technicalClassName": "",
+  "vendor": "",
+  "attributes": {
+    "object": "",
+    "provider": "",
+    "serverEventsHandler": "",
+    "serverType": "app"
+  },
+  "createdBy": null,
+  "designSettings": {
+    "Main Properties": [
+      "keyFields",
+      "provider",
+      "object",
+      "serverType"
+    ]
+  },
+  "owner": null,
+  "supportedInstanceTypes": [],
+  "supportedLinkTypes": [
+    {
+      "linkSource": true,
+      "linkTarget": false,
+      "linkTypeGuid": "d37727fb-24ff-7ea3-0e14-a5d9d8526f38",
+      "supportedLinkGuid": "47a8e741-7392-4515-82ab-5195237f7b2b"
+    },
+    {
+      "linkSource": false,
+      "linkTarget": true,
+      "linkTypeGuid": "ac7518d7-ef25-faab-3714-cd9dc06f3864",
+      "supportedLinkGuid": "7fe4c3ae-ab13-4e20-b70d-699be5188916"
+    },
+    {
+      "linkSource": false,
+      "linkTarget": true,
+      "linkTypeGuid": "c21ecef7-8939-4534-b458-66945464b796",
+      "supportedLinkGuid": "4e891b28-f3a5-429b-ad25-f2c49827fcce"
+    },
+    {
+      "linkSource": false,
+      "linkTarget": true,
+      "linkTypeGuid": "f52235a4-c120-2490-3814-9e29182ad912",
+      "supportedLinkGuid": "acd1a3b2-e06a-4157-ab61-2d38d8bb7ce6"
+    },
+    {
+      "linkSource": true,
+      "linkTarget": true,
+      "linkTypeGuid": "8bf587d6-57c7-29a2-e114-26c2384051bc",
+      "supportedLinkGuid": "6ac6d630-d135-40a4-9aae-d56d891dab94"
+    }
+  ],
+  "synonyms": [
+    "connector data source",
+    "DataConnector",
+    "DataConnectorDataSource"
+  ],
+  "tags": [],
+  "tenantId": null,
+  "validFrom": null,
+  "validUntil": null
+}

@@ -1,0 +1,19 @@
+# Keep the demo factory's build-time and run-time artefacts out of every image.
+#
+# The root node_modules is deliberately NOT excluded: src/app-server-ts's
+# Dockerfile copies it in, because the yarn workspaces are installed once at the
+# repository root. The demo factory is the exception — it is a standalone npm
+# project, so its dependencies are installed inside the image from its own
+# lockfile and the local tree must not overwrite that.
+src/demo-factory/node_modules
+
+# Recorded clips, narration, rendered videos and their caches. Large, and
+# reproducible from demo.yaml.
+src/demo-factory/output
+src/demo-factory/.cache
+src/demo-factory/public/generated
+src/web-app/public/demo-factory
+
+# A live session, written by tools/auth-from-session.mjs or auth:b1. This must
+# never reach an image.
+src/demo-factory/playwright

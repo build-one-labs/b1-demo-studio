@@ -1,0 +1,210 @@
+schemaVersion: 1
+id: sales-tour-planning
+title: From Salesforce pipeline to a drivable sales tour
+description: The sales-tour planner scores live Salesforce opportunities, clusters them by geography, reserves the drives between stops, and hands over an editable tour calendar.
+
+# Every scene records in a FRESH browser context, so no scene may depend on
+# another's UI state. What ties them together is the connector's determinism:
+# an unparameterised load computes the default plan (today's two-week window,
+# two visits a day), and scene one types exactly those values into the dialog —
+# so the plan it triggers is the same plan every later scene finds on load.
+# The dates below are the recording day's window; re-recording on another day
+# means updating them here and nowhere else.
+
+settings:
+  language: en
+  viewport:
+    width: 1920
+    height: 1080
+  fps: 30
+  baseUrl:
+    env: B1_BASE_URL
+    fallback: http://localhost:8080/
+  authStateEnv: B1_AUTH_STATE
+  headlessEnv: DEMO_HEADLESS
+  holdBeforeMs: 700
+  holdAfterMs: 1400
+  cursor:
+    enabled: true
+    moveDurationMs: 700
+    clickLeadMs: 120
+    clickEffectDurationMs: 560
+    sizePx: 30
+  narration:
+    provider: auto
+    voiceIdEnv: ELEVENLABS_VOICE_ID
+    apiKeyEnv: ELEVENLABS_API_KEY
+    modelIdEnv: ELEVENLABS_MODEL_ID
+    defaultModelId: eleven_multilingual_v2
+    languageCodeEnv: ELEVENLABS_LANGUAGE_CODE
+    defaultLanguageCode: en
+    wordsPerMinute: 132
+  branding:
+    productName: Build.One
+    accentColor: "#1266f1"
+    backgroundColor: "#0b1020"
+    textColor: "#f7f8ff"
+    showCaptions: true
+    showSceneTitles: true
+
+scenes:
+  - id: plan-parameters
+    title: Parameters in, tour out
+    route: /screens/SalesTourPlanningScreen
+    narration: >
+      This is the Build.One sales-tour planner. It reads my opportunities live from Salesforce,
+      scores them, and turns the best ones into a visit schedule.
+      [cue:open-dialog] I start with the tour parameters — one dialog, reachable from anywhere on the screen.
+      [cue:set-window] I plan the next two weeks, from the tenth to the twenty-third of August,
+      [cue:set-limit] and I cap the tour at two customer visits per day, so every visit gets real time.
+      [cue:plan] One click, and the planner qualifies, scores and schedules the whole tour in a single pass.
+    actions:
+      - action: click
+        atCue: open-dialog
+        target: { role: button, name: Tour parameters }
+      # A typed date reaches the model when the picker parses it on Enter —
+      # fill alone looks right on screen and never becomes a filter value.
+      # All fields are addressed inside the dialog: the same form is instanced
+      # on the screen's first tab, so the bare ids exist twice in the DOM.
+      - action: fill
+        atCue: set-window
+        target: { css: '.p-dialog #tourFrom input' }
+        value: "2026-08-10"
+      - action: press
+        atCue: set-window
+        offsetMs: 900
+        target: { css: '.p-dialog #tourFrom input' }
+        key: Enter
+      - action: fill
+        atCue: set-window
+        offsetMs: 1900
+        target: { css: '.p-dialog #tourTo input' }
+        value: "2026-08-23"
+      - action: press
+        atCue: set-window
+        offsetMs: 2800
+        target: { css: '.p-dialog #tourTo input' }
+        key: Enter
+      - action: fill
+        atCue: set-limit
+        target: { css: '.p-dialog input#maxPerDay, .p-dialog #maxPerDay input' }
+        value: "2"
+      # InputNumber commits on blur, not on keystroke — Tab is the commit.
+      - action: press
+        atCue: set-limit
+        offsetMs: 900
+        target: { css: '.p-dialog input#maxPerDay, .p-dialog #maxPerDay input' }
+        key: Tab
+      - action: click
+        atCue: plan
+        target: { css: '.p-dialog button:has-text("Plan tour")' }
+      - action: waitFor
+        target: { css: '.p-toast-message:has-text("appointments planned") >> nth=-1' }
+        timeoutMs: 30000
+    assertions:
+      - visible: { css: '.p-toast-message:has-text("appointments planned") >> nth=-1' }
+
+  - id: scored-candidates
+    title: Every decision explains itself
+    route: /screens/SalesTourPlanningScreen
+    narration: >
+      A planning run explains itself. [cue:open-candidates] On the opportunities tab, every candidate
+      carries a score — weighted deal value, pipeline stage, and how urgently the close date needs a visit.
+      [cue:show-reasons] And the ones that did not make the tour say why, in plain language: below the
+      minimum value, already closed, or simply no room left in the window.
+      The tour is an argument, not a black box.
+    actions:
+      - action: click
+        atCue: open-candidates
+        target: { role: tab, name: 2. Opportunities }
+      - action: waitFor
+        target: { css: '.p-datatable-tbody > tr >> nth=0' }
+        timeoutMs: 15000
+      - action: highlight
+        atCue: show-reasons
+        target: { css: 'th[data-col-field="unplannedReason"]' }
+        durationMs: 2200
+    assertions:
+      - visible: { css: '.p-datatable-tbody > tr >> nth=0' }
+
+  - id: stops-on-the-map
+    title: Geography is part of the plan
+    route: /screens/SalesTourPlanningScreen
+    narration: >
+      [cue:open-map] Every stop that made the tour is on the map. The coordinates come straight from
+      the Salesforce records — no geocoding, no third-party lookup. [cue:show-map] Nearby customers
+      cluster together, and that geography drives the plan itself: the planner groups each day around
+      one city, so the rep spends the day selling instead of driving.
+    actions:
+      - action: click
+        atCue: open-map
+        target: { role: tab, name: 2. Opportunities }
+      - action: waitFor
+        target: { css: '.leaflet-marker-icon >> nth=0' }
+        timeoutMs: 20000
+      - action: highlight
+        atCue: show-map
+        target: { css: '.leaflet-container:visible >> nth=0' }
+        durationMs: 2400
+    assertions:
+      - visible: { css: '.leaflet-marker-icon >> nth=0' }
+
+  - id: tour-calendar
+    title: Drives are appointments too
+    route: /screens/SalesTourPlanningScreen
+    narration: >
+      [cue:open-plan] Here is the computed tour. The calendar opens on the tour itself — colour-coded
+      by pipeline stage, and every appointment badged with the city the rep has to be in.
+      [cue:open-week] The week view shows the part most planners skip: [cue:show-travel] between two
+      visits, the planner reserves the actual drive, with distance and duration estimated from the
+      coordinates. Appointments never touch. A tour day is a route, not a wish list.
+    actions:
+      - action: click
+        atCue: open-plan
+        target: { role: tab, name: 3. Tour plan }
+      - action: waitFor
+        target: { css: '.ec-event:visible >> nth=0' }
+        timeoutMs: 20000
+      # Both step tabs hold a scheduler and the inactive one stays in the DOM,
+      # so the calendar's own controls are only unique among VISIBLE elements.
+      - action: click
+        atCue: open-week
+        target: { css: 'button:has-text("Week"):visible >> nth=0' }
+      - action: highlight
+        atCue: show-travel
+        target: { css: '.ec-event:visible:has-text("Travel time") >> nth=0' }
+        durationMs: 2400
+    assertions:
+      - visible: { css: '.ec-event:visible:has-text("Travel time") >> nth=0' }
+
+  - id: accept-the-plan
+    title: From proposal to working calendar
+    route: /screens/SalesTourPlanningScreen
+    narration: >
+      A proposal is only a proposal. [cue:accept] Accept plan writes the tour into a working calendar
+      of its own — [cue:open-accepted] and that copy is mine. [cue:show-editable] I can drag an
+      appointment to another slot or hand it to a colleague, and every move is persisted.
+      Re-plan with sharper criteria tomorrow, and the accepted plan is simply replaced.
+      From a Salesforce pipeline to a drivable, editable tour — in one click.
+    actions:
+      - action: click
+        atCue: accept
+        target: { role: button, name: Accept plan }
+      - action: waitFor
+        target: { css: '.p-toast-message:has-text("accepted into the tour plan")' }
+        timeoutMs: 20000
+      - action: click
+        atCue: open-accepted
+        target: { role: tab, name: 4. Accepted plan }
+      - action: waitFor
+        target: { css: '.ec-event:visible >> nth=0' }
+        timeoutMs: 20000
+      - action: highlight
+        atCue: show-editable
+        target: { css: '.ec-event:visible >> nth=0' }
+        durationMs: 2000
+    # The accept toast is asserted by the waitFor ACTION above, not here:
+    # assertions run at scene end, ~20 seconds after the click, and the toast
+    # auto-dismisses long before that.
+    assertions:
+      - visible: { css: '.ec-event:visible >> nth=0' }

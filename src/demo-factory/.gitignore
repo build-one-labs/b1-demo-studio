@@ -1,0 +1,11 @@
+node_modules/
+output/
+public/generated/
+.cache/
+playwright/.auth/
+test-results/
+.qa*/
+.env
+*.log
+__pycache__/
+*.pyc

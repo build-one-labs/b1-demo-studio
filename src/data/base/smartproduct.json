@@ -1,0 +1,24 @@
+[
+  {
+    "createdBy": "1nd7tSsWQull81DW5XEYcEbeMwtIk1R0",
+    "productCode": "b1-demo-factory",
+    "productDescription": "Demo Factory — demo-as-code pipeline that records and renders reproducible Build.One product videos.",
+    "productGuid": "94328e98-6f1d-4d15-b86d-f62fff77d705",
+    "productInstalled": false,
+    "productName": "b1-demo-factory",
+    "systemOwned": false,
+    "vendor": "",
+    "tenantId": null
+  },
+  {
+    "productCode": "mini-app-sample",
+    "productDescription": "Mini App Sample Application",
+    "productGuid": "e8a832d8-0365-4c4c-971b-6dd3c0ca6d94",
+    "productInstalled": false,
+    "productName": "mini-app-sample",
+    "systemOwned": false,
+    "vendor": "",
+    "createdBy": null,
+    "tenantId": null
+  }
+]

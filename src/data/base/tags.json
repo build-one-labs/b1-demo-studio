@@ -1,0 +1,37 @@
+[
+  {
+    "color": "#6366f1",
+    "howToUse": "Objects implementing customer relationship management: contacts, accounts, leads, activities, customer 360 screens and their data sources.",
+    "id": "57ed1bb5-86d9-4bb8-9af1-55d5f26398ac",
+    "label": "CRM",
+    "tagGroupId": "9312cf25-2b46-46e1-9a67-b260727699cd"
+  },
+  {
+    "color": "#0ea5e9",
+    "howToUse": "Objects for enterprise resource planning: inventory, procurement, manufacturing, invoicing, finance postings and related screens/DSOs.",
+    "id": "2faff92d-59b3-4c44-b43e-1d14f3df2168",
+    "label": "ERP",
+    "tagGroupId": "9312cf25-2b46-46e1-9a67-b260727699cd"
+  },
+  {
+    "color": "#ef4444",
+    "howToUse": "Objects for finance and accounting: payments, ledgers, taxes, financial reports and their data sources.",
+    "id": "c47f4b05-799e-4648-8a35-8c10eb21d5c9",
+    "label": "Finance",
+    "tagGroupId": "9312cf25-2b46-46e1-9a67-b260727699cd"
+  },
+  {
+    "color": "#f59e0b",
+    "howToUse": "Objects for tracking opportunities/deals: opportunity entities, stages, forecasts, win/loss, and opportunity screens.",
+    "id": "6616fa19-d2ae-4139-a87d-84230068385d",
+    "label": "Opportunity Management",
+    "tagGroupId": "9312cf25-2b46-46e1-9a67-b260727699cd"
+  },
+  {
+    "color": "#22c55e",
+    "howToUse": "Objects supporting the sales process: quotes, orders, sales reps, pipelines, sales dashboards and their data sources.",
+    "id": "04c9d746-d3a3-4202-bffd-15ca37c77c2a",
+    "label": "Sales",
+    "tagGroupId": "9312cf25-2b46-46e1-9a67-b260727699cd"
+  }
+]

@@ -1,0 +1,69 @@
+{
+  "abstractType": false,
+  "active": true,
+  "classTypeGuid": "fd175260-faa7-c08c-0214-d78ac43436e0",
+  "containerType": false,
+  "extendsObjectTypeGuid": "171ce169-e586-495a-9257-0982d1bc4eb0",
+  "howToUse": "Use to treat an automation flow (n8n) as a CRUD-capable backend. resourceName is the flow name (no path). Fetches invoke the flow with payload { action: 'read', filter }; commits map to other flow actions. Routed through the AutomationFlowDataAdapter.",
+  "label": "Automation Flow Data Source",
+  "maintenanceMenu": "",
+  "objectTypeDescription": "Data source whose fetch invokes an automation flow",
+  "objectTypeGuid": "c8696f86-1403-46a9-bde3-39926156d233",
+  "objectTypeName": "b1_data_source_automation_flow",
+  "status": "Active",
+  "storeInstances": "",
+  "technicalClassName": "",
+  "vendor": "",
+  "attributes": {
+    "workflowName": ""
+  },
+  "createdBy": null,
+  "designSettings": {
+    "Main Properties": [
+      "workflowName"
+    ]
+  },
+  "owner": null,
+  "supportedInstanceTypes": [],
+  "supportedLinkTypes": [
+    {
+      "linkSource": true,
+      "linkTarget": false,
+      "linkTypeGuid": "d37727fb-24ff-7ea3-0e14-a5d9d8526f38",
+      "supportedLinkGuid": "5ed40121-ba40-40af-b1ca-59aa3005f646"
+    },
+    {
+      "linkSource": false,
+      "linkTarget": true,
+      "linkTypeGuid": "ac7518d7-ef25-faab-3714-cd9dc06f3864",
+      "supportedLinkGuid": "3013227c-1667-4fd0-8ebf-0bb219435fbc"
+    },
+    {
+      "linkSource": false,
+      "linkTarget": true,
+      "linkTypeGuid": "c21ecef7-8939-4534-b458-66945464b796",
+      "supportedLinkGuid": "8dd3b879-0eb3-4c2a-afc5-0da1c7733e10"
+    },
+    {
+      "linkSource": false,
+      "linkTarget": true,
+      "linkTypeGuid": "f52235a4-c120-2490-3814-9e29182ad912",
+      "supportedLinkGuid": "25eafcd9-962b-43d4-94a6-6fdbff0c593a"
+    },
+    {
+      "linkSource": true,
+      "linkTarget": true,
+      "linkTypeGuid": "8bf587d6-57c7-29a2-e114-26c2384051bc",
+      "supportedLinkGuid": "2c671407-aea7-4e16-a187-c8ad06fbb8e6"
+    }
+  ],
+  "synonyms": [
+    "automation flow data source",
+    "AutomationFlow",
+    "AutomationFlowDataSource"
+  ],
+  "tags": [],
+  "tenantId": null,
+  "validFrom": null,
+  "validUntil": null
+}

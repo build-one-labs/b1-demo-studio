@@ -1,0 +1,43 @@
+{
+  "createdAt": "2026-08-11 12:24:35.556629",
+  "createdBy": "1nd7tSsWQull81DW5XEYcEbeMwtIk1R0",
+  "howToUse": "",
+  "label": "",
+  "moduleGuid": "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4",
+  "objectDescription": "Initial screen of the b1-demo-factory app: hosts the demo-factory Remotion root via the native-component mechanism.",
+  "objectMasterGuid": "d6c2b1d8-70bc-408b-9559-4006065e29a9",
+  "objectName": "DemoFactoryScreen",
+  "objectTypeGuid": "d188099d-8548-49f0-86e4-c4b28dda9ecc",
+  "owner": "1nd7tSsWQull81DW5XEYcEbeMwtIk1R0",
+  "status": "Active",
+  "templateObject": false,
+  "attributes": {
+    "title": "Demo Factory"
+  },
+  "instances": [
+    {
+      "instanceName": "a",
+      "objectInstanceGuid": "26812a70-2d94-4a80-ad12-c714160b8365",
+      "objectMasterGuid": "31572117-2fe3-4262-ba03-20a74c6b59ca",
+      "objectSequence": 1,
+      "attributes": {},
+      "instances": [
+        {
+          "instanceName": "demoFactoryRoot",
+          "objectInstanceGuid": "869b58a4-5fca-4666-a896-1b19835d621b",
+          "objectMasterGuid": "5d29888c-571d-4105-a0c0-d41c79bb7f88",
+          "objectSequence": 1,
+          "attributes": {
+            "componentName": "DemoFactoryStudio"
+          },
+          "instances": []
+        }
+      ]
+    }
+  ],
+  "links": [],
+  "tags": [],
+  "tenantId": null,
+  "validFrom": null,
+  "validUntil": null
+}
