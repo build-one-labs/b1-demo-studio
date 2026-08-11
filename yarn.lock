@@ -9951,6 +9951,7 @@ __metadata:
     ts-node: "npm:^10.9.1"
     tsconfig-paths: "npm:^4.2.0"
     typescript: "npm:^5.7.3"
+    yaml: "npm:^2.8.0"
     zod: "npm:^3.24.3"
   languageName: unknown
   linkType: soft
