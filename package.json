@@ -2,7 +2,7 @@
   "private": true,
   "name": "app",
   "version": "1.0.0",
-  "repository": "https://github.com/build-one-labs/starter.git",
+  "repository": "https://github.com/build-one-labs/b1-demo-studio.git",
   "author": "Build.One",
   "license": "MIT",
   "scripts": {

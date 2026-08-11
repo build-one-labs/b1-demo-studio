@@ -1,87 +1,52 @@
-# B1 Starter (Build.One)
+# b1-demo-studio
 
-A starter monorepo for building blueprint‑driven, evergreen enterprise frontends with the B1 Framework:
+A Build.One application: a Nuxt front end, a NestJS server, and the blueprints
+that drive both. It was generated from the Build.One starter and set up for you
+— its database, its container registry and its workspaces are already its own.
 
-- Frontend: Nuxt 3 + Vue 3 + PrimeVue
-- Backend: NestJS + Drizzle ORM + PostgreSQL
-- Shared: B1 blueprints, Evergreen UI runtime, and CLI/tooling
+## Start working on it
 
-This repo is the “starter‑style project” described in the B1 Framework documentation and is optimized for GitHub Codespaces and AI‑assisted development.
+Open a codespace on this repository, from the Build.One control panel or from
+the **Code** button above. It builds itself: dependencies, database and secrets
+are all in place by the time it opens, so there is nothing to install and
+nothing to configure.
 
-## What’s in this Starter
+To work locally instead, open the repository in VS Code and reopen it in the dev
+container — the same environment, on your own machine.
 
-- **Frontend (`src/web-app/`)**
-  - Nuxt 3 + Vue 3 application
-  - Uses `@buildone/web-core`, `@buildone/web-framework`, and `@buildone/web-framework-layer`
-  - PrimeVue, theming, and Evergreen UI runtime integration
+## What is where
 
-- **Backend (`src/app-server-ts/`)**
-  - NestJS application with Drizzle ORM and PostgreSQL
-  - Hosts application APIs, server actions, and integration logic
-  - Uses `@buildone/app-server-tslib` and Drizzle migrations
+| Path | What it holds |
+| --- | --- |
+| `src/web-app/` | The Nuxt 3 front end (Vue 3, PrimeVue, the Build.One web framework). |
+| `src/app-server-ts/` | The NestJS server: APIs, server actions, and the Drizzle schema and migrations. |
+| `src/data/` | The blueprints — screens, menus and data definitions — that the UI is built from. |
 
-- **Blueprints & Data (`src/data/`)**
-  - B1 blueprints, menus, and repository configuration (JSON/XML)
-  - Imported into PostgreSQL and used by the Evergreen UI runtime
+Each is a Yarn workspace. `yarn dev` in `src/web-app`, `yarn start:dev` in
+`src/app-server-ts`, and `yarn lint:check` at the root for everything.
 
-- **Tooling**
-  - Yarn 4 workspaces
-  - ESLint, Prettier, Jest
-  - B1 Framework packages: `@buildone/app-server-tslib`, `@buildone/web-core`, `@buildone/web-framework`, `@buildone/web-framework-layer`
-  - `@buildone/swat-cli` and related tooling
+## Shipping a change
 
-## Getting Started (Codespaces)
+1. **Release.** The control panel's Release & Deploy screen tags a version and
+   builds the three images — or run the **Publish Branch** workflow yourself.
+2. **Deploy.** Deploy that version to an environment from the same screen, which
+   runs the **Deploy Release** workflow.
 
-The recommended way to work with this starter is via GitHub Codespaces, as described in the B1 “Getting Started” and “Try It in Codespaces” guides:
+Both workflows are in `.github/workflows/`, and what they build and where they
+push it is set in `.build/deploy/`.
 
-1. Open this repository in **GitHub Codespaces**.
-2. Let the dev container setup run (it installs dependencies and configures the stack).
-3. Follow the B1 Introduction guide to start the app, run migrations, and explore the sample application.
+## What was set up for you
 
-For any non‑Codespaces or advanced usage, rely on the official B1 documentation rather than this README.
+- **This repository**, generated from the Build.One starter.
+- **A PostgreSQL database** of its own — Neon project `steep-smoke-51683579`.
+- **A container registry** for its images: `653306034207.dkr.ecr.eu-central-1.amazonaws.com/buildone-samples`.
+- **Cloud workspaces**, with the credentials they need already in place.
 
-## AI & Claude Code
+Its keys are held for your organization rather than in this repository: the
+workspace fetches what it needs when it starts. Nothing here needs a secret
+committed to it.
 
-This starter is intended to be used together with Claude Code in GitHub Codespaces:
+## Getting help
 
-- Use Claude Code as your primary coding assistant for working with blueprints, UI, and backend logic.
-- Follow the B1 “Introduction” guide for suggested prompts and safe, blueprint‑driven edits.
-- See `CLAUDE.md` in this repo for concrete setup steps and usage tips specific to this starter.
-
-## Framework Documentation in Codespaces
-
-In GitHub Codespaces, you can open the B1 Framework documentation from the dev container:
-
-- Use the B1 CLI command `b1 documentation` in the Codespaces terminal, or
-- Use the preconfigured “Documentation” entry in the Ports/tasks UI (where available).
-
-For details, see the B1 CLI documentation and the “Try It in Codespaces” / Introduction guides.
-
-## CI/CD
-
-This starter includes CircleCI configuration and related scripts.  
-For how CI/CD fits into the overall B1 workflow (builds, tests, deploy), see the B1 CLI and operations documentation.
-
-## Support
-
-If you’re unsure how to proceed or something doesn’t work as expected, ask your B1 team for guidance and links to the latest framework documentation.
-
-## Where to Learn More
-
-This README intentionally stays short and defers to the B1 Framework documentation as the ground truth:
-
-- **Getting started & architecture**
-  - Getting Started (introduction, Codespaces, starter overview)
-  - Fundamentals: Architecture, Blueprints & Objects, Data & Logic Layer, Evergreen UI
-
-- **Backend and database**
-  - “Database” and “Data & Logic Layer” fundamentals
-  - `schema-to-blueprint` CLI documentation for generating blueprints from Drizzle schema
-
-- **Security & auth**
-  - “Security & Authentication (BetterAuth)” fundamentals
-
-- **CLI & operations**
-  - “CLI (build-one / b1)” documentation for stack management, preview, documentation, and DB admin commands
-
-For repo‑specific details (AI usage, Codespaces secrets, etc.), also see `CLAUDE.md` and the individual workspace READMEs under `src/`.
+The Build.One control panel is where this repository was created, and where its
+releases, deployments and workspaces are managed from.
