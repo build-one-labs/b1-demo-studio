@@ -6,6 +6,7 @@ playwright/.auth/
 test-results/
 .qa*/
 .env
+.env.app-server
 *.log
 __pycache__/
 *.pyc

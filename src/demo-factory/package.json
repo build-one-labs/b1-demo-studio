@@ -8,6 +8,7 @@
     "node": ">=22"
   },
   "scripts": {
+    "provision": "node tools/provision-workspace.mjs",
     "validate": "node src/cli.mjs validate opportunities-map",
     "auth:b1": "node tools/capture-auth.mjs",
     "auth:workspace": "node tools/b1-auth-state.mjs",

@@ -9,8 +9,16 @@ const sleep = (milliseconds) => new Promise((resolve) => setTimeout(resolve, mil
 
 const existingFile = async (candidate) => {
   if (!candidate) return undefined;
-  await access(candidate);
-  return candidate;
+  // The path is a default at least as often as it is a choice — run-demo.mjs
+  // sets B1_AUTH_STATE on every run, whether or not a state was ever minted
+  // there — so a missing file means "no stored session", not a broken setting.
+  // Letting access() throw here made the API-key fallback below unreachable in
+  // exactly the workspaces it was written for: no handoff branch, no minted
+  // state, and the run died before it could try the header.
+  return access(candidate).then(
+    () => candidate,
+    () => undefined,
+  );
 };
 
 export const recordScenes = async ({demo, manifest, sceneFilter = null}) => {

@@ -18,6 +18,11 @@ import path from 'node:path';
 export const ALLOWED_ENV_KEYS = [
   'B1_BASE_URL',
   'B1_AUTH_STATE',
+  // `all` mints a fresh storage state before recording, and that exchange
+  // authenticates with the workspace API key. The app server's container is not
+  // given one — the compose file passes AUTH_URL and nothing else — so without
+  // a way to supply it here the full run can only ever fail at its second step.
+  'B1_USER_API_KEY',
   'DEMO_HEADLESS',
   'REMOTION_CONCURRENCY',
   'REMOTION_OFFTHREADVIDEO_CACHE_MB',
@@ -34,7 +39,7 @@ export const ALLOWED_ENV_KEYS = [
 ] as const;
 
 /** Never returned to the browser — only whether they are configured. */
-export const SECRET_ENV_KEYS = new Set<string>(['ELEVENLABS_API_KEY']);
+export const SECRET_ENV_KEYS = new Set<string>(['ELEVENLABS_API_KEY', 'B1_USER_API_KEY']);
 
 const ID_PATTERN = /^[\da-z][\da-z-]*$/;
 
@@ -45,6 +50,51 @@ export interface JobCommand {
   args: string[];
   step: JobAction;
 }
+
+export const JOB_ACTIONS: readonly JobAction[] = ['validate', 'prepare', 'record', 'render', 'all'];
+
+/** What the host running the pipeline can actually do. */
+export interface HostCapabilities {
+  hasFactory: boolean;
+  hasDependencies: boolean;
+  canRecord: boolean;
+  canRender: boolean;
+  canAuthenticate: boolean;
+}
+
+/**
+ * Why a stage cannot run here, or null when it can.
+ *
+ * One function rather than a rule in the server and a matching rule in the
+ * screen: the two drifting is how `all` came to be the single control that
+ * ignored the capability check, spawning a pipeline whose first stage the
+ * server already knew would not resolve its imports.
+ *
+ * `all` is every stage in one process (`tools/run-demo.mjs`), so it needs
+ * everything the individual stages need — plus a way to sign the recording
+ * browser in, which is the one requirement no single stage has.
+ */
+export const stageBlockedReason = (action: JobAction, host: HostCapabilities): string | null => {
+  if (!host.hasFactory) return 'The demo factory is not installed on this host';
+  if (!host.hasDependencies) {
+    return 'The demo factory has no node_modules on this host — run `npm ci` in src/demo-factory';
+  }
+  if ((action === 'record' || action === 'all') && !host.canRecord) {
+    return 'This host has no browser for Playwright to drive';
+  }
+  if ((action === 'render' || action === 'all') && !host.canRender) return 'This host has no ffmpeg on PATH';
+  if (action === 'all' && !host.canAuthenticate) {
+    return 'No workspace API key on this host, so the recording browser cannot be signed in — set B1_USER_API_KEY in Settings';
+  }
+  return null;
+};
+
+/** The blocked reason for every stage, for a screen that wants to explain itself. */
+export const stageBlockedReasons = (host: HostCapabilities): Record<JobAction, string | null> =>
+  Object.fromEntries(JOB_ACTIONS.map((action) => [action, stageBlockedReason(action, host)])) as Record<
+    JobAction,
+    string | null
+  >;
 
 export const assertSafeId = (value: string, label = 'id'): string => {
   if (!ID_PATTERN.test(value || '')) throw new Error(`Invalid ${label}`);

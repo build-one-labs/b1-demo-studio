@@ -37,10 +37,11 @@
         </button>
       </nav>
       <div class="dfs-host">
-        <strong>{{ capabilities.hasFactory ? 'Pipeline found' : 'No pipeline' }}</strong>
+        <strong :title="stepBlockedReason('all')">{{ hostSummary }}</strong>
         <small
           >{{ capabilities.canRecord ? 'browser ok' : 'no browser' }} ·
-          {{ capabilities.canRender ? 'ffmpeg ok' : 'no ffmpeg' }}</small
+          {{ capabilities.canRender ? 'ffmpeg ok' : 'no ffmpeg' }} ·
+          {{ capabilities.canAuthenticate ? 'key ok' : 'no key' }}</small
         >
       </div>
     </aside>
@@ -63,7 +64,14 @@
         <button class="dfs-btn" :disabled="!dirty || busy" @click="saveDemo">
           {{ dirty ? 'Save changes' : 'Saved' }}
         </button>
-        <button class="dfs-btn primary" :disabled="!demo || busy" @click="runJob('all')">▶ Run full demo</button>
+        <button
+          class="dfs-btn primary"
+          :disabled="!demo || busy || !stepAllowed('all')"
+          :title="stepAllowed('all') ? 'Validate, sign in, prepare, record and render' : stepBlockedReason('all')"
+          @click="runJob('all')"
+        >
+          ▶ Run full demo
+        </button>
       </header>
 
       <div v-if="error" class="dfs-error">{{ error }}</div>
@@ -425,7 +433,7 @@ type Run = {
 type Job = {
   status: string;
   step: string | null;
-  logs: { text: string }[];
+  logs: { text: string; stream?: 'stdout' | 'stderr' }[];
   exitCode: number | null;
   demoId: string | null;
 };
@@ -455,7 +463,19 @@ const runs = ref<Run[]>([]);
 const selectedRunId = ref('');
 const settings = ref<Record<string, { value?: string; configured: boolean; secret: boolean }>>({});
 const settingDraft = ref<Record<string, string>>({});
-const capabilities = ref({ hasFactory: false, canRecord: false, canRender: false });
+const capabilities = ref({
+  hasFactory: false,
+  hasDependencies: false,
+  canRecord: false,
+  canRender: false,
+  canAuthenticate: false,
+  // Why each stage cannot run here, straight from the server — the rule lives
+  // in demo-factory.lib.ts and this screen only renders its verdict. Blocked
+  // until that verdict arrives, so a stage is never offered on a guess.
+  blocked: Object.fromEntries(
+    ['validate', 'prepare', 'record', 'render', 'all'].map((id) => [id, 'Checking what this host can run…'])
+  ) as Record<string, string | null>
+});
 const job = ref<Job>({ status: 'idle', step: null, logs: [], exitCode: null, demoId: null });
 const dirty = ref(false);
 const validation = ref<'unknown' | 'valid' | 'invalid'>('unknown');
@@ -545,10 +565,17 @@ const sceneRecorded = (id: string) => Boolean(currentRun.value?.scenes?.find((it
 const stepDone = (id: string) =>
   job.value.status === 'complete' &&
   steps.findIndex((s) => s.id === job.value.step) >= steps.findIndex((s) => s.id === id);
-const stepAllowed = (id: string) =>
-  id === 'record' ? capabilities.value.canRecord : id === 'render' ? capabilities.value.canRender : true;
-const stepBlockedReason = (id: string) =>
-  id === 'record' ? 'This host has no Playwright browser installed' : 'This host has no ffmpeg on PATH';
+const stepBlockedReason = (id: string) => capabilities.value.blocked[id] || '';
+const stepAllowed = (id: string) => !stepBlockedReason(id);
+// "Pipeline found" was true of a checkout whose node_modules had never been
+// installed, which is the state every stage fails in.
+const hostSummary = computed(() =>
+  !capabilities.value.hasFactory
+    ? 'No pipeline'
+    : capabilities.value.hasDependencies
+      ? 'Pipeline found'
+      : 'Pipeline not installed'
+);
 
 async function call<T>(action: string, body: Record<string, unknown> = {}): Promise<T> {
   const response = await fetch(`${ACTIONS}/${action}`, {
@@ -643,7 +670,10 @@ function startPolling() {
           await loadRuns();
           notify('Job complete.');
         } else if (job.value.status === 'failed') {
-          notify('Job failed — see the pipeline log.', true);
+          // The log panel is collapsible and the tail is long; carrying the last
+          // stderr line into the toast is usually the whole diagnosis.
+          const last = [...job.value.logs].reverse().find((line) => line.stream === 'stderr')?.text;
+          notify(last ? `Job failed — ${last}` : 'Job failed — see the pipeline log.', true);
         }
       }
     } catch {
@@ -746,6 +776,9 @@ async function saveSettings() {
     });
     settings.value = value.settings;
     settingDraft.value = {};
+    // Several settings decide what this host can run — an API key, a browser
+    // path, an ffmpeg path — so the stage buttons are re-asked, not left stale.
+    await loadState();
     notify('Settings saved.');
   } catch (settingsError) {
     notify((settingsError as Error).message, true);

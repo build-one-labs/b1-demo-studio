@@ -23,6 +23,10 @@ npm run demo                                  # validate -> auth -> prepare -> r
 npm run publish:web                           # copy the run into the web app's public folder
 ```
 
+In a Codespace this is already done for you — see *A workspace provisions
+itself* below — and the Studio screen records without any of it. `npm run
+provision` re-runs that setup after a stack restart.
+
 The final video lands in `output/opportunities-map/<run-id>/opportunities-map.mp4`,
 next to the SRT captions and the reproducible `run-manifest.json`.
 
@@ -59,7 +63,49 @@ alongside them.
 
 **The host decides which stages work.** The screen asks the server what it can
 do (`capabilities`) and disables the rest with the reason attached, rather than
-letting a stage fail deep inside a spawned process.
+letting a stage fail deep inside a spawned process. That covers four things: the
+factory's `node_modules` (a workspace checkout has none until `npm ci` runs
+here — only the app server's image installs them at build time), a browser, an
+ffmpeg, and a workspace API key. `Run full demo` needs all four, because
+`tools/run-demo.mjs` is every stage plus the auth mint; `start-job` refuses the
+same way, so the API is not a way around the check.
+
+**A workspace provisions itself.** The dev stack's app-server container is a
+stock slim node image with the repository bind-mounted: no factory
+dependencies, no chromium, no ffmpeg, and the generated compose file passes it
+`AUTH_URL` and no workspace API key. So a Codespace could not record at all,
+and `tools/provision-workspace.mjs` closes that gap — it is the Dockerfile
+block below, applied to a running dev stack:
+
+- `npm ci` here, and Playwright's bundled ffmpeg into `.cache/ms-playwright`
+  (`recordVideo` will not start without Playwright's own, and will not take the
+  system one instead). Both land in the repository, so they outlive the
+  container.
+- `apt-get install chromium ffmpeg` inside the app-server container. This is
+  the one step the container's own lifetime bounds — the image is not ours and
+  the compose file that picks it is generated — so it re-runs after a stack
+  restart.
+- `.env.app-server`, holding what the app server needs and a shell must not
+  have: the container's binary paths, and `B1_BASE_URL=http://caddy:8080/`,
+  which is how the container reaches the web app (`localhost:8080` there is the
+  app server itself). The Studio reads it as defaults beneath the Settings tab.
+
+A demo also needs the screen it films to have data, and
+`.devcontainer/scripts/app-server-secrets.mjs` is the other half of the same
+gap: a Codespace secret is set on the devcontainer, not on the compose services
+beside it, so `opportunities-map` recorded a table reading "Salesforce
+credentials are not configured" while the shell three feet away had them. It
+forwards an allowlist of connector credentials into `src/app-server-ts/.env`,
+which the app server's `ConfigModule` already loads. Topology variables are
+deliberately not forwarded — the workspace's `AUTH_URL` and database URLs name
+hosts as seen from outside the compose network, and the container's own are the
+correct ones.
+
+`.devcontainer/scripts/orchestrators/codespace-startup.sh` runs both once the
+stack is up, so a fresh Codespace records without being asked. After restarting
+the stack by hand, `npm run provision` puts the container's half back. It is
+idempotent, and it never fails a startup: a workspace that records nothing
+should not break over a browser it will not use.
 
 `src/app-server-ts/Dockerfile` installs `chromium` and `ffmpeg` and ships the
 factory with its own `npm ci`, so all four stages work from a deployed app.
@@ -94,6 +140,14 @@ run id identifies a run; the prefix in front of it does not.
   does not work against the default remote auth server. `npm run demo` runs it
   automatically; upstream's interactive `tools/capture-auth.mjs` is kept for
   recording against a foreign environment.
+
+  The mint is best-effort, not a gate. It needs an auth server carrying the
+  `x-api-key` handoff branch, and an older deployment answers 401 — which used
+  to end the run at its second step even though `record.mjs` has a second way
+  in, authenticating every request in the take with the API key header. So a
+  refused mint is now reported and the run continues, on the stored state where
+  one exists and on the header otherwise. It stops only when there is neither,
+  because the alternative is a recording of the sign-in page.
 - **Player host**: `src/remotion/composition.ts` is new here — it lifts the
   composition id, dimensions, default props and duration formula out of
   `Root.tsx` so the B1 native component can share them. `Root.tsx` is otherwise

@@ -17,10 +17,13 @@ import {
   ALLOWED_ENV_KEYS,
   assertSafeId,
   buildJobCommand,
+  HostCapabilities,
   JobAction,
   publicSettings,
   safeChildPath,
-  SECRET_ENV_KEYS
+  SECRET_ENV_KEYS,
+  stageBlockedReason,
+  stageBlockedReasons
 } from './demo-factory.lib';
 
 /**
@@ -95,12 +98,62 @@ export class DemoFactoryStudio {
     ALLOWED_ENV_KEYS.map((key) => [key, process.env[key] || ''])
   );
 
+  /**
+   * What `tools/provision-workspace.mjs` left for this server, beneath anything
+   * typed into the Settings tab.
+   *
+   * The app server sees the pipeline's host differently from a workspace shell:
+   * its Chromium is a container path, and the web app to record is
+   * `caddy:8080` on the compose network rather than `localhost:8080`. Those
+   * values cannot live in the factory's own `.env`, which the CLI also reads
+   * from a shell, where both would be wrong. So the provisioner writes
+   * `.env.app-server` and this reads it.
+   *
+   * Re-read rather than read once: on a fresh Codespace the provisioner runs
+   * after the stack is up, minutes after this server first booted, and `nest
+   * --watch` restarts often enough that a cache would be the only thing making
+   * the timing matter.
+   */
+  private provisionedEnv: Record<string, string> = {};
+
   private job: JobState = idleJob();
 
   private activeChild: ReturnType<typeof spawn> | undefined;
 
+  private async loadProvisionedEnv(): Promise<void> {
+    const allowed = new Set<string>(ALLOWED_ENV_KEYS);
+    const values: Record<string, string> = {};
+    try {
+      const text = await readFile(path.join(this.projectRoot, '.env.app-server'), 'utf8');
+      for (const line of text.split(/\r?\n/)) {
+        const trimmed = line.trim();
+        const separator = trimmed.indexOf('=');
+        if (!trimmed || trimmed.startsWith('#') || separator < 1) continue;
+        const key = trimmed.slice(0, separator).trim();
+        if (allowed.has(key))
+          values[key] = trimmed
+            .slice(separator + 1)
+            .trim()
+            .replace(/^(["'])(.*)\1$/, '$2');
+      }
+    } catch {
+      // No provisioning on this host is a normal state, not a failure: a
+      // deployed image sets the same variables in its own environment.
+    }
+    this.provisionedEnv = values;
+  }
+
+  /** The effective value of a setting: operator's, else provisioned, else unset. */
+  private setting(key: string): string {
+    return this.runtimeEnv[key] || this.provisionedEnv[key] || '';
+  }
+
+  private effectiveSettings(): Record<string, string> {
+    return Object.fromEntries(ALLOWED_ENV_KEYS.map((key) => [key, this.setting(key)]));
+  }
+
   private outputRoot(): string {
-    const configured = this.runtimeEnv.DEMO_OUTPUT_DIR || process.env.DEMO_OUTPUT_DIR;
+    const configured = this.setting('DEMO_OUTPUT_DIR') || process.env.DEMO_OUTPUT_DIR;
     return configured ? path.resolve(this.projectRoot, configured) : path.join(this.projectRoot, 'output');
   }
 
@@ -162,25 +215,69 @@ export class DemoFactoryStudio {
    * ffmpeg nor a Playwright browser, so `record` and `render` only work where
    * those were installed.
    */
-  private async capabilities() {
-    const browsersPath = this.runtimeEnv.PLAYWRIGHT_BROWSERS_PATH || process.env.PLAYWRIGHT_BROWSERS_PATH;
-    const chromiumPath =
-      this.runtimeEnv.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH || process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH;
-    const [ffmpeg, managedBrowsers, systemChromium] = await Promise.all([
-      this.canSpawn(this.runtimeEnv.FFMPEG_PATH || process.env.FFMPEG_PATH || 'ffmpeg', ['-version']),
+  private async capabilities(): Promise<HostCapabilities & { pipelineRoot: string }> {
+    // The one gate every caller passes through, so the one place to pick up
+    // what the workspace provisioner may have written since the last call.
+    await this.loadProvisionedEnv();
+    const browsersPath = this.setting('PLAYWRIGHT_BROWSERS_PATH') || process.env.PLAYWRIGHT_BROWSERS_PATH;
+    const chromiumPath = this.setting('PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH');
+    const [ffmpeg, managedBrowsers, systemChromium, hasFactory, hasDependencies] = await Promise.all([
+      this.canSpawn(this.setting('FFMPEG_PATH') || 'ffmpeg', ['-version']),
       // Either Playwright's own download (default cache or PLAYWRIGHT_BROWSERS_PATH)
       // or a system Chromium the image installed instead — a slim base image
       // cannot always run the managed download.
-      this.exists(browsersPath || path.join(process.env.HOME || '/root', '.cache', 'ms-playwright')),
-      chromiumPath ? this.canSpawn(chromiumPath, ['--version']) : Promise.resolve(false)
+      this.hasManagedBrowser(browsersPath || path.join(process.env.HOME || '/root', '.cache', 'ms-playwright')),
+      chromiumPath ? this.canSpawn(chromiumPath, ['--version']) : Promise.resolve(false),
+      this.exists(this.demosRoot),
+      this.hasDependencies()
     ]);
     const browsers = managedBrowsers || systemChromium;
     return {
       pipelineRoot: this.projectRoot,
-      hasFactory: await this.exists(this.demosRoot),
+      hasFactory,
+      hasDependencies,
       canRecord: browsers,
-      canRender: ffmpeg
+      canRender: ffmpeg,
+      canAuthenticate: this.hasWorkspaceApiKey()
     };
+  }
+
+  /**
+   * A Playwright browser cache with a browser in it.
+   *
+   * The directory alone is not the signal it looks like: a workspace points
+   * `PLAYWRIGHT_BROWSERS_PATH` at a cache holding nothing but Playwright's
+   * bundled ffmpeg, which `recordVideo` needs and which is not a browser.
+   */
+  private async hasManagedBrowser(root: string): Promise<boolean> {
+    const entries = await readdir(root).catch(() => [] as string[]);
+    return entries.some((name) => name.startsWith('chromium'));
+  }
+
+  /**
+   * The factory is a standalone npm project outside the yarn workspaces, so a
+   * checkout has no `node_modules` for it until somebody runs `npm ci` there —
+   * only the app server's own image does that at build time. `src/cli.mjs`
+   * imports Playwright and Remotion at load, before it reads its arguments, so
+   * a missing install makes every stage die identically with a module
+   * resolution stack trace from a child process. Cheaper to say so up front.
+   */
+  private async hasDependencies(): Promise<boolean> {
+    const modules = path.join(this.projectRoot, 'node_modules');
+    const required = ['@playwright/test', '@remotion/bundler', '@remotion/renderer', 'yaml', 'zod'];
+    const found = await Promise.all(required.map((name) => this.exists(path.join(modules, name))));
+    return found.every(Boolean);
+  }
+
+  /**
+   * `all` signs the recording browser in with the workspace API key, which the
+   * CLI resolves either unqualified or named for its auth server
+   * (`B1_USER_API_KEY__AUTH_DEVELOP_TEST_BUILD_ONE`). Match both, and count the
+   * one the operator may have typed into Settings.
+   */
+  private hasWorkspaceApiKey(): boolean {
+    if (this.setting('B1_USER_API_KEY')) return true;
+    return Object.entries(process.env).some(([key, value]) => /^B1_USER_API_KEY(__|$)/.test(key) && Boolean(value));
   }
 
   private canSpawn(command: string, args: string[]): Promise<boolean> {
@@ -216,15 +313,18 @@ export class DemoFactoryStudio {
   }
 
   private definedEnv(): Record<string, string> {
-    return Object.fromEntries(Object.entries(this.runtimeEnv).filter(([, value]) => value !== ''));
+    return Object.fromEntries(Object.entries(this.effectiveSettings()).filter(([, value]) => value !== ''));
   }
 
   @B1Action({ description: 'Demos, runtime settings, host capabilities and the current job in one call' })
   async state() {
+    const capabilities = await this.capabilities();
     return {
       demos: await this.listDemos(),
-      settings: publicSettings(this.runtimeEnv),
-      capabilities: await this.capabilities(),
+      settings: publicSettings(this.effectiveSettings()),
+      // `blocked` carries the reason per stage so the screen renders the
+      // server's own verdict instead of reimplementing the rule.
+      capabilities: { ...capabilities, blocked: stageBlockedReasons(capabilities) },
       job: this.job
     };
   }
@@ -333,6 +433,12 @@ export class DemoFactoryStudio {
     if (this.job.status === 'running') throw new Error('Another job is already running');
     const command = buildJobCommand({ action, demoId, scenes, voice });
 
+    // The screen disables what this host cannot do, but it is not the only
+    // caller and its capability snapshot is as old as its last `state`. Refuse
+    // here too, with the reason, rather than spawn a child that cannot succeed.
+    const blocked = stageBlockedReason(action, await this.capabilities());
+    if (blocked) throw new Error(`Cannot run ${action} on this host — ${blocked}.`);
+
     this.job = {
       id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
       action,
@@ -393,7 +499,8 @@ export class DemoFactoryStudio {
 
   @B1Action({ description: 'Runtime settings, with secrets reduced to whether they are configured' })
   async getSettings() {
-    return { settings: publicSettings(this.runtimeEnv) };
+    await this.loadProvisionedEnv();
+    return { settings: publicSettings(this.effectiveSettings()) };
   }
 
   @B1Action({ description: 'Update runtime settings held in the server process' })
@@ -405,6 +512,6 @@ export class DemoFactoryStudio {
       if (SECRET_ENV_KEYS.has(key) && !value) continue;
       this.runtimeEnv[key] = String(value ?? '');
     }
-    return { settings: publicSettings(this.runtimeEnv) };
+    return { settings: publicSettings(this.effectiveSettings()) };
   }
 }
