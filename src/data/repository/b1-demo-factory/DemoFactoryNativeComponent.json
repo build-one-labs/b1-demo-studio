@@ -1,0 +1,25 @@
+{
+  "createdAt": "2026-08-11 12:24:30.441042",
+  "createdBy": "1nd7tSsWQull81DW5XEYcEbeMwtIk1R0",
+  "howToUse": "",
+  "label": "",
+  "moduleGuid": "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4",
+  "objectDescription": "Native component host for the Demo Factory Studio — the demo dashboard (storyboard, scene editor, pipeline stages, run history) backed by the demo-factory server actions.",
+  "objectMasterGuid": "5d29888c-571d-4105-a0c0-d41c79bb7f88",
+  "objectName": "DemoFactoryNativeComponent",
+  "objectTypeGuid": "217eaba6-7c1d-49f3-a755-e135d89c93ac",
+  "owner": "1nd7tSsWQull81DW5XEYcEbeMwtIk1R0",
+  "status": "Active",
+  "templateObject": false,
+  "attributes": {
+    "componentName": "DemoFactoryStudio",
+    "fileName": "src/web-app/src/components/global/DemoFactoryStudio.vue",
+    "headerLabel": "Demo Factory Studio"
+  },
+  "instances": [],
+  "links": [],
+  "tags": [],
+  "tenantId": null,
+  "validFrom": null,
+  "validUntil": null
+}

@@ -1,0 +1,73 @@
+{
+  "abstractType": false,
+  "active": true,
+  "classTypeGuid": "fd175260-faa7-c08c-0214-d78ac43436e0",
+  "containerType": false,
+  "extendsObjectTypeGuid": "171ce169-e586-495a-9257-0982d1bc4eb0",
+  "howToUse": "For prototyping only — use only when no real data source backed by an actual database table is available yet (e.g. mocking up a screen before its b1_entity/table exists). Backed by a clob payload (referenced by the `data` attribute) holding a JSON array; the appserver's ClobController applies filtering, sorting and pagination server-side (the DSO is addressed by its own name and the appserver resolves it to its payload, like the other DSO types). The `serverType` attribute selects which appserver serves it: `\"app\"` (the default) routes to the customer appserver (`/service/app/data/clob/<name>`), `\"swat\"` routes to the framework appserver (`/service/swat/data/clob/<name>`). The customer appserver (the default `\"app\"`) is what lets a temporary DSO run a customer-side `serverEventsHandler`; use `\"swat\"` for framework-shipped fixtures. Good for dropdown sources, demo data, and placeholder fixtures — NOT for production data. json sources are writable (create/update/delete persist server-side, keyed by the DSO's keyFields). Replace with a real table/entity-backed data source (b1_data_source_embedded over a b1_entity, or b1_data_source_connector/scl) before production. The backing attribute is `data` — a `dataType: \"clob\"` attribute holding the payload's `clob_guid`, NOT a URL, path or object name (it replaced the former `dataObject`, which named a separate b1_clob object). The easiest way to create the payload + DSO together is create_data_layer with dataMode:\"clob\" (pass the rows via sampleRows). For a master-detail JOIN (a master grid whose selection filters this DSO as the detail), set `foreignFields: \"<childKey>,<parentKey>\"` and a Join link from the master DSO — the join filter is evaluated server-side and matches `eq`/`neq` across number/string; see the `master-detail-join.md` knowledge doc.",
+  "label": "Temporary Data Source",
+  "maintenanceMenu": "",
+  "objectTypeDescription": "Data source backed by a clob payload (referenced by `data`) holding a JSON array (read + json CRUD), filtered/sorted server-side.",
+  "objectTypeGuid": "7f9b0fa6-4d9d-486e-a87c-9c8936822da0",
+  "objectTypeName": "b1_data_source_temporary",
+  "status": "Active",
+  "storeInstances": "",
+  "technicalClassName": "",
+  "vendor": "",
+  "attributes": {
+    "data": "",
+    "serverEventsHandler": "",
+    "serverType": "app"
+  },
+  "createdBy": null,
+  "designSettings": {
+    "Main Properties": [
+      "keyFields",
+      "data",
+      "serverType"
+    ]
+  },
+  "owner": null,
+  "supportedInstanceTypes": [],
+  "supportedLinkTypes": [
+    {
+      "linkSource": true,
+      "linkTarget": false,
+      "linkTypeGuid": "d37727fb-24ff-7ea3-0e14-a5d9d8526f38",
+      "supportedLinkGuid": "b6812e05-5774-47fe-983b-a9d4e2927b8a"
+    },
+    {
+      "linkSource": false,
+      "linkTarget": true,
+      "linkTypeGuid": "ac7518d7-ef25-faab-3714-cd9dc06f3864",
+      "supportedLinkGuid": "dde7cc60-ecef-4268-b59f-71980696e2ec"
+    },
+    {
+      "linkSource": false,
+      "linkTarget": true,
+      "linkTypeGuid": "c21ecef7-8939-4534-b458-66945464b796",
+      "supportedLinkGuid": "484a9a0e-2045-4eb9-b403-18d765966d51"
+    },
+    {
+      "linkSource": false,
+      "linkTarget": true,
+      "linkTypeGuid": "f52235a4-c120-2490-3814-9e29182ad912",
+      "supportedLinkGuid": "cfcf2470-32e8-4232-b123-63fa83ed37d6"
+    },
+    {
+      "linkSource": true,
+      "linkTarget": true,
+      "linkTypeGuid": "8bf587d6-57c7-29a2-e114-26c2384051bc",
+      "supportedLinkGuid": "7197276a-7ac3-43d3-8aab-91279c099e7b"
+    }
+  ],
+  "synonyms": [
+    "temporary data source",
+    "TemporaryCollection",
+    "TemporaryDataSource"
+  ],
+  "tags": [],
+  "tenantId": null,
+  "validFrom": null,
+  "validUntil": null
+}

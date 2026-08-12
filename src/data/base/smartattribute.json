@@ -1,0 +1,20 @@
+[
+  {
+    "active": true,
+    "attributeDescription": "Source query for the entity",
+    "attributeGroupGuid": "fc0f41c7-5ed7-4c05-9c6e-317790166851",
+    "attributeGroupName": "B1",
+    "attributeGuid": "12fe1c8f-5fb1-4d35-a763-bafe0f049f98",
+    "attributeLabel": "sourceQuery",
+    "attributeType": "attribute",
+    "constantLevel": "Class",
+    "dataType": "string",
+    "designGroupGuid": "8ca16f06-8fd4-4add-a5ca-77968a0f5830",
+    "technicalName": "sourceQuery",
+    "vendor": "",
+    "createdBy": null,
+    "tags": [],
+    "tenantId": null,
+    "validationRules": null
+  }
+]

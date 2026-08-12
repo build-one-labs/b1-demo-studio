@@ -175,6 +175,46 @@ run_stack_startup() {
 }
 
 # =============================================================================
+# Step 3: App server secrets
+# =============================================================================
+# Codespace secrets are set on this container, not on the compose services
+# beside it, and the compose file that would forward them is generated into
+# .deploy/. So a connector's credentials are present in the workspace and
+# absent in the process that calls the API. The script writes the allowlisted
+# ones into the app server's .env, which its ConfigModule already reads.
+run_app_server_secrets() {
+  local script="$WORKSPACE_ROOT/.devcontainer/scripts/app-server-secrets.mjs"
+
+  [ -f "$script" ] || return 0
+
+  secrets_print_section "Step 3: App Server Secrets"
+  node "$script" || secrets_print_warning "Forwarding workspace secrets to the app server failed; connectors may report missing credentials."
+}
+
+# =============================================================================
+# Step 4: Demo Factory runtime
+# =============================================================================
+# The Demo Factory Studio screen spawns its pipeline inside the app server's
+# container, which in a workspace is a stock slim node image: no factory
+# dependencies, no browser, no ffmpeg. A deployed app gets all of that from
+# src/app-server-ts/Dockerfile; a Codespace got none of it, so every stage
+# failed on a fresh workspace. The provisioner is that Dockerfile block applied
+# to the running dev stack.
+#
+# Runs after the stack, because it installs into the app server's container and
+# waits for it to exist. Non-fatal by construction: a workspace that never
+# records a demo should not have its startup fail over a browser it will not
+# use, so the script reports and returns rather than exiting non-zero.
+run_demo_factory_setup() {
+  local provisioner="$WORKSPACE_ROOT/src/demo-factory/tools/provision-workspace.mjs"
+
+  [ -f "$provisioner" ] || return 0
+
+  secrets_print_section "Step 4: Demo Factory Runtime"
+  node "$provisioner" || secrets_print_warning "Demo Factory provisioning skipped; run 'npm run provision' in src/demo-factory."
+}
+
+# =============================================================================
 # Main
 # =============================================================================
 main() {
@@ -186,6 +226,12 @@ main() {
 
   # Step 2: Start the stack
   run_stack_startup
+
+  # Step 3: Give the app server the workspace secrets compose does not pass it
+  run_app_server_secrets
+
+  # Step 4: Make the Demo Factory Studio's stages runnable in this workspace
+  run_demo_factory_setup
 }
 
 main "$@"

@@ -5702,6 +5702,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@remotion/player@npm:4.0.507":
+  version: 4.0.507
+  resolution: "@remotion/player@npm:4.0.507"
+  dependencies:
+    remotion: "npm:4.0.507"
+  peerDependencies:
+    react: ">=16.8.0"
+    react-dom: ">=16.8.0"
+  checksum: 10c0/c6e1dafedda3bb3fdc641e5664d8141cf4a5c2e424c03dd06bb142f04a09d8a6c265d1dbc5d3ea7f2ea5d59e8407b44f4e69724b71985a8c5393f7dbae95862f
+  languageName: node
+  linkType: hard
+
 "@rolldown/pluginutils@npm:1.0.0-rc.2":
   version: 1.0.0-rc.2
   resolution: "@rolldown/pluginutils@npm:1.0.0-rc.2"
@@ -7940,6 +7952,24 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/react-dom@npm:^19.0.0":
+  version: 19.2.4
+  resolution: "@types/react-dom@npm:19.2.4"
+  peerDependencies:
+    "@types/react": ^19.2.0
+  checksum: 10c0/b7d854ce17bb51a3a067168268a90f0123d10dc490f63f1ff5409f07ac715febeb8f5b7b473404a9d437106571e0312fc2937a945634d590abfc9aa46a14b01b
+  languageName: node
+  linkType: hard
+
+"@types/react@npm:^19.0.0":
+  version: 19.2.18
+  resolution: "@types/react@npm:19.2.18"
+  dependencies:
+    csstype: "npm:^3.2.2"
+  checksum: 10c0/d04216172b4b4362b310017c210dfbe019fb4f4e7dffd0313e70b3acb3051d5c3e76e7e84e3cf4c6a3c824993ffadfe3949e589a6398a09d4200e7670e2962de
+  languageName: node
+  linkType: hard
+
 "@types/resolve@npm:1.20.2":
   version: 1.20.2
   resolution: "@types/resolve@npm:1.20.2"
@@ -9921,6 +9951,7 @@ __metadata:
     ts-node: "npm:^10.9.1"
     tsconfig-paths: "npm:^4.2.0"
     typescript: "npm:^5.7.3"
+    yaml: "npm:^2.8.0"
     zod: "npm:^3.24.3"
   languageName: unknown
   linkType: soft
@@ -12073,7 +12104,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"csstype@npm:^3.2.3":
+"csstype@npm:^3.2.2, csstype@npm:^3.2.3":
   version: 3.2.3
   resolution: "csstype@npm:3.2.3"
   checksum: 10c0/cd29c51e70fa822f1cecd8641a1445bed7063697469d35633b516e60fe8c1bde04b08f6c5b6022136bb669b64c63d4173af54864510fbb4ee23281801841a3ce
@@ -21490,10 +21521,28 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-dom@npm:19.2.8":
+  version: 19.2.8
+  resolution: "react-dom@npm:19.2.8"
+  dependencies:
+    scheduler: "npm:^0.27.0"
+  peerDependencies:
+    react: ^19.2.8
+  checksum: 10c0/41ba2247b76f687fcfe5bbc99f514d6b851d8c8041c2f5ded36ed05bd7fdc5208cacbac9de51e3e6633e77f96f44cec9f0d4a5a55184dba4e00738f224439134
+  languageName: node
+  linkType: hard
+
 "react-is@npm:^18.0.0":
   version: 18.3.1
   resolution: "react-is@npm:18.3.1"
   checksum: 10c0/f2f1e60010c683479e74c63f96b09fb41603527cd131a9959e2aee1e5a8b0caf270b365e5ca77d4a6b18aae659b60a86150bb3979073528877029b35aecd2072
+  languageName: node
+  linkType: hard
+
+"react@npm:19.2.8":
+  version: 19.2.8
+  resolution: "react@npm:19.2.8"
+  checksum: 10c0/5f86bdb56426652fd6d989d30a6f2e603c057272c47c9ca3a3fbe190a3a39ee9ccce937d63cfc039717abed1b8891d6a499134bc35311acc07eafdacd86537cd
   languageName: node
   linkType: hard
 
@@ -21748,6 +21797,16 @@ __metadata:
   peerDependencies:
     vue: ">= 3.4.0"
   checksum: 10c0/2e4ce57a44d0495a2f858868baf63914a134384ed0bfbcd8186e6bcd915a473bdc7e79dd72110a6d5ffa94b48439c97d92cdfda9669e3ac8639ce5c01571bfe8
+  languageName: node
+  linkType: hard
+
+"remotion@npm:4.0.507":
+  version: 4.0.507
+  resolution: "remotion@npm:4.0.507"
+  peerDependencies:
+    react: ">=16.8.0"
+    react-dom: ">=16.8.0"
+  checksum: 10c0/4caaef762714f98310bc8e37246b02564db5e2463fa219bbc39f2e9d4dcb74a5769b53ed8461fc4970641341f21a25e680b76810a21f39f30f749ebce519c7a6
   languageName: node
   linkType: hard
 
@@ -22508,6 +22567,13 @@ __metadata:
   version: 1.6.0
   resolution: "sax@npm:1.6.0"
   checksum: 10c0/e5593f4a91eb25761a688c4d96902e4e95a0dd6017bc65146b6f21236e3d715cf893333b76bc758923c9574c2fb5a7a76c3a81e96ea15432f2624f906c027c1e
+  languageName: node
+  linkType: hard
+
+"scheduler@npm:^0.27.0":
+  version: 0.27.0
+  resolution: "scheduler@npm:0.27.0"
+  checksum: 10c0/4f03048cb05a3c8fddc45813052251eca00688f413a3cee236d984a161da28db28ba71bd11e7a3dd02f7af84ab28d39fb311431d3b3772fed557945beb00c452
   languageName: node
   linkType: hard
 
@@ -25922,11 +25988,17 @@ __metadata:
     "@pinia/nuxt": "npm:^0.11.1"
     "@primevue/forms": "npm:^4.3.6"
     "@primevue/nuxt-module": "npm:^4.3.6"
+    "@remotion/player": "npm:4.0.507"
     "@types/leaflet": "npm:^1.9.21"
+    "@types/react": "npm:^19.0.0"
+    "@types/react-dom": "npm:^19.0.0"
     eslint: "npm:^9.19.0"
     leaflet: "npm:^1.9.4"
     nuxt: "npm:^4.0.0"
     pinia: "npm:^3.0.3"
+    react: "npm:19.2.8"
+    react-dom: "npm:19.2.8"
+    remotion: "npm:4.0.507"
     sass-embedded: "npm:^1.90.0"
     typescript: "npm:^5.7.3"
     vue: "npm:^3.5.22"

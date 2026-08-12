@@ -1,0 +1,69 @@
+{
+  "abstractType": false,
+  "active": true,
+  "classTypeGuid": "fd175260-faa7-c08c-0214-d78ac43436e0",
+  "containerType": false,
+  "extendsObjectTypeGuid": "171ce169-e586-495a-9257-0982d1bc4eb0",
+  "howToUse": "Use for legacy OpenEdge / Smart Component Library (Progress 4GL) integrations. resourceName is the qualified Akioma class path, optionally with a /dsX/eX dataset/entity suffix. Routed through the SclDataAdapter, which handles PASOE authentication and session token caching.",
+  "label": "SCL Data Source",
+  "maintenanceMenu": "",
+  "objectTypeDescription": "Data source backed by OpenEdge / Smart Component Library",
+  "objectTypeGuid": "96436740-1dd9-4ed8-856e-d1731b95cd11",
+  "objectTypeName": "b1_data_source_scl",
+  "status": "Active",
+  "storeInstances": "",
+  "technicalClassName": "",
+  "vendor": "",
+  "attributes": {
+    "businessEntity": ""
+  },
+  "createdBy": null,
+  "designSettings": {
+    "Main Properties": [
+      "businessEntity"
+    ]
+  },
+  "owner": null,
+  "supportedInstanceTypes": [],
+  "supportedLinkTypes": [
+    {
+      "linkSource": true,
+      "linkTarget": false,
+      "linkTypeGuid": "d37727fb-24ff-7ea3-0e14-a5d9d8526f38",
+      "supportedLinkGuid": "d73ae5d0-a082-46f7-a1e2-f761693847b6"
+    },
+    {
+      "linkSource": false,
+      "linkTarget": true,
+      "linkTypeGuid": "ac7518d7-ef25-faab-3714-cd9dc06f3864",
+      "supportedLinkGuid": "96ed8b67-b2d7-4cd6-a944-7b073f20ee3a"
+    },
+    {
+      "linkSource": false,
+      "linkTarget": true,
+      "linkTypeGuid": "c21ecef7-8939-4534-b458-66945464b796",
+      "supportedLinkGuid": "2a20365d-6966-423c-89fe-9b3caddbafd6"
+    },
+    {
+      "linkSource": false,
+      "linkTarget": true,
+      "linkTypeGuid": "f52235a4-c120-2490-3814-9e29182ad912",
+      "supportedLinkGuid": "ea7e861d-4388-447f-a077-1194c762661e"
+    },
+    {
+      "linkSource": true,
+      "linkTarget": true,
+      "linkTypeGuid": "8bf587d6-57c7-29a2-e114-26c2384051bc",
+      "supportedLinkGuid": "61dc2943-9792-4871-a962-aaffa921b766"
+    }
+  ],
+  "synonyms": [
+    "SCL data source",
+    "SCLDataSource",
+    "OpenEdge data source"
+  ],
+  "tags": [],
+  "tenantId": null,
+  "validFrom": null,
+  "validUntil": null
+}

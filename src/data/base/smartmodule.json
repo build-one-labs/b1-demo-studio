@@ -1,0 +1,24 @@
+[
+  {
+    "moduleDataFolder": "b1-demo-factory",
+    "moduleDescription": "Demo Factory — demo-as-code video pipeline (src/demo-factory): Remotion compositions, Playwright recorder and the screens that host them.",
+    "moduleGuid": "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4",
+    "moduleName": "b1-demo-factory",
+    "modulePackage": "b1-demo-factory",
+    "productGuid": "94328e98-6f1d-4d15-b86d-f62fff77d705",
+    "systemOwned": false,
+    "createdBy": null,
+    "tenantId": null
+  },
+  {
+    "moduleDataFolder": "mini-app-sample",
+    "moduleDescription": "Mini App Sample Application",
+    "moduleGuid": "4722bdb3-b17d-4bb0-9855-3383b82cca76",
+    "moduleName": "mini-app-sample",
+    "modulePackage": "mini-app-sample",
+    "productGuid": "e8a832d8-0365-4c4c-971b-6dd3c0ca6d94",
+    "systemOwned": false,
+    "createdBy": null,
+    "tenantId": null
+  }
+]

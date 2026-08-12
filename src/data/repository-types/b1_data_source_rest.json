@@ -1,0 +1,68 @@
+{
+  "abstractType": false,
+  "active": true,
+  "classTypeGuid": "fd175260-faa7-c08c-0214-d78ac43436e0",
+  "containerType": false,
+  "extendsObjectTypeGuid": "171ce169-e586-495a-9257-0982d1bc4eb0",
+  "howToUse": "Use for arbitrary REST APIs that return plain JSON arrays or objects. Routed through the RestDataAdapter; supports full URLs and placeholder substitution in resourceName (e.g. {{env.integration.pasoeUrl}}/users).",
+  "label": "REST Data Source",
+  "maintenanceMenu": "",
+  "objectTypeDescription": "Data source backed by an arbitrary REST API",
+  "objectTypeGuid": "786465ea-0e32-453a-9500-43273d1fa703",
+  "objectTypeName": "b1_data_source_rest",
+  "status": "Active",
+  "storeInstances": "",
+  "technicalClassName": "",
+  "vendor": "",
+  "attributes": {
+    "resourceName": ""
+  },
+  "createdBy": null,
+  "designSettings": {
+    "Main Properties": [
+      "resourceName"
+    ]
+  },
+  "owner": null,
+  "supportedInstanceTypes": [],
+  "supportedLinkTypes": [
+    {
+      "linkSource": true,
+      "linkTarget": false,
+      "linkTypeGuid": "d37727fb-24ff-7ea3-0e14-a5d9d8526f38",
+      "supportedLinkGuid": "fdfc30e2-0448-40e5-8e4a-e241eea7ac9e"
+    },
+    {
+      "linkSource": false,
+      "linkTarget": true,
+      "linkTypeGuid": "ac7518d7-ef25-faab-3714-cd9dc06f3864",
+      "supportedLinkGuid": "6fc066a9-d8f7-4a02-ac6c-cefa3b1c305e"
+    },
+    {
+      "linkSource": false,
+      "linkTarget": true,
+      "linkTypeGuid": "c21ecef7-8939-4534-b458-66945464b796",
+      "supportedLinkGuid": "c5e28623-3591-4484-b799-18ac647581bf"
+    },
+    {
+      "linkSource": false,
+      "linkTarget": true,
+      "linkTypeGuid": "f52235a4-c120-2490-3814-9e29182ad912",
+      "supportedLinkGuid": "3ac2d59d-94e4-4471-aa89-f6fedf2363ae"
+    },
+    {
+      "linkSource": true,
+      "linkTarget": true,
+      "linkTypeGuid": "8bf587d6-57c7-29a2-e114-26c2384051bc",
+      "supportedLinkGuid": "f2e94949-3558-4cb2-8836-7b298bf24beb"
+    }
+  ],
+  "synonyms": [
+    "REST data source",
+    "RestDataSource"
+  ],
+  "tags": [],
+  "tenantId": null,
+  "validFrom": null,
+  "validUntil": null
+}

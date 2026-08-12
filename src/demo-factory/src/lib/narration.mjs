@@ -1,0 +1,121 @@
+import {copyFile, readFile, writeFile} from 'node:fs/promises';
+import path from 'node:path';
+import {alignmentToCaptions, captionsToSrt} from './captions.mjs';
+import {alignmentDurationMs, mapCuesToAlignment, parseNarrationCues, syntheticAlignment} from './cues.mjs';
+import {ensureDir, projectRoot, readJson, sha256, writeJson} from './files.mjs';
+import {writeSilentWav} from './wav.mjs';
+
+const selectProvider = (demo, override) => {
+  if (override) return override;
+  const configured = demo.settings.narration.provider;
+  if (configured !== 'auto') return configured;
+  const apiKey = process.env[demo.settings.narration.apiKeyEnv];
+  const voiceId = process.env[demo.settings.narration.voiceIdEnv];
+  return apiKey && voiceId ? 'elevenlabs' : 'silent';
+};
+
+const callElevenLabs = async ({text, apiKey, voiceId, modelId, languageCode}) => {
+  const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${encodeURIComponent(voiceId)}/with-timestamps?output_format=mp3_44100_128`, {
+    method: 'POST',
+    headers: {'content-type': 'application/json', 'xi-api-key': apiKey},
+    body: JSON.stringify({
+      text,
+      model_id: modelId,
+      language_code: languageCode,
+      seed: 424242,
+      apply_text_normalization: 'auto',
+      voice_settings: {stability: 0.62, similarity_boost: 0.82, style: 0.18, use_speaker_boost: true},
+    }),
+  });
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(`ElevenLabs returned ${response.status}: ${body.slice(0, 500)}`);
+  }
+  return response.json();
+};
+
+const buildNarration = async ({demo, scene, provider, cacheDirectory}) => {
+  const {text, cues: cueOffsets} = parseNarrationCues(scene.narration);
+  const narration = demo.settings.narration;
+  const modelId = process.env[narration.modelIdEnv] || narration.defaultModelId;
+  const languageCode = process.env[narration.languageCodeEnv] || narration.defaultLanguageCode;
+  const voiceId = process.env[narration.voiceIdEnv] || 'silent-preview';
+  const cacheKey = sha256(JSON.stringify({provider, text, modelId, languageCode, voiceId, wordsPerMinute: narration.wordsPerMinute}));
+  const metadataFile = path.join(cacheDirectory, `${cacheKey}.json`);
+
+  try {
+    const metadata = await readJson(metadataFile);
+    await readFile(metadata.audioFile);
+    return metadata;
+  } catch (error) {
+    if (!['ENOENT', 'ENOTDIR'].includes(error.code)) throw error;
+  }
+
+  let alignment;
+  let audioFile;
+  if (provider === 'elevenlabs') {
+    const apiKey = process.env[narration.apiKeyEnv];
+    if (!apiKey || !voiceId || voiceId === 'silent-preview') {
+      throw new Error(`ElevenLabs mode requires ${narration.apiKeyEnv} and ${narration.voiceIdEnv}`);
+    }
+    const result = await callElevenLabs({text, apiKey, voiceId, modelId, languageCode});
+    alignment = result.normalized_alignment || result.alignment;
+    if (!alignment) throw new Error('ElevenLabs response did not include alignment timestamps');
+    audioFile = path.join(cacheDirectory, `${cacheKey}.mp3`);
+    await writeFile(audioFile, Buffer.from(result.audio_base64, 'base64'));
+  } else {
+    alignment = syntheticAlignment(text, narration.wordsPerMinute);
+    audioFile = path.join(cacheDirectory, `${cacheKey}.wav`);
+    await writeSilentWav(audioFile, alignmentDurationMs(alignment));
+  }
+
+  const metadata = {
+    provider,
+    cacheKey,
+    text,
+    audioFile,
+    alignment,
+    durationMs: alignmentDurationMs(alignment),
+    cues: mapCuesToAlignment(cueOffsets, text, alignment),
+    captions: alignmentToCaptions(text, alignment),
+  };
+  await writeJson(metadataFile, metadata);
+  return metadata;
+};
+
+export const prepareNarration = async ({demo, runDir, providerOverride}) => {
+  const provider = selectProvider(demo, providerOverride);
+  const narrationDir = await ensureDir(path.join(runDir, 'narration'));
+  const captionsDir = await ensureDir(path.join(runDir, 'captions'));
+  const cacheDirectory = await ensureDir(path.join(projectRoot, '.cache', 'narration'));
+  const scenes = [];
+
+  for (const scene of demo.scenes) {
+    const metadata = await buildNarration({demo, scene, provider, cacheDirectory});
+    const extension = path.extname(metadata.audioFile);
+    const outputAudio = path.join(narrationDir, `${scene.id}${extension}`);
+    await copyFile(metadata.audioFile, outputAudio);
+    const outputAlignment = path.join(narrationDir, `${scene.id}.alignment.json`);
+    await writeJson(outputAlignment, metadata);
+    const outputSrt = path.join(captionsDir, `${scene.id}.srt`);
+    await writeFile(outputSrt, `${captionsToSrt(metadata.captions)}\n`, 'utf8');
+    scenes.push({
+      id: scene.id,
+      title: scene.title,
+      route: scene.route,
+      actions: scene.actions,
+      assertions: scene.assertions,
+      narration: metadata.text,
+      narrationProvider: provider,
+      narrationFile: outputAudio,
+      alignmentFile: outputAlignment,
+      captionsFile: outputSrt,
+      narrationDurationMs: metadata.durationMs,
+      cues: metadata.cues,
+      captions: metadata.captions,
+    });
+  }
+
+  return {provider, scenes};
+};
+

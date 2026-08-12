@@ -1,0 +1,100 @@
+schemaVersion: 1
+id: opportunities-map
+title: A Salesforce pipeline you can actually see
+description: The mini-apps opportunity screen reads the Salesforce pipeline live and plots it geographically — one connector-backed data source, two views, no export step in between.
+
+# Authored for b1-demo-studio, whose blueprint has no SalesTourPlanningScreen
+# (the vendored sales-tour demo targets vanguard's). This records
+# OpportunitiesMapScreen from the mini-apps module instead.
+#
+# Two scenes, not three, and the reason is worth keeping: the screen's third
+# view — the "Recent Revenue" tab — is wired to ProductRevenueDSO, which
+# returns [] in this workspace (local product revenue has no account in common
+# with the Salesforce org). Filming it would show an empty chart with an
+# axis of 0.0 to 1.0. The narration also stays off the Amount column: the
+# restricted-events handler anonymizes it to "***********", which the currency
+# formatter renders as "$NaN".
+#
+# Every selector below was verified against the running app before recording.
+
+settings:
+  language: en
+  viewport:
+    width: 1920
+    height: 1080
+  fps: 30
+  baseUrl:
+    env: B1_BASE_URL
+    fallback: http://localhost:8080/?app=sample-app
+  authStateEnv: B1_AUTH_STATE
+  headlessEnv: DEMO_HEADLESS
+  holdBeforeMs: 700
+  holdAfterMs: 1400
+  cursor:
+    enabled: true
+    moveDurationMs: 700
+    clickLeadMs: 120
+    clickEffectDurationMs: 560
+    sizePx: 30
+  narration:
+    provider: auto
+    voiceIdEnv: ELEVENLABS_VOICE_ID
+    apiKeyEnv: ELEVENLABS_API_KEY
+    modelIdEnv: ELEVENLABS_MODEL_ID
+    defaultModelId: eleven_multilingual_v2
+    languageCodeEnv: ELEVENLABS_LANGUAGE_CODE
+    defaultLanguageCode: en
+    wordsPerMinute: 132
+  branding:
+    productName: Build.One
+    accentColor: "#1266f1"
+    backgroundColor: "#0b1020"
+    textColor: "#f7f8ff"
+    showCaptions: true
+    showSceneTitles: true
+
+scenes:
+  - id: live-pipeline
+    title: The pipeline, straight from Salesforce
+    route: /screens/OpportunitiesMapScreen
+    narration: >
+      This is a Build.One screen reading a Salesforce pipeline live.
+      [cue:show-list] Nothing here was exported or copied overnight — the rows
+      arrive through a connector at the moment the screen opens.
+      [cue:read-row] Every opportunity carries the things a sales conversation
+      turns on: the stage it has reached, how likely it is to close, and the
+      revenue that combination is worth.
+    actions:
+      - action: waitFor
+        atCue: show-list
+        target: { css: '.p-datatable-tbody > tr:nth-child(1)' }
+        timeoutMs: 30000
+      - action: highlight
+        atCue: read-row
+        target: { css: '.p-datatable-tbody > tr:nth-child(2)' }
+        durationMs: 3200
+    assertions:
+      - visible: { css: '.p-datatable-tbody > tr:nth-child(1)' }
+      - textContains: { target: { css: '.p-datatable' }, value: 'Negotiation/Review' }
+
+  - id: deals-on-a-map
+    title: Where those deals actually are
+    route: /screens/OpportunitiesMapScreen
+    narration: >
+      A pipeline stays abstract until you ask where it is.
+      [cue:show-map] The map below is driven by that same connector source, so
+      the geocoded opportunities are already placed — no second query, no export
+      to fall out of date.
+      [cue:read-map] That is the difference between a ranked list and a week you
+      can actually drive.
+    actions:
+      - action: waitFor
+        atCue: show-map
+        target: { css: '.leaflet-marker-icon >> nth=0' }
+        timeoutMs: 30000
+      - action: highlight
+        atCue: read-map
+        target: { css: '.leaflet-container' }
+        durationMs: 3200
+    assertions:
+      - visible: { css: '.leaflet-marker-icon >> nth=0' }

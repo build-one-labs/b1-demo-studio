@@ -1,0 +1,9 @@
+[
+  {
+    "color": "#64748b",
+    "description": "Top-level business domains used to group repository objects.",
+    "howToUse": "Business-domain classification of repository objects.",
+    "id": "9312cf25-2b46-46e1-9a67-b260727699cd",
+    "label": "Domain"
+  }
+]
