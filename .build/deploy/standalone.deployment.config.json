@@ -1,9 +1,9 @@
 {
   "$schema": "deployment.config.schema.json",
   "globals": {
-    "dataImage": "653306034207.dkr.ecr.eu-central-1.amazonaws.com/buildone-samples/b1-demo-studio-data:${VERSION}",
-    "appServerTsImage": "653306034207.dkr.ecr.eu-central-1.amazonaws.com/buildone-samples/b1-demo-studio-app-server-ts:${VERSION}",
-    "webAppImage": "653306034207.dkr.ecr.eu-central-1.amazonaws.com/buildone-samples/b1-demo-studio-web-app:${VERSION}"
+    "dataImage": "653306034207.dkr.ecr.eu-central-1.amazonaws.com/clawd-software/b1-demo-studio-data:${VERSION}",
+    "appServerTsImage": "653306034207.dkr.ecr.eu-central-1.amazonaws.com/clawd-software/b1-demo-studio-app-server-ts:${VERSION}",
+    "webAppImage": "653306034207.dkr.ecr.eu-central-1.amazonaws.com/clawd-software/b1-demo-studio-web-app:${VERSION}"
   },
   "services": {
     "swat_app_server_ts": {
