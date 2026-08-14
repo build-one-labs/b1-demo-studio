@@ -17,3 +17,12 @@ src/web-app/public/demo-factory
 # A live session, written by tools/auth-from-session.mjs or auth:b1. This must
 # never reach an image.
 src/demo-factory/playwright
+
+# One workspace's view of the pipeline, written by tools/provision-workspace.mjs:
+# a B1_USER_API_KEY and a set of paths and URLs that describe the machine it ran
+# on. Both are wrong in a published image — the key because it is a secret that
+# would ship inside it, the paths because the image sets its own and the Studio
+# reads this file in preference to them. CI never has one (it is gitignored), so
+# this is what keeps an image built from a provisioned workspace honest.
+src/demo-factory/.env
+src/demo-factory/.env.*

@@ -14,9 +14,9 @@
   - Upstream streams job state over SSE. A B1 action is request/response, so
     this polls `job` while one is running — same object, one fewer transport.
   - The host advertises what it can do (`capabilities`). The app server image
-    carries node but neither ffmpeg nor a Playwright browser, so Record and
-    Render are disabled there with the reason shown, rather than failing deep
-    inside a spawned process.
+    installs ffmpeg and a system Chromium, but a host without them disables
+    Record and Render with the reason shown, rather than failing deep inside a
+    spawned process.
 -->
 <template>
   <div class="dfs">
