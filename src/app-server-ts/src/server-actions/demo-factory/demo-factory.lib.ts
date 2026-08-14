@@ -82,7 +82,9 @@ export const stageBlockedReason = (action: JobAction, host: HostCapabilities): s
   if ((action === 'record' || action === 'all') && !host.canRecord) {
     return 'This host has no browser for Playwright to drive';
   }
-  if ((action === 'render' || action === 'all') && !host.canRender) return 'This host has no ffmpeg on PATH';
+  if ((action === 'render' || action === 'all') && !host.canRender) {
+    return 'This host has no ffmpeg and ffprobe for the renderer to measure and compose clips with';
+  }
   if (action === 'all' && !host.canAuthenticate) {
     return 'No workspace API key on this host, so the recording browser cannot be signed in — set B1_USER_API_KEY in Settings';
   }

@@ -46,9 +46,25 @@ RUN chmod +x ./start.sh
 # never records from the deployed app can drop this whole block, and the Studio
 # will say so on screen instead of failing.
 # ---------------------------------------------------------------------------
-RUN apk add --no-cache chromium ffmpeg font-noto ttf-freefont
+# The `&&` chain is the point: an image that reaches ECR without a working
+# ffmpeg or Chromium is one whose Studio shows "no browser · no ffmpeg" to an
+# operator with no way to tell why. Prove both run here, at build time, where
+# the failure is a red job instead of a dead button.
+RUN apk add --no-cache chromium ffmpeg font-noto ttf-freefont \
+  && ffmpeg -version > /dev/null \
+  && ffprobe -version > /dev/null \
+  && /usr/bin/chromium --version > /dev/null
 
-ENV DEMO_FACTORY_ROOT=/workspace/src/demo-factory     PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1     PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium-browser     REMOTION_BROWSER_EXECUTABLE=/usr/bin/chromium-browser
+# Absolute paths rather than a bare command name: these are handed to Playwright
+# as `executablePath` and to Remotion as its browser, and neither searches PATH.
+# They match what tools/provision-workspace.mjs writes for a workspace, so the
+# pipeline reads the same variables wherever it runs.
+ENV DEMO_FACTORY_ROOT=/workspace/src/demo-factory \
+    PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 \
+    PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium \
+    REMOTION_BROWSER_EXECUTABLE=/usr/bin/chromium \
+    FFMPEG_PATH=/usr/bin/ffmpeg \
+    FFPROBE_PATH=/usr/bin/ffprobe
 
 # The factory is a standalone npm project, deliberately outside the yarn
 # workspaces, so it brings its own lockfile and its own node_modules.
