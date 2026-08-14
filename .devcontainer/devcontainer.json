@@ -68,7 +68,7 @@
   "postStartCommand": "node_modules/@buildone/swat-cli/scripts/devcontainer/orchestrators/poststart.sh",
   // postAttachCommand: Runs when you attach to the container (parallel background tasks)
   "postAttachCommand": {
-    "Stack Startup": ["${containerWorkspaceFolder}/.devcontainer/scripts/orchestrators/codespace-startup.sh"],
+    "Stack Startup": ["node_modules/@buildone/swat-cli/scripts/devcontainer/lib/task-runner.sh", "start_stack"],
     "Appserver": ["node_modules/@buildone/swat-cli/scripts/devcontainer/lib/task-runner.sh", "watch_app_server_ts"],
     "Web App": ["node_modules/@buildone/swat-cli/scripts/devcontainer/lib/task-runner.sh", "watch_web_app"],
     "Claude": ["node_modules/@buildone/swat-cli/scripts/devcontainer/lib/task-runner.sh", "start_claude"],

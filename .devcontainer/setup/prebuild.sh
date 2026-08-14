@@ -5,6 +5,31 @@ WORKSPACE_ROOT="${WORKSPACE_ROOT:-$(git rev-parse --show-toplevel)}"
 export WORKSPACE_ROOT
 
 # >>> b1-user-secret-fetch (managed by @buildone/swat-cli migration; safe to re-run) >>>
+#
+# Rendered through the workspace's own layout where it exists. This block is the
+# first thing a prebuild prints, and its lines used to arrive as flat
+# `[INFO] …` in the middle of a start that renders in phases and steps.
+#
+# Where it does not exist, the fallback below prints exactly what this block
+# always printed: the block runs before `yarn install`, so on a container's very
+# first prebuild node_modules holds nothing to load. `trap - EXIT` drops
+# common.sh's cleanup handler, which belongs to a task script and would fire on
+# this file's deliberate `exit 0` paths.
+_B1_COMMON="${WORKSPACE_ROOT:-$(pwd)}/node_modules/@buildone/swat-cli/scripts/devcontainer/lib/common.sh"
+if [ -z "${B1_COMMON_SH_LOADED:-}" ] && [ -f "$_B1_COMMON" ]; then
+  # shellcheck source=/dev/null
+  . "$_B1_COMMON" && trap - EXIT
+fi
+unset _B1_COMMON
+# B1_COMMON_SH_LOADED, not `declare -F log`: common.sh *exports* its functions,
+# so in any shell started under a workspace the name is already defined while
+# the variables it reads are not — an inherited `log` then dies on
+# `B1_LOG_CONSOLE_FD: unbound variable` under `set -u`, from inside a line it
+# was only trying to print. The variable is set by the source above and is not
+# exported, so it answers for this shell and no other.
+if [ -z "${B1_COMMON_SH_LOADED:-}" ]; then
+  log() { local level="$1"; shift; echo "[${level}] $*"; }
+fi
 # Pull this workspace's secrets from the auth server using a single API key, so
 # they need not be set as individual GitHub Codespaces secrets. Accepts a
 # personal B1_USER_API_KEY or a shared organization B1_ORG_API_KEY, either of
@@ -200,14 +225,14 @@ _b1_fetch_user_secrets() {
 
   local auth="${AUTH_URL%/}"
   if ! _b1_url_is_safe "$auth"; then
-    echo "[WARN] AUTH_URL (${auth}) is not https, so the API key would cross the network in clear text - request refused"
-    echo "[WARN] Set AUTH_URL to an https:// URL. A value with no scheme at all is read as http:// and hits this."
+    log WARN "AUTH_URL (${auth}) is not https, so the API key would cross the network in clear text - request refused"
+    log WARN "Set AUTH_URL to an https:// URL. A value with no scheme at all is read as http:// and hits this."
     _b1_secret_status 'bad-url' "$auth"
     return 0
   fi
 
   if ! command -v curl >/dev/null 2>&1 || ! command -v jq >/dev/null 2>&1 || ! command -v base64 >/dev/null 2>&1; then
-    echo "[WARN] curl, jq and base64 are required to fetch secrets - skipping"
+    log WARN "curl, jq and base64 are required to fetch secrets - skipping"
     _b1_secret_status 'no-tools' "$auth"
     return 0
   fi
@@ -224,13 +249,13 @@ _b1_fetch_user_secrets() {
     # for themselves. Saying "no key is set" here would be false.
     set_it_as='B1_USER_API_KEY'
     [ -n "$slug" ] && set_it_as="B1_USER_API_KEY__${slug}"
-    echo "[WARN] No API key for ${auth} - the keys set here belong to other auth servers: $(printf '%s' "$keys_set" | tr '\n' ' ')"
-    echo "[WARN] A key only works at the auth server that minted it. Sign in at ${auth}, mint a key (Account > API keys) and set it as ${set_it_as}."
+    log WARN "No API key for ${auth} - the keys set here belong to other auth servers: $(printf '%s' "$keys_set" | tr '\n' ' ')"
+    log WARN "A key only works at the auth server that minted it. Sign in at ${auth}, mint a key (Account > API keys) and set it as ${set_it_as}."
     _b1_secret_status 'no-key' "$auth"
     return 0
   fi
   b1_api_key="${!b1_api_key_var}"
-  echo "[INFO] Using ${b1_api_key_var} for ${auth}"
+  log INFO "Using ${b1_api_key_var} for ${auth}"
 
   local env_fetched="${root}/.b1/env/.env.fetched"
   mkdir -p "${root}/.b1/env" 2>/dev/null || true
@@ -244,7 +269,7 @@ _b1_fetch_user_secrets() {
   if [ -n "$scope" ]; then
     # Percent-encode the '/' so it cannot be read as a path segment.
     query="?scope=${scope//\//%2F}"
-    echo "[INFO] Resolving secrets for scope ${scope}"
+    log INFO "Resolving secrets for scope ${scope}"
   fi
 
   # /resolve-all walks user -> organization -> global for a user key (a personal
@@ -260,7 +285,7 @@ _b1_fetch_user_secrets() {
     "${auth}/api/secrets/resolve-all${query}" 2>/dev/null) || {
     # Curl could not complete the request at all: DNS, TLS, connection refused,
     # timeout. This used to be the one failure that said nothing whatsoever.
-    echo "[WARN] Secret fetch could not reach ${auth} (network, DNS or TLS failure) - leaving ${env_fetched} as it is"
+    log WARN "Secret fetch could not reach ${auth} (network, DNS or TLS failure) - leaving ${env_fetched} as it is"
     _b1_secret_status 'network' "$auth"
     return 0
   }
@@ -268,7 +293,7 @@ _b1_fetch_user_secrets() {
   # Anything but success leaves any existing file alone: an expired key or an
   # auth server still starting must not empty a workspace's secrets.
   [ "$code" = "200" ] || {
-    echo "[WARN] Secret fetch returned HTTP ${code} from ${auth} - leaving ${env_fetched} as it is"
+    log WARN "Secret fetch returned HTTP ${code} from ${auth} - leaving ${env_fetched} as it is"
     _b1_secret_status "http-${code}" "$auth"
     return 0
   }
@@ -284,7 +309,7 @@ _b1_fetch_user_secrets() {
   # reported rather than being cut in half by the split.
   while IFS=$'\t' read -r key encoded; do
     [ -n "$key" ] || continue
-    var=$(_b1_env_name "$key") || { echo "[WARN] Skipped secret '${key}': not usable as a variable name"; continue; }
+    var=$(_b1_env_name "$key") || { log WARN "Skipped secret '${key}': not usable as a variable name"; continue; }
     val=$(printf '%s' "$encoded" | base64 -d 2>/dev/null) || continue
     [ -n "$val" ] || continue
     printf '%s=${%s:-%s}\n' "$var" "$var" "$(_b1_quote "$val")" >> "$tmp"
@@ -308,19 +333,19 @@ _b1_fetch_user_secrets() {
   # secrets lost them on the next start.
   if [ "$n" -eq 0 ]; then
     rm -f "$tmp"
-    echo "[WARN] Secret fetch returned no readable secrets - leaving ${env_fetched} as it is"
+    log WARN "Secret fetch returned no readable secrets - leaving ${env_fetched} as it is"
     _b1_secret_status 'empty' "$auth"
     return 0
   fi
 
   mv "$tmp" "$env_fetched" 2>/dev/null || {
     rm -f "$tmp"
-    echo "[WARN] Could not write ${env_fetched}"
+    log WARN "Could not write ${env_fetched}"
     _b1_secret_status 'write-failed' "$auth"
     return 0
   }
   _b1_secret_status "ok:${n}" "$auth"
-  echo "[INFO] Fetched ${n} secret(s) into .b1/env/.env.fetched"
+  log INFO "Fetched ${n} secret(s) into .b1/env/.env.fetched"
 }
 _b1_fetch_user_secrets || true
 
@@ -384,7 +409,7 @@ if [ -f "$SECRETS_CONFIG" ]; then
             exit 0
         fi
 
-        echo "[INFO] All required secrets are configured, proceeding with prebuild..."
+        log INFO "All required secrets are configured, proceeding with prebuild"
     fi
 fi
 
@@ -409,7 +434,7 @@ if [[ "${PREBUILD_CHECK:-}" != "true" ]]; then
     # instructions naming the API key that fetches them.
     if [[ -z "${CODEARTIFACT_AUTH_TOKEN:-}" ]]; then
         if command -v aws >/dev/null 2>&1 && [[ -n "${AWS_ACCESS_KEY_ID:-}" && -n "${AWS_SECRET_ACCESS_KEY:-}" ]]; then
-            echo "[INFO] Obtaining CodeArtifact auth token..."
+            log INFO "Obtaining CodeArtifact auth token"
             if CODEARTIFACT_AUTH_TOKEN=$(aws codeartifact get-authorization-token \
                 --domain buildone --domain-owner 653306034207 \
                 --region "${AWS_REGION:-eu-central-1}" --query authorizationToken --output text) \
@@ -417,16 +442,16 @@ if [[ "${PREBUILD_CHECK:-}" != "true" ]]; then
                 export CODEARTIFACT_AUTH_TOKEN
                 mkdir -p "${WORKSPACE_ROOT}/.b1/env" 2>/dev/null || true
                 echo "export CODEARTIFACT_AUTH_TOKEN=${CODEARTIFACT_AUTH_TOKEN}" > "${WORKSPACE_ROOT}/.b1/env/.aws-token.env"
-                echo "[INFO] CodeArtifact token obtained"
+                log INFO "CodeArtifact token obtained"
             else
                 CODEARTIFACT_AUTH_TOKEN=""
-                echo "[WARN] Could not obtain a CodeArtifact token with the provided credentials"
+                log WARN "Could not obtain a CodeArtifact token with the provided credentials"
             fi
         fi
         if [[ -z "${CODEARTIFACT_AUTH_TOKEN:-}" && -f "${WORKSPACE_ROOT}/.b1/env/.aws-token.env" ]]; then
             source "${WORKSPACE_ROOT}/.b1/env/.aws-token.env" || true
             if [[ -n "${CODEARTIFACT_AUTH_TOKEN:-}" ]]; then
-                echo "[INFO] Using cached CodeArtifact token"
+                log INFO "Using cached CodeArtifact token"
             fi
         fi
     fi
@@ -521,13 +546,13 @@ if [[ "${PREBUILD_CHECK:-}" != "true" ]]; then
     fi
     # <<< b1-codeartifact-auth <<<
 
-    echo "[INFO] Installing packages..."
+    log INFO "Installing packages"
     yarn install
 
-    echo "[INFO] Clearing yarn cache..."
+    log INFO "Clearing yarn cache"
     yarn cache clear
 else
-    echo "[INFO] Skipping package install during prebuild check"
+    log INFO "Skipping package install during prebuild check"
 fi
 # >>> b1-framework-prebuild-guard (managed by @buildone/swat-cli migration; safe to re-run) >>>
 # Everything below this point reaches into node_modules — a find over it, then
