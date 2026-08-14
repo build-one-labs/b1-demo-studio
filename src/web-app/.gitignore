@@ -2,6 +2,8 @@
 .output
 .data
 .nuxt
+# Only when a build is pointed here with NUXT_BUILD_DIR; otherwise everything writes `.nuxt`.
+.nuxt-build
 .nitro
 .cache
 dist
