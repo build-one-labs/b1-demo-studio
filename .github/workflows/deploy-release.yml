@@ -168,6 +168,11 @@ jobs:
           B1_DEPLOY_ENV_VARS: ${{ inputs.env-vars }}
           B1_DEPLOY_ENV_SECRETS: ${{ inputs.env-secrets }}
           B1_DEPLOY_SECRETS_JSON: ${{ toJSON(secrets) }}
+          # The auth server this deploy ran against, carried into the stack Env: every
+          # service in the generated compose reads `${AUTH_URL:-http://auth_server:3000}`,
+          # and that default only exists in a stack with a local auth server. b1 deploy
+          # sets it on every deploy of a remote-auth stack, overwriting what the stack has.
+          AUTH_URL: ${{ env.AUTH_URL || secrets.AUTH_URL }}
         run: |
           PORTAINER_URL="${{ inputs.portainer-url }}"
           PORTAINER_KEY="${{ inputs.portainer-api-key }}"
