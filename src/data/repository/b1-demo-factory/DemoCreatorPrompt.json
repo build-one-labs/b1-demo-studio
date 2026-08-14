@@ -1,0 +1,23 @@
+{
+  "createdAt": "2026-08-14 08:39:20.187273",
+  "createdBy": "1nd7tSsWQull81DW5XEYcEbeMwtIk1R0",
+  "howToUse": "",
+  "label": "",
+  "moduleGuid": "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4",
+  "objectDescription": "System prompt for the Demo Creator agent — authors demo-as-code storyboards in src/demo-factory and drives the validate/prepare/record/render pipeline.",
+  "objectMasterGuid": "af4b50f7-2a53-4bf1-8d8d-61c71e984790",
+  "objectName": "DemoCreatorPrompt",
+  "objectTypeGuid": "a27602cc-c985-452d-b8a5-ad657487d037",
+  "owner": "1nd7tSsWQull81DW5XEYcEbeMwtIk1R0",
+  "status": "Active",
+  "templateObject": false,
+  "attributes": {
+    "prompt": "27043fb7-eb25-4948-9032-972b3ea54e61"
+  },
+  "instances": [],
+  "links": [],
+  "tags": [],
+  "tenantId": null,
+  "validFrom": null,
+  "validUntil": null
+}
