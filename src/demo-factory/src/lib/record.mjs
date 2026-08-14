@@ -1,7 +1,7 @@
 import {access, rm} from 'node:fs/promises';
 import path from 'node:path';
 import {chromium} from '@playwright/test';
-import {envBoolean} from './env.mjs';
+import {envBoolean, resolveApiKey} from './env.mjs';
 import {ensureDir} from './files.mjs';
 import {executeAssertions, executeSceneActions, installDemoCursor, primeDemoCursor, resolveDemoUrl} from './actions.mjs';
 
@@ -31,7 +31,9 @@ export const recordScenes = async ({demo, manifest, sceneFilter = null}) => {
   // the owning user, and Playwright applies context headers to navigation and
   // XHR alike — so the whole recorded session is authenticated. Ignored when
   // unset, and a storage state still wins where one exists.
-  const apiKey = process.env.B1_USER_API_KEY;
+  // Scoped name first: a key belongs to one auth server and is named for it,
+  // and the unqualified variable no longer exists in a workspace.
+  const apiKey = resolveApiKey()?.key;
   const clipsDir = await ensureDir(path.join(manifest.runDir, 'clips'));
   // Alpine and other slim images cannot run Playwright's own download, so a
   // container may ship a system Chromium instead. Same shape as FFMPEG_PATH in

@@ -6,6 +6,12 @@
         "B1_DEFAULT_APP": "${B1_DEFAULT_APP:-sample-app}",
         "REPOSITORY": "build-one-labs/b1-demo-studio"
       }
+    },
+    "app_server_ts": {
+      "environment": {
+        "B1_BASE_URL": "${B1_BASE_URL:-https://${STACK}.${DOMAIN}}",
+        "B1_USER_API_KEY": "${B1_USER_API_KEY:-}"
+      }
     }
   }
 }

@@ -20,6 +20,7 @@ import {
   HostCapabilities,
   JobAction,
   publicSettings,
+  resolveApiKey,
   safeChildPath,
   SECRET_ENV_KEYS,
   stageBlockedReason,
@@ -271,6 +272,8 @@ export class DemoFactoryStudio {
       this.hasDependencies()
     ]);
 
+    const apiKey = this.workspaceApiKey();
+
     // Only absolute paths are worth passing on — see CHROMIUM_PATHS. A tool
     // found unqualified on PATH still counts as present, because the child
     // process inherits the same PATH and falls back to it the same way.
@@ -279,7 +282,10 @@ export class DemoFactoryStudio {
         ? { PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH: systemChromium, REMOTION_BROWSER_EXECUTABLE: systemChromium }
         : {}),
       ...(ffmpeg?.startsWith('/') ? { FFMPEG_PATH: ffmpeg } : {}),
-      ...(ffprobe?.startsWith('/') ? { FFPROBE_PATH: ffprobe } : {})
+      ...(ffprobe?.startsWith('/') ? { FFPROBE_PATH: ffprobe } : {}),
+      // Under the unqualified name: the pipeline is given the key that was
+      // found, not the variable it happened to be scoped under.
+      ...(apiKey ? { B1_USER_API_KEY: apiKey } : {})
     };
 
     return {
@@ -290,7 +296,7 @@ export class DemoFactoryStudio {
       // Both, not just ffmpeg: render measures every clip with ffprobe before it
       // composes anything, so an image with one and not the other fails late.
       canRender: Boolean(ffmpeg) && Boolean(ffprobe),
-      canAuthenticate: this.hasWorkspaceApiKey()
+      canAuthenticate: Boolean(this.setting('B1_USER_API_KEY') || apiKey)
     };
   }
 
@@ -339,14 +345,18 @@ export class DemoFactoryStudio {
   }
 
   /**
-   * `all` signs the recording browser in with the workspace API key, which the
-   * CLI resolves either unqualified or named for its auth server
-   * (`B1_USER_API_KEY__AUTH_DEVELOP_TEST_BUILD_ONE`). Match both, and count the
-   * one the operator may have typed into Settings.
+   * `all` signs the recording browser in with the user API key for this
+   * deployment's auth server, which is named for it
+   * (`B1_USER_API_KEY__TRY_AUTH_TEST_BUILD_ONE`).
+   *
+   * Returned rather than merely counted, because the pipeline reads the
+   * unqualified `B1_USER_API_KEY` and nothing scoped: the same rule as the
+   * browser and ffmpeg paths — what the capability check found is what the
+   * spawned process is given, so "can authenticate" and "did authenticate"
+   * cannot disagree.
    */
-  private hasWorkspaceApiKey(): boolean {
-    if (this.setting('B1_USER_API_KEY')) return true;
-    return Object.entries(process.env).some(([key, value]) => /^B1_USER_API_KEY(__|$)/.test(key) && Boolean(value));
+  private workspaceApiKey(): string {
+    return resolveApiKey(process.env, process.env.AUTH_URL)?.key || '';
   }
 
   private canSpawn(command: string, args: string[]): Promise<boolean> {

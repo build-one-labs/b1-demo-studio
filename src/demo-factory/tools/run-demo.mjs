@@ -12,6 +12,7 @@ import {spawn} from 'node:child_process';
 import {existsSync} from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
+import {resolveApiKey} from '../src/lib/env.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const demoId = process.argv[2] || 'sales-tour-planning';
@@ -57,11 +58,13 @@ if (existsSync(authState)) {
 try {
   await run(['tools/b1-auth-state.mjs']);
 } catch (error) {
-  if (!existsSync(authState) && !process.env.B1_USER_API_KEY) {
+  if (!existsSync(authState) && !resolveApiKey()) {
     throw new Error(
       `Cannot sign the recording in: ${error.message}\n` +
-        'This workspace has no auth state and no B1_USER_API_KEY. Capture one interactively with ' +
-        '`npm run auth:b1`, or set B1_USER_API_KEY so the recording can authenticate by header.',
+        'This host has no auth state and no user API key. Capture one interactively with ' +
+        '`npm run auth:b1`, or set the key for this auth server — ' +
+        `B1_USER_API_KEY__<AUTH HOST> (${process.env.AUTH_URL || 'AUTH_URL unset'}) or B1_USER_API_KEY — ` +
+        'so the recording can authenticate by header.',
     );
   }
   console.warn(`Could not mint a fresh auth state (${error.message}).`);

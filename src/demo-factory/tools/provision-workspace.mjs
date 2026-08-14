@@ -25,6 +25,7 @@ import {existsSync, writeFileSync} from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath, pathToFileURL} from 'node:url';
 import {promisify} from 'node:util';
+import {resolveApiKey} from '../src/lib/env.mjs';
 
 const run = promisify(execFile);
 
@@ -103,8 +104,8 @@ const reachableBaseUrl = async (id) => {
  *
  * A key belongs to one auth server, so it may be named for it
  * (`B1_USER_API_KEY__TRY_AUTH_TEST_BUILD_ONE`). Reuse the CLI's resolution
- * where it is installed rather than keep a second copy of the rule; fall back
- * to the unqualified name when it is not.
+ * where it is installed; fall back to this project's copy of the same rule,
+ * which is what the app server image has to use anyway.
  */
 const workspaceApiKey = async () => {
   const helper = path.join(repoRoot, 'node_modules', '@buildone', 'swat-cli', 'scripts', 'utils', 'api-key.mjs');
@@ -112,7 +113,7 @@ const workspaceApiKey = async () => {
     const {apiKeyFor} = await import(pathToFileURL(helper).href);
     return apiKeyFor(process.env.AUTH_URL, 'user', process.env)?.key || '';
   }
-  return process.env.B1_USER_API_KEY || '';
+  return resolveApiKey()?.key || '';
 };
 
 // ---------------------------------------------------------------------------

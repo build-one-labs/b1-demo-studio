@@ -19,9 +19,10 @@ export const ALLOWED_ENV_KEYS = [
   'B1_BASE_URL',
   'B1_AUTH_STATE',
   // `all` mints a fresh storage state before recording, and that exchange
-  // authenticates with the workspace API key. The app server's container is not
-  // given one — the compose file passes AUTH_URL and nothing else — so without
-  // a way to supply it here the full run can only ever fail at its second step.
+  // authenticates with the user API key — as does the recording itself, by
+  // header, on a host where the mint is unavailable. A deployed container has
+  // one only if the compose file passes it, so this stays writable from
+  // Settings for the host where nobody did.
   'B1_USER_API_KEY',
   'DEMO_HEADLESS',
   'REMOTION_CONCURRENCY',
@@ -40,6 +41,52 @@ export const ALLOWED_ENV_KEYS = [
 
 /** Never returned to the browser — only whether they are configured. */
 export const SECRET_ENV_KEYS = new Set<string>(['ELEVENLABS_API_KEY', 'B1_USER_API_KEY']);
+
+/**
+ * The environment-variable fragment naming one auth server, e.g.
+ * `try-auth.test.build.one` → `TRY_AUTH_TEST_BUILD_ONE`.
+ *
+ * The same rule as the CLI's `scripts/utils/api-key.mjs`, the shell's
+ * `b1_auth_host_slug` and the factory's `src/lib/env.mjs`. A port for the same
+ * reason as everything else in this file: swat-cli is a development dependency
+ * and this server ships as an image that does not contain it.
+ */
+export const authHostSlug = (url: string | undefined): string | null => {
+  if (!url) return null;
+  const host = url
+    .replace(/^[^:]+:\/\//, '')
+    .replace(/[/?].*$/, '')
+    .replace(/^.*@/, '')
+    .replace(/:\d+$/, '');
+  if (host === '') return null;
+  const slug = host.replace(/[.-]/g, '_').toUpperCase();
+  return /^[\dA-Z_]+$/.test(slug) ? slug : null;
+};
+
+/**
+ * The user API key for one auth server, scoped name first.
+ *
+ * Keys are issued per auth server and named for it
+ * (`B1_USER_API_KEY__TRY_AUTH_TEST_BUILD_ONE`); the unqualified name is a
+ * fallback that a workspace no longer sets, kept because it is what the
+ * Settings tab writes and what this server hands the pipeline it spawns.
+ *
+ * Scoped to the given `authUrl` deliberately: a host holding a key for some
+ * other auth server cannot sign this recording in, and reporting `canAuthenticate`
+ * for it would enable the button and fail at the exchange.
+ */
+export const resolveApiKey = (
+  env: Record<string, string | undefined>,
+  authUrl: string | undefined
+): { name: string; key: string } | null => {
+  const slug = authHostSlug(authUrl);
+  const names = slug ? [`B1_USER_API_KEY__${slug}`, 'B1_USER_API_KEY'] : ['B1_USER_API_KEY'];
+  for (const name of names) {
+    const key = env[name];
+    if (key) return { name, key };
+  }
+  return null;
+};
 
 const ID_PATTERN = /^[\da-z][\da-z-]*$/;
 
@@ -86,7 +133,7 @@ export const stageBlockedReason = (action: JobAction, host: HostCapabilities): s
     return 'This host has no ffmpeg and ffprobe for the renderer to measure and compose clips with';
   }
   if (action === 'all' && !host.canAuthenticate) {
-    return 'No workspace API key on this host, so the recording browser cannot be signed in — set B1_USER_API_KEY in Settings';
+    return 'No user API key for this auth server on this host, so the recording browser cannot be signed in — set B1_USER_API_KEY__<AUTH HOST> on the container, or paste a key into Settings';
   }
   return null;
 };
