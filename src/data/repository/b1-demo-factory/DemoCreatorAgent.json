@@ -1,0 +1,67 @@
+{
+  "createdAt": "2026-08-14 08:40:35.780915",
+  "createdBy": "1nd7tSsWQull81DW5XEYcEbeMwtIk1R0",
+  "howToUse": "",
+  "label": "",
+  "moduleGuid": "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4",
+  "objectDescription": "Demo Creator",
+  "objectMasterGuid": "34e589aa-fd11-4aa9-b2cf-ed6ec90fe6a4",
+  "objectName": "DemoCreatorAgent",
+  "objectTypeGuid": "061d6de8-56e1-43c2-9887-8b8892d967e7",
+  "owner": "1nd7tSsWQull81DW5XEYcEbeMwtIk1R0",
+  "status": "Active",
+  "templateObject": false,
+  "attributes": {
+    "agentEnvironment": "github:{{currentRepository}}",
+    "avatar": "/resources/images/agents/b1_agent_swallow.png",
+    "model": "AnthropicClaudeSonnet5",
+    "systemPrompt": "DemoCreatorPrompt"
+  },
+  "instances": [
+    {
+      "instanceName": "SkillCreateDemoVideo",
+      "objectInstanceGuid": "5e13d69e-bdc8-495a-a09d-3ba3a334c7c5",
+      "objectMasterGuid": "b486c12b-90c6-4cc6-9362-397cf048692c",
+      "objectSequence": 1,
+      "attributes": {},
+      "instances": []
+    },
+    {
+      "instanceName": "SkillQueryDataSource",
+      "objectInstanceGuid": "611d16d6-2adf-4bd7-88fb-c85620595fed",
+      "objectMasterGuid": "8f3f3c68-eb70-40d6-bded-bcb3dfda7837",
+      "objectSequence": 2,
+      "attributes": {},
+      "instances": []
+    },
+    {
+      "instanceName": "SkillRefreshKnowledge",
+      "objectInstanceGuid": "e146624f-303f-4b6a-b7f2-8b70479ba090",
+      "objectMasterGuid": "a72be040-5d9a-400c-a4c8-91e5b660e005",
+      "objectSequence": 3,
+      "attributes": {},
+      "instances": []
+    },
+    {
+      "instanceName": "environment-blueprint",
+      "objectInstanceGuid": "f47b767e-dfff-435f-8815-aa4a4ce43545",
+      "objectMasterGuid": "16e42b21-bf90-4738-82df-dc0f3e0266eb",
+      "objectSequence": 4,
+      "attributes": {},
+      "instances": []
+    },
+    {
+      "instanceName": "environment-knowledge",
+      "objectInstanceGuid": "595d0cd8-2d04-49ff-9af9-44aac6161a13",
+      "objectMasterGuid": "bf810128-6f52-42b0-b710-bc08b54099c0",
+      "objectSequence": 5,
+      "attributes": {},
+      "instances": []
+    }
+  ],
+  "links": [],
+  "tags": [],
+  "tenantId": null,
+  "validFrom": null,
+  "validUntil": null
+}

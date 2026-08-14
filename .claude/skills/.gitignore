@@ -2,3 +2,7 @@
 b1-*/
 # Keep project-specific b1 skills
 !b1-sync-from-template/
+# Owned by this repository, not copied from swat-cli: the demo factory lives
+# here, so its skill does too. Mirrored by the DemoCreatorSkillDef blueprint
+# object, which is what the Demo Creator agent is served — change both together.
+!b1-create-demo-video/

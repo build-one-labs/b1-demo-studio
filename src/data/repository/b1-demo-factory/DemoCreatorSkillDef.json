@@ -1,0 +1,26 @@
+{
+  "createdAt": "2026-08-14 08:40:23.208446",
+  "createdBy": "1nd7tSsWQull81DW5XEYcEbeMwtIk1R0",
+  "howToUse": "",
+  "label": "",
+  "moduleGuid": "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4",
+  "objectDescription": "Skill definition: author and produce a demo video with the demo factory (validate → prepare → record → render). Mirrors .claude/skills/b1-create-demo-video/SKILL.md — change both together.",
+  "objectMasterGuid": "b486c12b-90c6-4cc6-9362-397cf048692c",
+  "objectName": "DemoCreatorSkillDef",
+  "objectTypeGuid": "e58b5599-6b5b-4e3b-a359-f71475852177",
+  "owner": "1nd7tSsWQull81DW5XEYcEbeMwtIk1R0",
+  "status": "Active",
+  "templateObject": false,
+  "attributes": {
+    "definition": "43fb802c-8a35-4811-8ae1-9b9319d4a3de",
+    "description": "Author and produce a Build.One product video with the demo factory (src/demo-factory) — write demos/<id>/demo.yaml as a storyboard, verify every selector against the running app, then validate → prepare → record → render.",
+    "triggers": "create a demo video, record a demo, make a product video, storyboard a demo, demo factory, add a scene, re-record a scene, regenerate the demo, demo.yaml",
+    "type": "repo"
+  },
+  "instances": [],
+  "links": [],
+  "tags": [],
+  "tenantId": null,
+  "validFrom": null,
+  "validUntil": null
+}
