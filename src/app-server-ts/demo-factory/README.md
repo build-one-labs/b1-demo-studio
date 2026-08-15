@@ -222,6 +222,19 @@ render dies partway with `Compositor exited with signal SIGTERM`:
 REMOTION_OFFTHREADVIDEO_CACHE_MB=512 REMOTION_CONCURRENCY=2 yarn demo:render <demo-id>
 ```
 
+**The bundle must not restart the server that spawned it.** Remotion writes its
+webpack cache to the `node_modules/.cache/webpack/` above the pipeline's cwd —
+`src/app-server-ts/node_modules/`. `tsconfig.json` excludes that from the
+*program*, which is not the same as excluding it from the *watcher*: under
+`nest start --watch` those writes read as "File change detected", and the Nest
+CLI tree-kills the server together with the render it spawned. The symptom is a
+run whose log stops dead on `Selecting composition B1Demo…` seconds after
+`Bundling the Remotion composition — done`, with no exit line, while the
+container itself never restarted (`docker inspect` shows `RestartCount=0`).
+`watchOptions.excludeDirectories` in `src/app-server-ts/tsconfig.json` is what
+keeps the watcher off both `node_modules` trees; if a render starts dying there
+again, check that it survived a tsconfig edit.
+
 **Salesforce credentials reach the app server through a `.env`, not compose.**
 `SALESFORCE_INSTANCE_URL`, `SALESFORCE_CLIENT_ID` and `SALESFORCE_CLIENT_SECRET`
 must be set for the connector. Setting them as workspace secrets is not enough:
@@ -271,8 +284,11 @@ Where that lands depends on who started it:
 A run's own directory is the other half of the picture: `run-manifest.json`
 after prepare and record, `normalized/` and `<demo-id>.mp4` plus
 `render-result.json` after render. A run dir with `normalized/` but no
-`render-result.json` stopped during the Remotion bundle or render — see the
-capped frame cache above, which is the usual reason.
+`render-result.json` stopped during the Remotion bundle or render. Two causes
+account for most of those, and the log tells them apart: `Compositor exited with
+signal SIGTERM` partway through the frames is the frame cache, while a log that
+ends on `Selecting composition B1Demo…` with no error at all is the watcher
+restart — both are above.
 
 ## Authoring
 
