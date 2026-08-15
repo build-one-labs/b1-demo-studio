@@ -248,6 +248,32 @@ first scene waits for a table row dies on a 30s `waitFor` timeout.
 Without `ELEVENLABS_API_KEY`/`ELEVENLABS_VOICE_ID` the pipeline still runs — it
 produces a silent, captioned video with cue timing estimated from text length.
 
+## Logs
+
+Every stage narrates itself on stdout with a wall-clock stamp — scene by scene
+while recording, clip by clip while normalising, and every ten percent of the
+Remotion render — so a run that stops can be placed at the step it stopped in.
+
+Where that lands depends on who started it:
+
+- **From a shell** (`yarn demo:record …`) it is the terminal. Keep a copy with
+  `yarn demo:render <demo-id> 2>&1 | tee /tmp/render.log`.
+- **From the Studio screen** the app server pipes it into the log panel *and*
+  writes it to `output/logs/<started-at>--<demo>--<stage>.log` (the panel shows
+  the path; the newest 50 files are kept). The panel's tail lives in the server
+  process, so a `nest --watch` restart mid-run empties it — the file is what
+  survives, and it is on the same volume the workspace sees:
+
+  ```bash
+  tail -f src/app-server-ts/demo-factory/output/logs/*.log
+  ```
+
+A run's own directory is the other half of the picture: `run-manifest.json`
+after prepare and record, `normalized/` and `<demo-id>.mp4` plus
+`render-result.json` after render. A run dir with `normalized/` but no
+`render-result.json` stopped during the Remotion bundle or render — see the
+capped frame cache above, which is the usual reason.
+
 ## Authoring
 
 See `AUTHORING.md` (scene rules, actions, cue markers, synthetic cursor) and

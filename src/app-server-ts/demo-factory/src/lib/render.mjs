@@ -4,6 +4,7 @@ import {bundle} from '@remotion/bundler';
 import {renderMedia, selectComposition} from '@remotion/renderer';
 import {captionsToSrt} from './captions.mjs';
 import {ensureDir, projectRoot, writeJson} from './files.mjs';
+import {seconds, step, timed} from './log.mjs';
 import {normalizeVideo} from './media.mjs';
 
 const toPublicAsset = (absoluteFile, publicDirectory) => path.relative(path.join(projectRoot, 'public'), absoluteFile).split(path.sep).join('/');
@@ -19,8 +20,12 @@ export const renderDemo = async ({demo, manifest}) => {
   const scenes = [];
   let videoOffsetMs = 0;
   const combinedCaptions = [];
-  for (const scene of manifest.scenes) {
-    const normalized = await normalizeVideo(scene.clipFile, path.join(normalizedDir, `${scene.id}.mp4`));
+  step(`Rendering ${manifest.demoId}: ${manifest.scenes.length} scenes from ${manifest.runDir}`);
+  for (const [index, scene] of manifest.scenes.entries()) {
+    const normalized = await timed(
+      `Normalising clip ${index + 1}/${manifest.scenes.length}: ${scene.id}`,
+      () => normalizeVideo(scene.clipFile, path.join(normalizedDir, `${scene.id}.mp4`)),
+    );
     const clipTarget = path.join(publicRunDir, `${scene.id}.mp4`);
     const narrationExtension = path.extname(scene.narrationFile);
     const narrationTarget = path.join(publicRunDir, `${scene.id}${narrationExtension}`);
@@ -50,12 +55,16 @@ export const renderDemo = async ({demo, manifest}) => {
   // does not exist. The clips staged above are then absent from the bundle and
   // every scene 404s at frame 0. The staging dir and this must stay the same
   // path; both derive it from projectRoot for that reason.
-  const serveUrl = await bundle({entryPoint, publicDir: path.join(projectRoot, 'public'), webpackOverride: (config) => config});
+  // The slowest silent step by a wide margin on a cold cache, and the one a
+  // killed run most often dies in, so it says so before it starts.
+  const serveUrl = await timed('Bundling the Remotion composition', () =>
+    bundle({entryPoint, publicDir: path.join(projectRoot, 'public'), webpackOverride: (config) => config}));
   // Same idea as PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH in record.mjs: a slim
   // container ships one Chromium and both browser users are pointed at it,
   // rather than each downloading its own at run time.
   const browserExecutable = process.env.REMOTION_BROWSER_EXECUTABLE || undefined;
-  const composition = await selectComposition({serveUrl, id: 'B1Demo', inputProps, browserExecutable});
+  const composition = await timed('Selecting composition B1Demo', () =>
+    selectComposition({serveUrl, id: 'B1Demo', inputProps, browserExecutable}));
   const outputFile = path.join(manifest.runDir, `${demo.id}.mp4`);
   const configuredConcurrency = process.env.REMOTION_CONCURRENCY;
   const concurrency = configuredConcurrency && /^\d+$/.test(configuredConcurrency) ? Number(configuredConcurrency) : (configuredConcurrency || 2);
@@ -68,6 +77,11 @@ export const renderDemo = async ({demo, manifest}) => {
   const offthreadVideoCacheSizeInBytes = configuredCacheMb && /^\d+$/.test(configuredCacheMb)
     ? Number(configuredCacheMb) * 1024 * 1024
     : undefined;
+  step(`Rendering ${composition.durationInFrames} frames at ${composition.fps} fps with concurrency ${concurrency} → ${outputFile}`);
+  const renderStartedAt = Date.now();
+  // Every ten percent: enough to see a stalled render without burying the
+  // stage's own lines under a progress callback that fires per frame.
+  let nextReport = 10;
   await renderMedia({
     composition,
     serveUrl,
@@ -78,9 +92,16 @@ export const renderDemo = async ({demo, manifest}) => {
     overwrite: true,
     crf: 20,
     concurrency,
+    onProgress: ({progress, renderedFrames, encodedFrames}) => {
+      const percent = Math.floor(progress * 100);
+      if (percent < nextReport) return;
+      while (percent >= nextReport) nextReport += 10;
+      step(`Rendering ${percent}% (${renderedFrames} rendered, ${encodedFrames} encoded of ${composition.durationInFrames} frames, ${seconds(Date.now() - renderStartedAt)} elapsed)`);
+    },
     ...(browserExecutable ? {browserExecutable} : {}),
     ...(offthreadVideoCacheSizeInBytes ? {offthreadVideoCacheSizeInBytes} : {}),
   });
+  step(`Rendered in ${seconds(Date.now() - renderStartedAt)}`);
 
   const srtFile = path.join(manifest.runDir, `${demo.id}.srt`);
   await writeFile(srtFile, `${captionsToSrt(combinedCaptions)}\n`, 'utf8');

@@ -3,6 +3,7 @@ import path from 'node:path';
 import {chromium} from '@playwright/test';
 import {envBoolean, resolveApiKey} from './env.mjs';
 import {ensureDir} from './files.mjs';
+import {seconds, step, warn} from './log.mjs';
 import {executeAssertions, executeSceneActions, installDemoCursor, primeDemoCursor, resolveDemoUrl} from './actions.mjs';
 
 const sleep = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
@@ -42,11 +43,16 @@ export const recordScenes = async ({demo, manifest, sceneFilter = null}) => {
   const executablePath = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH || undefined;
   const browser = await chromium.launch({headless: envBoolean(demo.settings.headlessEnv, true), executablePath});
   const recordedScenes = [];
+  // How the take was authenticated is the first thing to check when a scene
+  // records the sign-in screen instead of the app, so it is on the record.
+  step(`Recording ${demo.id} against ${baseUrl} (${authState ? `storage state ${authState}` : apiKey ? 'x-api-key header' : 'no credentials'})`);
 
   try {
-    for (const preparedScene of manifest.scenes) {
+    for (const [index, preparedScene] of manifest.scenes.entries()) {
+      const position = `${index + 1}/${manifest.scenes.length}`;
       if (sceneFilter && !sceneFilter.has(preparedScene.id)) {
         if (!preparedScene.clipFile) throw new Error(`Scene ${preparedScene.id} has no existing clip and cannot be skipped`);
+        step(`Scene ${position}: ${preparedScene.id} — not selected, keeping the existing clip`);
         recordedScenes.push(preparedScene);
         continue;
       }
@@ -67,6 +73,7 @@ export const recordScenes = async ({demo, manifest, sceneFilter = null}) => {
 
       try {
         const url = resolveDemoUrl(sourceScene.route, baseUrl);
+        step(`Scene ${position}: ${sourceScene.id} — opening ${url}`);
         await page.goto(url, {waitUntil: 'networkidle', timeout: 30_000});
         await page.locator('[data-demo-id="app-ready"]').waitFor({state: 'visible', timeout: 15_000}).catch(() => {});
         const scene = {...sourceScene, cues: preparedScene.cues};
@@ -86,9 +93,12 @@ export const recordScenes = async ({demo, manifest, sceneFilter = null}) => {
         await video.saveAs(clipFile);
         const originalVideoFile = await video.path();
         if (path.resolve(originalVideoFile) !== path.resolve(clipFile)) await rm(originalVideoFile, {force: true});
+        step(`Scene ${position}: ${sourceScene.id} — recorded ${seconds(recordedDurationMs)} to ${clipFile}`);
         recordedScenes.push({...preparedScene, clipFile, narrationOffsetMs, recordedDurationMs});
       } catch (error) {
-        await page.screenshot({path: path.join(clipsDir, `${sourceScene.id}.failure.png`), fullPage: false}).catch(() => {});
+        const failureShot = path.join(clipsDir, `${sourceScene.id}.failure.png`);
+        warn(`Scene ${position}: ${sourceScene.id} failed after ${seconds(Date.now() - recordingStartedAt)} — screenshot at ${failureShot}`);
+        await page.screenshot({path: failureShot, fullPage: false}).catch(() => {});
         await context.close().catch(() => {});
         throw new Error(`Scene ${sourceScene.id} failed: ${error.message}`, {cause: error});
       }

@@ -7,7 +7,8 @@
  * ten copies of that sentence in the file.
  */
 import { spawn } from 'node:child_process';
-import { access, mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
+import { createWriteStream, WriteStream } from 'node:fs';
+import { access, mkdir, readdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import path from 'node:path';
 
@@ -60,6 +61,8 @@ interface JobState {
   status: 'idle' | 'running' | 'complete' | 'failed' | 'cancelled';
   step: JobAction | null;
   logs: JobLogLine[];
+  /** Where the untruncated output of this job is being written. */
+  logFile: string | null;
   startedAt: string | null;
   finishedAt: string | null;
   exitCode: number | null;
@@ -72,6 +75,7 @@ const idleJob = (): JobState => ({
   status: 'idle',
   step: null,
   logs: [],
+  logFile: null,
   startedAt: null,
   finishedAt: null,
   exitCode: null
@@ -79,6 +83,15 @@ const idleJob = (): JobState => ({
 
 /** Keep the tail only: a full render is chatty and the panel shows a tail anyway. */
 const LOG_LIMIT = 600;
+
+/**
+ * How many job logs to keep under `<output>/logs`.
+ *
+ * They are small (a render writes a few hundred lines) and the reason to keep
+ * more than the current one is to compare a run that worked with the one that
+ * did not, so this is generous rather than tidy.
+ */
+const LOG_FILES_KEPT = 50;
 
 /**
  * Where a system browser and ffmpeg live when nothing was configured.
@@ -162,6 +175,8 @@ export class DemoFactoryStudio {
 
   private activeChild: ReturnType<typeof spawn> | undefined;
 
+  private jobLog: WriteStream | undefined;
+
   private async loadProvisionedEnv(): Promise<void> {
     const allowed = new Set<string>(ALLOWED_ENV_KEYS);
     const values: Record<string, string> = {};
@@ -217,8 +232,57 @@ export class DemoFactoryStudio {
   private appendLog(chunk: unknown, stream: 'stdout' | 'stderr'): void {
     const text = String(chunk).replace(/\r/g, '').trimEnd();
     if (!text) return;
-    for (const line of text.split('\n')) this.job.logs.push({ at: new Date().toISOString(), stream, text: line });
+    for (const line of text.split('\n')) {
+      this.job.logs.push({ at: new Date().toISOString(), stream, text: line });
+      this.jobLog?.write(`${new Date().toISOString()} ${stream === 'stderr' ? 'ERR' : 'out'} ${line}\n`);
+    }
     this.job.logs = this.job.logs.slice(-LOG_LIMIT);
+  }
+
+  /**
+   * Start writing this job's output to `<output>/logs`, alongside the tail the
+   * Studio polls.
+   *
+   * That tail lives in this process and is capped, so a `nest --watch` restart
+   * — or anything else that ends this server mid-render — takes the whole
+   * record of the run with it, which is exactly when the record is wanted: what
+   * a killed render leaves on disk is a run directory that simply stops, with
+   * no clue whether it was bundling, rendering or already dead. The file sits on
+   * the same volume as the runs, so a workspace shell can `tail -f` it while a
+   * job started from the Studio screen is still going.
+   */
+  private async openJobLog(script: string, args: string[]): Promise<void> {
+    const file = this.job.logFile;
+    if (!file) return;
+    try {
+      await mkdir(path.dirname(file), { recursive: true });
+      await this.pruneJobLogs(path.dirname(file));
+      this.jobLog = createWriteStream(file, { flags: 'a' });
+      this.jobLog.write(
+        `# ${this.job.startedAt} ${this.job.action} ${this.job.demoId}\n# node ${script} ${args.join(' ')} (cwd ${this.projectRoot})\n`
+      );
+    } catch (error) {
+      // A log that cannot be opened is not a reason to refuse to run the job.
+      this.job.logFile = null;
+      this.appendLog(`Could not open the job log: ${(error as Error).message}`, 'stderr');
+    }
+  }
+
+  private async closeJobLog(): Promise<void> {
+    const stream = this.jobLog;
+    this.jobLog = undefined;
+    if (!stream) return;
+    await new Promise<void>((resolve) =>
+      stream.end(`# ${this.job.finishedAt} ${this.job.status} (exit ${this.job.exitCode})\n`, () => resolve())
+    );
+  }
+
+  private async pruneJobLogs(directory: string): Promise<void> {
+    // Names are the ISO start time, so lexical order is chronological.
+    const files = (await readdir(directory).catch(() => [] as string[])).filter((name) => name.endsWith('.log')).sort();
+    for (const name of files.slice(0, Math.max(0, files.length - (LOG_FILES_KEPT - 1)))) {
+      await rm(path.join(directory, name), { force: true });
+    }
   }
 
   private async listDemos() {
@@ -532,6 +596,7 @@ export class DemoFactoryStudio {
     const blocked = stageBlockedReason(action, await this.capabilities());
     if (blocked) throw new Error(`Cannot run ${action} on this host — ${blocked}.`);
 
+    const startedAt = new Date().toISOString();
     this.job = {
       id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
       action,
@@ -539,7 +604,11 @@ export class DemoFactoryStudio {
       status: 'running',
       step: command.step,
       logs: [],
-      startedAt: new Date().toISOString(),
+      // Named, not opened, so the first response already tells the caller where
+      // to look — including the caller watching a job that this server will not
+      // live long enough to report the end of.
+      logFile: path.join(this.outputRoot(), 'logs', `${startedAt.replace(/[.:]/g, '-')}--${demoId}--${action}.log`),
+      startedAt,
       finishedAt: null,
       exitCode: null
     };
@@ -552,6 +621,7 @@ export class DemoFactoryStudio {
   }
 
   private async execute(script: string, args: string[]): Promise<void> {
+    await this.openJobLog(script, args);
     try {
       const child = spawn(process.execPath, [script, ...args], {
         cwd: this.projectRoot,
@@ -573,6 +643,7 @@ export class DemoFactoryStudio {
     } finally {
       this.job.finishedAt = new Date().toISOString();
       this.activeChild = undefined;
+      await this.closeJobLog();
     }
   }
 
