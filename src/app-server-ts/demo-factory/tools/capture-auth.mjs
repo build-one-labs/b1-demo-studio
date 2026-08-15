@@ -15,7 +15,9 @@ if (!baseUrl) throw new Error('Set B1_BASE_URL before capturing authentication s
 const authFile = path.resolve('playwright/.auth/b1-demo-user.json');
 await mkdir(path.dirname(authFile), {recursive: true});
 
-const browser = await chromium.launch({headless: false});
+// Headed, but the same browser rule as b1-auth-state.mjs: use the system
+// Chromium where one was configured rather than Playwright's managed download.
+const browser = await chromium.launch({headless: false, executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH || undefined});
 const context = await browser.newContext();
 const page = await context.newPage();
 await page.goto(baseUrl, {waitUntil: 'domcontentloaded'});
