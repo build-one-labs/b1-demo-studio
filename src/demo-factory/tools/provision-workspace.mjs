@@ -10,15 +10,20 @@
  * could only ever fail. This script is that Dockerfile block, applied to a
  * running dev stack.
  *
- * It is idempotent and safe to re-run: every step checks before it acts. The
- * Codespace startup orchestrator runs it once the stack is up, and
- * `npm run provision` runs it by hand after a stack restart, which takes the
- * container's apt packages with it.
+ * It is idempotent and safe to re-run: every step checks before it acts.
+ * `.devcontainer/scripts/provision-demo-factory.sh` runs it once the stack is
+ * up (a postAttachCommand, so every Codespace start), and `npm run provision`
+ * runs it by hand after a stack restart, which takes the container's apt
+ * packages with it.
  *
  * Two of the five steps write into the repository rather than the container,
  * because the bind mount outlives it: the factory's `node_modules` and the
  * Playwright cache holding the bundled ffmpeg that `recordVideo` needs (the
  * system ffmpeg does not substitute for it — Playwright looks for its own).
+ * `--repo-only` runs exactly those two and stops, which is what the prebuild
+ * does: they are the slow half, they need no container, and doing them at
+ * container-create time means they are already in a new Codespace's image
+ * rather than being paid for on first attach.
  */
 import {execFile} from 'node:child_process';
 import {existsSync, writeFileSync} from 'node:fs';
@@ -32,6 +37,7 @@ const run = promisify(execFile);
 const factoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const repoRoot = path.resolve(factoryRoot, '..', '..');
 const browsersCache = path.join(factoryRoot, '.cache', 'ms-playwright');
+const repoOnly = process.argv.includes('--repo-only');
 
 const log = (message) => console.log(`[demo-factory] ${message}`);
 
@@ -151,6 +157,11 @@ if (existsSync(browsersCache)) {
       maxBuffer: 64 * 1024 * 1024,
     }),
   );
+}
+
+if (repoOnly) {
+  log('--repo-only: leaving the container steps to the post-attach run');
+  process.exit(0);
 }
 
 // ---------------------------------------------------------------------------

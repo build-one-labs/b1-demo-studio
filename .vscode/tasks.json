@@ -62,6 +62,18 @@
       "problemMatcher": []
     },
     {
+      "label": "Demo Factory",
+      "type": "shell",
+      "command": "bash .devcontainer/scripts/provision-demo-factory.sh",
+      "isBackground": true,
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "focus": false
+      },
+      "problemMatcher": []
+    },
+    {
       "label": "Install Dependencies",
       "type": "shell",
       "command": "export AWS_ACCESS_KEY_ID=\"${AWS_ACCESS_KEY_ID:-${B1_ACCESS_KEY_ID:-}}\" && export AWS_SECRET_ACCESS_KEY=\"${AWS_SECRET_ACCESS_KEY:-${B1_SECRET_ACCESS_KEY:-}}\" && { [ -n \"${CODEARTIFACT_AUTH_TOKEN:-}\" ] || export CODEARTIFACT_AUTH_TOKEN=$(aws codeartifact get-authorization-token --domain buildone --domain-owner 653306034207 --region \"${AWS_REGION:-eu-central-1}\" --query authorizationToken --output text); } && yarn install && find node_modules/@buildone/swat-cli/scripts/ -name '*.sh' -exec chmod +x {} +",
@@ -74,7 +86,7 @@
     },
     {
       "label": "Dev Tasks",
-      "dependsOn": ["Stack Startup", "App Appserver", "Web App", "Claude"],
+      "dependsOn": ["Stack Startup", "App Appserver", "Web App", "Claude", "Demo Factory"],
       "dependsOrder": "parallel",
       "presentation": {
         "reveal": "always",

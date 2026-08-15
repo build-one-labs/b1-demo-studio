@@ -72,6 +72,11 @@
     "Appserver": ["node_modules/@buildone/swat-cli/scripts/devcontainer/lib/task-runner.sh", "watch_app_server_ts"],
     "Web App": ["node_modules/@buildone/swat-cli/scripts/devcontainer/lib/task-runner.sh", "watch_web_app"],
     "Claude": ["node_modules/@buildone/swat-cli/scripts/devcontainer/lib/task-runner.sh", "start_claude"],
+    // Waits for the stack, then gives the app server's container the browser,
+    // ffmpeg and API key the Demo Factory Studio's pipeline needs — without
+    // which every stage button on that screen is disabled. Not a task-runner
+    // task: those live in @buildone/swat-cli's tasks.json, which is a package.
+    "Demo Factory": ["bash", ".devcontainer/scripts/provision-demo-factory.sh"],
     "Host Terminal": [
       "node_modules/@buildone/swat-cli/scripts/devcontainer/lib/task-runner.sh",
       "start_host_terminal"

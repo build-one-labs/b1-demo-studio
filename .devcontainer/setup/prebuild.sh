@@ -618,6 +618,27 @@ fi
 # <<< b1-framework-prebuild-guard <<<
 
 
+# The Demo Factory's own dependencies. It is an npm project outside the yarn
+# workspaces, so the install above does not reach it, and without them every
+# stage button on the Demo Factory Studio screen is disabled — the pipeline's
+# entry point imports Playwright and Remotion before it reads its arguments.
+#
+# Only the repository half here (`--repo-only`): the container half installs
+# apt packages into the app server's container, which does not exist at
+# container-create time and is recreated by the stack start anyway. That half
+# is .devcontainer/scripts/provision-demo-factory.sh, on postAttachCommand.
+#
+# Skipped under PREBUILD_CHECK, which is the catch-up prebuild the stack start
+# runs: the post-attach script does the whole thing minutes later, and this is
+# the slow step of the two.
+#
+# `|| true`: onCreateCommand runs under `set -e`, and no state of the Demo
+# Factory is worth failing container creation over.
+if [[ "${PREBUILD_CHECK:-}" != "true" && -d "${WORKSPACE_ROOT}/src/demo-factory" ]]; then
+    log INFO "Installing Demo Factory dependencies"
+    node "${WORKSPACE_ROOT}/src/demo-factory/tools/provision-workspace.mjs" --repo-only || true
+fi
+
 # Ensure the workspace scripts are executable
 find "${WORKSPACE_ROOT}/node_modules/@buildone/swat-cli/scripts/devcontainer" -type f -name "*.sh" -exec chmod +x {} \;
 
