@@ -628,15 +628,32 @@ fi
 # container-create time and is recreated by the stack start anyway. That half
 # is .devcontainer/scripts/provision-demo-factory.sh, on postAttachCommand.
 #
-# Skipped under PREBUILD_CHECK, which is the catch-up prebuild the stack start
-# runs: the post-attach script does the whole thing minutes later, and this is
-# the slow step of the two.
+# Under PREBUILD_CHECK — the catch-up prebuild the stack start runs when the
+# workspace was fast-forwarded past its prebuild image's commit — the whole
+# provisioning is launched instead, detached. That is the one start where the
+# postAttachCommand hook is not there to do it: Codespaces resolved postAttach
+# from the devcontainer.json in the (older) image, and a hook that arrived in
+# the fast-forward is not in that list. This file, by contrast, is read from
+# the checkout as it is now. The script waits for the stack itself, and its
+# lock stops the two paths from doubling up when both are present.
 #
 # `|| true`: onCreateCommand runs under `set -e`, and no state of the Demo
 # Factory is worth failing container creation over.
-if [[ "${PREBUILD_CHECK:-}" != "true" && -d "${WORKSPACE_ROOT}/src/demo-factory" ]]; then
-    log INFO "Installing Demo Factory dependencies"
-    node "${WORKSPACE_ROOT}/src/demo-factory/tools/provision-workspace.mjs" --repo-only || true
+if [[ -d "${WORKSPACE_ROOT}/src/demo-factory" ]]; then
+    if [[ "${PREBUILD_CHECK:-}" == "true" ]]; then
+        log INFO "Launching Demo Factory provisioning in the background (waits for the stack)"
+        mkdir -p "${WORKSPACE_ROOT}/logs/workspace"
+        # setsid + every standard descriptor redirected: this prebuild's output
+        # is being captured through a pipe, and a child still holding it would
+        # keep the stack start waiting on a job that is itself waiting for the
+        # stack start.
+        setsid bash "${WORKSPACE_ROOT}/.devcontainer/scripts/provision-demo-factory.sh" \
+            >> "${WORKSPACE_ROOT}/logs/workspace/demo-factory-provision.log" 2>&1 < /dev/null &
+        disown || true
+    else
+        log INFO "Installing Demo Factory dependencies"
+        node "${WORKSPACE_ROOT}/src/demo-factory/tools/provision-workspace.mjs" --repo-only || true
+    fi
 fi
 
 # Ensure the workspace scripts are executable

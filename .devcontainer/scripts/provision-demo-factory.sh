@@ -24,6 +24,20 @@ log() { echo "[demo-factory] $*"; }
 # this repository, not a fixture of the template).
 [ -d "$FACTORY" ] || exit 0
 
+# Two things launch this: the "Demo Factory" postAttachCommand, and the catch-up
+# prebuild that start_stack runs when the workspace was fast-forwarded past the
+# commit its prebuild image was built from. In that second case the postAttach
+# configuration Codespaces resolved is the *old* devcontainer.json's — the hook
+# is not in it — which is why the prebuild launches this as well. When both do
+# fire (a fresh prebuild that also catches up), one is enough: whoever loses the
+# lock leaves, and the winner does the whole job.
+mkdir -p "${WORKSPACE_ROOT}/tmp/workspace"
+exec 9>"${WORKSPACE_ROOT}/tmp/workspace/demo-factory-provision.lock"
+if ! flock -n 9; then
+  log "another provisioning run is already in progress — leaving it to that one"
+  exit 0
+fi
+
 # Step 3 installs apt packages into a running container, and `build-one up`
 # recreates that container — so this waits for the marker the stack start writes
 # when the stack is operational rather than for the container to merely exist,
