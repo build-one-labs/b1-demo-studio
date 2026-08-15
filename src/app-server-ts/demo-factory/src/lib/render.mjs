@@ -43,7 +43,14 @@ export const renderDemo = async ({demo, manifest}) => {
 
   const inputProps = {title: demo.title, fps: demo.settings.fps, branding: demo.settings.branding, scenes};
   const entryPoint = path.join(projectRoot, 'src', 'remotion', 'index.ts');
-  const serveUrl = await bundle({entryPoint, webpackOverride: (config) => config});
+  // `publicDir` is explicit because Remotion otherwise infers it from the
+  // nearest package.json above the entry point. The factory has none of its own
+  // — its dependencies are the app server's — so that inference walks past
+  // `demo-factory/` and lands on `src/app-server-ts/public`, a directory that
+  // does not exist. The clips staged above are then absent from the bundle and
+  // every scene 404s at frame 0. The staging dir and this must stay the same
+  // path; both derive it from projectRoot for that reason.
+  const serveUrl = await bundle({entryPoint, publicDir: path.join(projectRoot, 'public'), webpackOverride: (config) => config});
   // Same idea as PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH in record.mjs: a slim
   // container ships one Chromium and both browser users are pointed at it,
   // rather than each downloading its own at run time.

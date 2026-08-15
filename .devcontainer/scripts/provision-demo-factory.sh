@@ -72,6 +72,21 @@ for env_file in "${WORKSPACE_ROOT}/.b1/env/.env.fetched" "${WORKSPACE_ROOT}/.b1/
   fi
 done
 
+# The connector secrets the generated compose file does not forward into the app
+# server's container. Runs here because this is the one hook that has both
+# halves: a stack known to be up, and the secrets exported above. Deliberately
+# *before* the provisioning below — it restarts the app server to reload the
+# .env, and doing that first means the restart precedes the apt install rather
+# than interrupting it. Reported, not propagated: a demo that cannot reach
+# Salesforce is still worth a provisioned browser.
+SECRETS="${WORKSPACE_ROOT}/.devcontainer/scripts/app-server-secrets.mjs"
+if [ -f "$SECRETS" ]; then
+  mkdir -p "$(dirname "$LOGFILE")"
+  node "$SECRETS" 2>&1 | tee -a "$LOGFILE"
+  secrets_status="${PIPESTATUS[0]}"
+  [ "$secrets_status" -eq 0 ] || log "forwarding app server secrets exited ${secrets_status} — see ${LOGFILE}"
+fi
+
 mkdir -p "$(dirname "$LOGFILE")"
 log "provisioning (full log: ${LOGFILE})"
 node "${FACTORY}/tools/provision-workspace.mjs" 2>&1 | tee -a "$LOGFILE"

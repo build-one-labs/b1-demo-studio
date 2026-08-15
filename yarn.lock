@@ -8670,15 +8670,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react-dom@npm:^19.0.0":
-  version: 19.2.4
-  resolution: "@types/react-dom@npm:19.2.4"
-  peerDependencies:
-    "@types/react": ^19.2.0
-  checksum: 10c0/b7d854ce17bb51a3a067168268a90f0123d10dc490f63f1ff5409f07ac715febeb8f5b7b473404a9d437106571e0312fc2937a945634d590abfc9aa46a14b01b
-  languageName: node
-  linkType: hard
-
 "@types/react@npm:^19.0.0":
   version: 19.2.18
   resolution: "@types/react@npm:19.2.18"
@@ -22517,7 +22508,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-dom@npm:19.2.8, react-dom@npm:^19.2.8":
+"react-dom@npm:^19.2.8":
   version: 19.2.8
   resolution: "react-dom@npm:19.2.8"
   dependencies:
@@ -22542,7 +22533,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react@npm:19.2.8, react@npm:^19.2.8":
+"react@npm:^19.2.8":
   version: 19.2.8
   resolution: "react@npm:19.2.8"
   checksum: 10c0/5f86bdb56426652fd6d989d30a6f2e603c057272c47c9ca3a3fbe190a3a39ee9ccce937d63cfc039717abed1b8891d6a499134bc35311acc07eafdacd86537cd
@@ -27085,17 +27076,11 @@ __metadata:
     "@pinia/nuxt": "npm:^0.11.1"
     "@primevue/forms": "npm:^4.3.6"
     "@primevue/nuxt-module": "npm:^4.3.6"
-    "@remotion/player": "npm:4.0.507"
     "@types/leaflet": "npm:^1.9.21"
-    "@types/react": "npm:^19.0.0"
-    "@types/react-dom": "npm:^19.0.0"
     eslint: "npm:^9.19.0"
     leaflet: "npm:^1.9.4"
     nuxt: "npm:^4.0.0"
     pinia: "npm:^3.0.3"
-    react: "npm:19.2.8"
-    react-dom: "npm:19.2.8"
-    remotion: "npm:4.0.507"
     sass-embedded: "npm:^1.90.0"
     typescript: "npm:^5.7.3"
     vue: "npm:^3.5.22"

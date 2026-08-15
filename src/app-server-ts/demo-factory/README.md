@@ -222,13 +222,28 @@ render dies partway with `Compositor exited with signal SIGTERM`:
 REMOTION_OFFTHREADVIDEO_CACHE_MB=512 REMOTION_CONCURRENCY=2 yarn demo:render <demo-id>
 ```
 
-**Salesforce credentials reach the app server through compose.**
+**Salesforce credentials reach the app server through a `.env`, not compose.**
 `SALESFORCE_INSTANCE_URL`, `SALESFORCE_CLIENT_ID` and `SALESFORCE_CLIENT_SECRET`
-must be set for the connector, but the `app_server_ts` service passes an
-explicit environment allowlist, so workspace secrets alone never arrive. They
-were added to `.deploy/workspace.docker-compose.yml`, which is **generated and
-gitignored** — regenerating the deploy files drops them again. The durable fix
-belongs in whatever produces that file.
+must be set for the connector. Setting them as workspace secrets is not enough:
+those land on the *devcontainer*, while the connector runs in the `app_server_ts`
+compose service, which passes an explicit environment allowlist and does not
+name them. Editing `.deploy/workspace.docker-compose.yml` does not stick either —
+it is generated and gitignored, so regenerating drops the entries again.
+
+`.devcontainer/scripts/app-server-secrets.mjs` is the durable path: it copies an
+allowlist of workspace secrets into `src/app-server-ts/.env`, which
+`ConfigModule.forRoot()` loads, and restarts the app server. It runs from
+`provision-demo-factory.sh` on every Codespace start, and by hand after adding a
+secret:
+
+```bash
+node .devcontainer/scripts/app-server-secrets.mjs
+```
+
+When a connector starts reading a new secret, add it to that script's
+`FORWARDED` allowlist. Symptom when this is missing: the screen's table is empty,
+the app server logs `Salesforce credentials are not configured`, and a demo whose
+first scene waits for a table row dies on a 30s `waitFor` timeout.
 
 Without `ELEVENLABS_API_KEY`/`ELEVENLABS_VOICE_ID` the pipeline still runs — it
 produces a silent, captioned video with cue timing estimated from text length.
