@@ -1,22 +1,20 @@
-# Keep the demo factory's build-time and run-time artefacts out of every image.
+# Keep the demo factory's run-time artefacts out of every image.
 #
 # The root node_modules is deliberately NOT excluded: src/app-server-ts's
 # Dockerfile copies it in, because the yarn workspaces are installed once at the
-# repository root. The demo factory is the exception — it is a standalone npm
-# project, so its dependencies are installed inside the image from its own
-# lockfile and the local tree must not overwrite that.
-src/demo-factory/node_modules
+# repository root — and the Demo Factory pipeline's dependencies are the app
+# server's, so they arrive the same way.
 
 # Recorded clips, narration, rendered videos and their caches. Large, and
 # reproducible from demo.yaml.
-src/demo-factory/output
-src/demo-factory/.cache
-src/demo-factory/public/generated
+src/app-server-ts/demo-factory/output
+src/app-server-ts/demo-factory/.cache
+src/app-server-ts/demo-factory/public/generated
 src/web-app/public/demo-factory
 
-# A live session, written by tools/auth-from-session.mjs or auth:b1. This must
-# never reach an image.
-src/demo-factory/playwright
+# A live session, written by tools/auth-from-session.mjs or demo:auth:b1. This
+# must never reach an image.
+src/app-server-ts/demo-factory/playwright
 
 # One workspace's view of the pipeline, written by tools/provision-workspace.mjs:
 # a B1_USER_API_KEY and a set of paths and URLs that describe the machine it ran
@@ -24,5 +22,5 @@ src/demo-factory/playwright
 # would ship inside it, the paths because the image sets its own and the Studio
 # reads this file in preference to them. CI never has one (it is gitignored), so
 # this is what keeps an image built from a provisioned workspace honest.
-src/demo-factory/.env
-src/demo-factory/.env.*
+src/app-server-ts/demo-factory/.env
+src/app-server-ts/demo-factory/.env.*

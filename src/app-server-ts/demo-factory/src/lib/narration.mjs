@@ -3,6 +3,7 @@ import path from 'node:path';
 import {alignmentToCaptions, captionsToSrt} from './captions.mjs';
 import {alignmentDurationMs, mapCuesToAlignment, parseNarrationCues, syntheticAlignment} from './cues.mjs';
 import {ensureDir, projectRoot, readJson, sha256, writeJson} from './files.mjs';
+import {seconds, step} from './log.mjs';
 import {writeSilentWav} from './wav.mjs';
 
 const selectProvider = (demo, override) => {
@@ -46,6 +47,7 @@ const buildNarration = async ({demo, scene, provider, cacheDirectory}) => {
   try {
     const metadata = await readJson(metadataFile);
     await readFile(metadata.audioFile);
+    step(`Narration for ${scene.id}: cache hit ${cacheKey.slice(0, 8)}`);
     return metadata;
   } catch (error) {
     if (!['ENOENT', 'ENOTDIR'].includes(error.code)) throw error;
@@ -58,6 +60,7 @@ const buildNarration = async ({demo, scene, provider, cacheDirectory}) => {
     if (!apiKey || !voiceId || voiceId === 'silent-preview') {
       throw new Error(`ElevenLabs mode requires ${narration.apiKeyEnv} and ${narration.voiceIdEnv}`);
     }
+    step(`Narration for ${scene.id}: calling ElevenLabs (${modelId}, voice ${voiceId})`);
     const result = await callElevenLabs({text, apiKey, voiceId, modelId, languageCode});
     alignment = result.normalized_alignment || result.alignment;
     if (!alignment) throw new Error('ElevenLabs response did not include alignment timestamps');
@@ -90,8 +93,10 @@ export const prepareNarration = async ({demo, runDir, providerOverride}) => {
   const cacheDirectory = await ensureDir(path.join(projectRoot, '.cache', 'narration'));
   const scenes = [];
 
-  for (const scene of demo.scenes) {
+  step(`Preparing narration for ${demo.id} with provider ${provider}`);
+  for (const [index, scene] of demo.scenes.entries()) {
     const metadata = await buildNarration({demo, scene, provider, cacheDirectory});
+    step(`Scene ${index + 1}/${demo.scenes.length}: ${scene.id} — ${seconds(metadata.durationMs)} of narration, ${Object.keys(metadata.cues).length} cues`);
     const extension = path.extname(metadata.audioFile);
     const outputAudio = path.join(narrationDir, `${scene.id}${extension}`);
     await copyFile(metadata.audioFile, outputAudio);

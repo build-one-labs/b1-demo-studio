@@ -7,7 +7,9 @@
  * ten copies of that sentence in the file.
  */
 import { spawn } from 'node:child_process';
-import { access, mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
+import { createWriteStream, WriteStream } from 'node:fs';
+import { access, mkdir, readdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { createRequire } from 'node:module';
 import path from 'node:path';
 
 import { B1Action, B1ActionPayload, B1Service } from '@buildone/app-server-tslib';
@@ -30,11 +32,11 @@ import {
 /**
  * Server actions behind the Demo Factory Studio screen.
  *
- * These are the upstream Studio server (`src/demo-factory/studio/server.mjs`)
- * expressed as B1 actions, so the dashboard is part of the application instead
- * of a second web server the operator has to start by hand.
+ * The Demo Factory's original standalone Studio server, expressed as B1
+ * actions, so the dashboard is part of the application instead of a second web
+ * server the operator has to start by hand.
  *
- * Two deliberate differences from upstream:
+ * Two deliberate differences from that original:
  *
  * - **Polling, not SSE.** Upstream streams job state over `/api/events`. A B1
  *   action is a request/response endpoint, so `job` returns the same object and
@@ -59,6 +61,8 @@ interface JobState {
   status: 'idle' | 'running' | 'complete' | 'failed' | 'cancelled';
   step: JobAction | null;
   logs: JobLogLine[];
+  /** Where the untruncated output of this job is being written. */
+  logFile: string | null;
   startedAt: string | null;
   finishedAt: string | null;
   exitCode: number | null;
@@ -71,6 +75,7 @@ const idleJob = (): JobState => ({
   status: 'idle',
   step: null,
   logs: [],
+  logFile: null,
   startedAt: null,
   finishedAt: null,
   exitCode: null
@@ -78,6 +83,15 @@ const idleJob = (): JobState => ({
 
 /** Keep the tail only: a full render is chatty and the panel shows a tail anyway. */
 const LOG_LIMIT = 600;
+
+/**
+ * How many job logs to keep under `<output>/logs`.
+ *
+ * They are small (a render writes a few hundred lines) and the reason to keep
+ * more than the current one is to compare a run that worked with the one that
+ * did not, so this is generous rather than tidy.
+ */
+const LOG_FILES_KEPT = 50;
 
 /**
  * Where a system browser and ffmpeg live when nothing was configured.
@@ -108,11 +122,12 @@ const FFPROBE_PATHS = ['/usr/bin/ffprobe', '/usr/local/bin/ffprobe', 'ffprobe'];
 @B1Service({ basePath: 'demo-factory' })
 export class DemoFactoryStudio {
   /**
-   * The vendored pipeline. The app server's working directory is
-   * `<repo>/src/app-server-ts`, so its sibling is the default; the env var
-   * exists for deployments that mount the factory somewhere else.
+   * The pipeline: `demo-factory/` beside this server's `src/`, resolved from
+   * this file so it is the same directory from `src/` (dev, ts) and `dist/`
+   * (built). The env var exists for deployments that mount it somewhere else.
    */
-  private readonly projectRoot = process.env.DEMO_FACTORY_ROOT || path.resolve(process.cwd(), '..', 'demo-factory');
+  private readonly projectRoot =
+    process.env.DEMO_FACTORY_ROOT || path.resolve(__dirname, '..', '..', '..', 'demo-factory');
 
   private readonly demosRoot = path.join(this.projectRoot, 'demos');
 
@@ -159,6 +174,8 @@ export class DemoFactoryStudio {
   private job: JobState = idleJob();
 
   private activeChild: ReturnType<typeof spawn> | undefined;
+
+  private jobLog: WriteStream | undefined;
 
   private async loadProvisionedEnv(): Promise<void> {
     const allowed = new Set<string>(ALLOWED_ENV_KEYS);
@@ -215,8 +232,57 @@ export class DemoFactoryStudio {
   private appendLog(chunk: unknown, stream: 'stdout' | 'stderr'): void {
     const text = String(chunk).replace(/\r/g, '').trimEnd();
     if (!text) return;
-    for (const line of text.split('\n')) this.job.logs.push({ at: new Date().toISOString(), stream, text: line });
+    for (const line of text.split('\n')) {
+      this.job.logs.push({ at: new Date().toISOString(), stream, text: line });
+      this.jobLog?.write(`${new Date().toISOString()} ${stream === 'stderr' ? 'ERR' : 'out'} ${line}\n`);
+    }
     this.job.logs = this.job.logs.slice(-LOG_LIMIT);
+  }
+
+  /**
+   * Start writing this job's output to `<output>/logs`, alongside the tail the
+   * Studio polls.
+   *
+   * That tail lives in this process and is capped, so a `nest --watch` restart
+   * — or anything else that ends this server mid-render — takes the whole
+   * record of the run with it, which is exactly when the record is wanted: what
+   * a killed render leaves on disk is a run directory that simply stops, with
+   * no clue whether it was bundling, rendering or already dead. The file sits on
+   * the same volume as the runs, so a workspace shell can `tail -f` it while a
+   * job started from the Studio screen is still going.
+   */
+  private async openJobLog(script: string, args: string[]): Promise<void> {
+    const file = this.job.logFile;
+    if (!file) return;
+    try {
+      await mkdir(path.dirname(file), { recursive: true });
+      await this.pruneJobLogs(path.dirname(file));
+      this.jobLog = createWriteStream(file, { flags: 'a' });
+      this.jobLog.write(
+        `# ${this.job.startedAt} ${this.job.action} ${this.job.demoId}\n# node ${script} ${args.join(' ')} (cwd ${this.projectRoot})\n`
+      );
+    } catch (error) {
+      // A log that cannot be opened is not a reason to refuse to run the job.
+      this.job.logFile = null;
+      this.appendLog(`Could not open the job log: ${(error as Error).message}`, 'stderr');
+    }
+  }
+
+  private async closeJobLog(): Promise<void> {
+    const stream = this.jobLog;
+    this.jobLog = undefined;
+    if (!stream) return;
+    await new Promise<void>((resolve) =>
+      stream.end(`# ${this.job.finishedAt} ${this.job.status} (exit ${this.job.exitCode})\n`, () => resolve())
+    );
+  }
+
+  private async pruneJobLogs(directory: string): Promise<void> {
+    // Names are the ISO start time, so lexical order is chronological.
+    const files = (await readdir(directory).catch(() => [] as string[])).filter((name) => name.endsWith('.log')).sort();
+    for (const name of files.slice(0, Math.max(0, files.length - (LOG_FILES_KEPT - 1)))) {
+      await rm(path.join(directory, name), { force: true });
+    }
   }
 
   private async listDemos() {
@@ -330,18 +396,26 @@ export class DemoFactoryStudio {
   }
 
   /**
-   * The factory is a standalone npm project outside the yarn workspaces, so a
-   * checkout has no `node_modules` for it until somebody runs `npm ci` there —
-   * only the app server's own image does that at build time. `src/cli.mjs`
-   * imports Playwright and Remotion at load, before it reads its arguments, so
-   * a missing install makes every stage die identically with a module
-   * resolution stack trace from a child process. Cheaper to say so up front.
+   * The pipeline's dependencies are this server's (one package.json, installed
+   * by the root `yarn install`), so on a normal host this is true. It stays a
+   * check because `src/cli.mjs` imports Playwright and Remotion at load, before
+   * it reads its arguments: an image built without them makes every stage die
+   * identically with a module resolution stack trace from a child process.
+   * Cheaper to say so up front. Resolved the way the spawned process will
+   * resolve them — from the pipeline's directory, up the tree — not by
+   * looking for a `node_modules` folder that yarn is free to hoist away.
    */
   private async hasDependencies(): Promise<boolean> {
-    const modules = path.join(this.projectRoot, 'node_modules');
+    const resolve = createRequire(path.join(this.projectRoot, 'package.json'));
     const required = ['@playwright/test', '@remotion/bundler', '@remotion/renderer', 'yaml', 'zod'];
-    const found = await Promise.all(required.map((name) => this.exists(path.join(modules, name))));
-    return found.every(Boolean);
+    return required.every((name) => {
+      try {
+        resolve.resolve(name);
+        return true;
+      } catch {
+        return false;
+      }
+    });
   }
 
   /**
@@ -522,6 +596,7 @@ export class DemoFactoryStudio {
     const blocked = stageBlockedReason(action, await this.capabilities());
     if (blocked) throw new Error(`Cannot run ${action} on this host — ${blocked}.`);
 
+    const startedAt = new Date().toISOString();
     this.job = {
       id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
       action,
@@ -529,7 +604,11 @@ export class DemoFactoryStudio {
       status: 'running',
       step: command.step,
       logs: [],
-      startedAt: new Date().toISOString(),
+      // Named, not opened, so the first response already tells the caller where
+      // to look — including the caller watching a job that this server will not
+      // live long enough to report the end of.
+      logFile: path.join(this.outputRoot(), 'logs', `${startedAt.replace(/[.:]/g, '-')}--${demoId}--${action}.log`),
+      startedAt,
       finishedAt: null,
       exitCode: null
     };
@@ -542,6 +621,7 @@ export class DemoFactoryStudio {
   }
 
   private async execute(script: string, args: string[]): Promise<void> {
+    await this.openJobLog(script, args);
     try {
       const child = spawn(process.execPath, [script, ...args], {
         cwd: this.projectRoot,
@@ -563,6 +643,7 @@ export class DemoFactoryStudio {
     } finally {
       this.job.finishedAt = new Date().toISOString();
       this.activeChild = undefined;
+      await this.closeJobLog();
     }
   }
 

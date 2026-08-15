@@ -32,5 +32,22 @@
     "paths": {
       "@/*": ["src/*"]
     }
+  },
+  // The Demo Factory pipeline (demo-factory/) is ESM .mjs plus a React/Remotion
+  // composition that Remotion bundles itself at render time. Not part of the
+  // Nest build: it has its own tsconfig for the .tsx.
+  "exclude": ["node_modules", "dist", "demo-factory"],
+  // `exclude` keeps these out of the program; it does not stop the watcher from
+  // watching them. Under `nest start --watch` that distinction has teeth: a
+  // render spawned by the demo-factory actions writes Remotion's webpack cache
+  // into `node_modules/.cache/webpack/`, tsc reports "File change detected",
+  // and the Nest CLI tree-kills the server — taking the render it was running
+  // down with it, mid-pipeline. Nothing here is ever edited by hand while the
+  // server is up, so nothing here needs watching. The trade is that a new
+  // dependency needs a dev-server restart to be picked up.
+  "watchOptions": {
+    // Both trees: dependencies are hoisted to the workspace root, and Remotion
+    // caches under whichever `node_modules` sits above the pipeline's cwd.
+    "excludeDirectories": ["**/node_modules", "../../node_modules", "dist", "demo-factory"]
   }
 }

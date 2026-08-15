@@ -1,7 +1,7 @@
 /**
  * Marks the app shell as ready for the demo factory's recorder.
  *
- * `src/demo-factory/src/lib/record.mjs` waits for `[data-demo-id="app-ready"]`
+ * `src/app-server-ts/demo-factory/src/lib/record.mjs` waits for `[data-demo-id="app-ready"]`
  * before every take and, when it never appears, swallows the failure and
  * records a 15-second timeout into the start of each clip.
  *

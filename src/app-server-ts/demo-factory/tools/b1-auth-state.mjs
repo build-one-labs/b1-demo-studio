@@ -28,7 +28,7 @@ await loadDotEnv();
 // to the auth exchange cannot strand the demo recorder. It has two homes: in
 // the framework monorepo it is CLI source, and in a product repo the identical
 // file ships inside @buildone/swat-cli. Try both rather than assume either.
-const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
+const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..', '..', '..');
 const sessionCandidates = [
   path.join(repoRoot, 'src', 'cli', 'scripts', 'utils', 'browser-session.mjs'),
   path.join(repoRoot, 'node_modules', '@buildone', 'swat-cli', 'scripts', 'utils', 'browser-session.mjs'),
@@ -43,7 +43,13 @@ await mkdir(path.dirname(authFile), {recursive: true});
 
 const {url, keyVar} = await browserSessionUrl({appUrl: baseUrl, target: '/'});
 
-const browser = await chromium.launch();
+// The same rule as record.mjs and render.mjs: a slim container cannot run
+// Playwright's managed download, so it ships one system Chromium and every
+// browser user is pointed at it. Without this the mint is the only step still
+// looking for the managed build — it dies with "Executable doesn't exist at
+// …/.cache/ms-playwright/chromium_headless_shell-…" on a host where the
+// recording it exists to authenticate runs perfectly well.
+const browser = await chromium.launch({executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH || undefined});
 try {
   const context = await browser.newContext();
   const page = await context.newPage();

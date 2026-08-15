@@ -1,10 +1,9 @@
 <!--
   Demo Factory Studio — the native component behind DemoFactoryScreen.
 
-  A port of the upstream Studio (src/demo-factory/studio/public, vendored here
-  for reference) from a standalone page onto a B1 screen. The layout is the
-  upstream one: storyboard on the left, preview and pipeline in the middle,
-  scene inspector on the right, pipeline log underneath.
+  A port of the Demo Factory's original standalone Studio page onto a B1
+  screen. The layout is the original one: storyboard on the left, preview and
+  pipeline in the middle, scene inspector on the right, pipeline log underneath.
 
   What changed in the port, and why:
 
@@ -184,6 +183,9 @@
               <div>
                 <span class="dfs-dot" :class="job.status" /><strong>Pipeline log</strong
                 ><small>{{ jobSubtitle }}</small>
+                <small v-if="job.logFile" class="dfs-log-file" :title="job.logFile">
+                  full log: <code>{{ job.logFile }}</code>
+                </small>
               </div>
               <div>
                 <button class="dfs-btn ghost" :disabled="job.status !== 'running'" @click="cancelJob">Cancel</button>
@@ -434,6 +436,8 @@ type Job = {
   status: string;
   step: string | null;
   logs: { text: string; stream?: 'stdout' | 'stderr' }[];
+  /** The server's full log for this job — this panel only shows a tail of it. */
+  logFile?: string | null;
   exitCode: number | null;
   demoId: string | null;
 };
@@ -1177,6 +1181,16 @@ onBeforeUnmount(stopPolling);
 .dfs-log-head small {
   margin-left: 0.5rem;
   opacity: 0.65;
+}
+/* The path is long and only there to be copied, so it truncates rather than
+   pushing the Cancel button off the panel. */
+.dfs-log-file {
+  display: inline-block;
+  max-width: 28rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: bottom;
 }
 .dfs-dot {
   display: inline-block;

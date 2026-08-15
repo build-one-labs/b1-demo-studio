@@ -35,7 +35,7 @@ const token = (process.argv[2] || process.env.B1_SESSION_TOKEN || '').trim();
 if (!token) throw new Error('Pass the session token as an argument or set B1_SESSION_TOKEN. See the header of this file for where to find it.');
 
 const baseUrl = process.env.B1_BASE_URL;
-if (!baseUrl) throw new Error('Set B1_BASE_URL (or put it in src/demo-factory/.env) so the cookie is written for the right host');
+if (!baseUrl) throw new Error('Set B1_BASE_URL (or put it in src/app-server-ts/demo-factory/.env) so the cookie is written for the right host');
 
 const target = new URL(baseUrl);
 const secure = target.protocol === 'https:';

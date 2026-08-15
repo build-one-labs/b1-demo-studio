@@ -62,7 +62,7 @@ try {
     throw new Error(
       `Cannot sign the recording in: ${error.message}\n` +
         'This host has no auth state and no user API key. Capture one interactively with ' +
-        '`npm run auth:b1`, or set the key for this auth server — ' +
+        '`yarn demo:auth:b1`, or set the key for this auth server — ' +
         `B1_USER_API_KEY__<AUTH HOST> (${process.env.AUTH_URL || 'AUTH_URL unset'}) or B1_USER_API_KEY — ` +
         'so the recording can authenticate by header.',
     );

@@ -3,27 +3,23 @@
  *
  * The Studio spawns the pipeline inside the *app server's* container, and in a
  * workspace that container is a stock slim node image with the repository
- * bind-mounted: no factory dependencies, no browser, no ffmpeg, and — because
- * the generated compose file passes it `AUTH_URL` and little else — no
- * workspace API key. A deployed app has all four from
- * `src/app-server-ts/Dockerfile`; a Codespace had none, so `Run full demo`
- * could only ever fail. This script is that Dockerfile block, applied to a
- * running dev stack.
+ * bind-mounted: no browser, no ffmpeg, and — because the generated compose
+ * file passes it `AUTH_URL` and little else — no workspace API key. A deployed
+ * app has all three from `src/app-server-ts/Dockerfile`; a Codespace had none,
+ * so `Run full demo` could only ever fail. This script is that Dockerfile
+ * block, applied to a running dev stack. (The pipeline's own dependencies are
+ * the app server's, installed by the root `yarn install`, so they need nothing
+ * here.)
  *
  * It is idempotent and safe to re-run: every step checks before it acts.
  * `.devcontainer/scripts/provision-demo-factory.sh` runs it once the stack is
- * up (a postAttachCommand, so every Codespace start), and `npm run provision`
- * runs it by hand after a stack restart, which takes the container's apt
- * packages with it.
+ * up (every Codespace start), and `yarn demo:provision` runs it by hand after
+ * a stack restart, which takes the container's apt packages with it.
  *
- * Two of the five steps write into the repository rather than the container,
- * because the bind mount outlives it: the factory's `node_modules` and the
- * Playwright cache holding the bundled ffmpeg that `recordVideo` needs (the
- * system ffmpeg does not substitute for it — Playwright looks for its own).
- * `--repo-only` runs exactly those two and stops, which is what the prebuild
- * does: they are the slow half, they need no container, and doing them at
- * container-create time means they are already in a new Codespace's image
- * rather than being paid for on first attach.
+ * One step writes into the repository rather than the container, because the
+ * bind mount outlives it: the Playwright cache holding the bundled ffmpeg that
+ * `recordVideo` needs (the system ffmpeg does not substitute for it —
+ * Playwright looks for its own).
  */
 import {execFile} from 'node:child_process';
 import {existsSync, writeFileSync} from 'node:fs';
@@ -35,9 +31,8 @@ import {resolveApiKey} from '../src/lib/env.mjs';
 const run = promisify(execFile);
 
 const factoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const repoRoot = path.resolve(factoryRoot, '..', '..');
+const repoRoot = path.resolve(factoryRoot, '..', '..', '..');
 const browsersCache = path.join(factoryRoot, '.cache', 'ms-playwright');
-const repoOnly = process.argv.includes('--repo-only');
 
 const log = (message) => console.log(`[demo-factory] ${message}`);
 
@@ -123,26 +118,7 @@ const workspaceApiKey = async () => {
 };
 
 // ---------------------------------------------------------------------------
-// 1. The factory's own dependencies. It is an npm project outside the yarn
-//    workspaces, so nothing else installs them. The browser download is
-//    skipped: the container uses the distribution's Chromium (step 3), and a
-//    shell user who wants Playwright's own runs `npx playwright install`.
-// ---------------------------------------------------------------------------
-if (existsSync(path.join(factoryRoot, 'node_modules', '@playwright', 'test'))) {
-  log('dependencies already installed');
-} else {
-  log('installing dependencies (npm ci)…');
-  await attempt('npm ci', () =>
-    run('npm', ['ci', '--no-audit', '--no-fund'], {
-      cwd: factoryRoot,
-      env: {...process.env, PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'},
-      maxBuffer: 64 * 1024 * 1024,
-    }),
-  );
-}
-
-// ---------------------------------------------------------------------------
-// 2. Playwright's bundled ffmpeg, into the repository so it survives the
+// 1. Playwright's bundled ffmpeg, into the repository so it survives the
 //    container. `recordVideo` refuses to start without it and will not use a
 //    system ffmpeg in its place. ~2 MB, unlike a browser download.
 // ---------------------------------------------------------------------------
@@ -159,20 +135,15 @@ if (existsSync(browsersCache)) {
   );
 }
 
-if (repoOnly) {
-  log('--repo-only: leaving the container steps to the post-attach run');
-  process.exit(0);
-}
-
 // ---------------------------------------------------------------------------
-// 3. Chromium and ffmpeg inside the app server's container. This is the one
+// 2. Chromium and ffmpeg inside the app server's container. This is the one
 //    step that does not survive the container being recreated, because the
 //    image is not ours to change and the compose file that picks it is
 //    generated. Re-running the script reinstalls them in about a minute.
 // ---------------------------------------------------------------------------
 const appServer = await findAppServer();
 if (!appServer) {
-  log('no app_server_ts container found — skipping the container steps (start the stack, then `npm run provision`)');
+  log('no app_server_ts container found — skipping the container steps (start the stack, then `yarn demo:provision`)');
   process.exit(0);
 }
 
@@ -198,7 +169,7 @@ if (hasChromium && hasFfmpeg) {
 }
 
 // ---------------------------------------------------------------------------
-// 4. Tell the app server what it now has.
+// 3. Tell the app server what it now has.
 //
 //    These are the container's paths and the container's view of the network,
 //    so they cannot go in the factory's `.env`, which the CLI also reads from a
@@ -212,7 +183,7 @@ const apiKey = await workspaceApiKey();
 const values = {
   ...(baseUrl ? {B1_BASE_URL: baseUrl} : {}),
   ...(apiKey ? {B1_USER_API_KEY: apiKey} : {}),
-  PLAYWRIGHT_BROWSERS_PATH: path.posix.join(containerRoot, 'src', 'demo-factory', '.cache', 'ms-playwright'),
+  PLAYWRIGHT_BROWSERS_PATH: path.posix.join(containerRoot, 'src', 'app-server-ts', 'demo-factory', '.cache', 'ms-playwright'),
   PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH: '/usr/bin/chromium',
   REMOTION_BROWSER_EXECUTABLE: '/usr/bin/chromium',
   FFMPEG_PATH: '/usr/bin/ffmpeg',

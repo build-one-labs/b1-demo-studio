@@ -3,15 +3,9 @@ import path from 'node:path';
 /**
  * Safety rails and job-command construction for the Demo Factory Studio.
  *
- * This mirrors `src/demo-factory/studio/lib.mjs`, which is the upstream
- * Studio's equivalent module. It is deliberately a port rather than an import:
- * the demo factory is a standalone npm project outside the yarn workspaces (so
- * React/Remotion never hoist into the Vue tree), and app-server-ts ships as its
- * own Docker image, which would not contain that tree. Keeping the rules here
- * means the server that actually spawns the pipeline owns them.
- *
- * Any change to the upstream list belongs here too — the values below are the
- * contract the Studio UI is written against.
+ * The pipeline itself lives in `demo-factory/` next to `src/` (ESM, spawned as
+ * a child process by the actions); these are the rules the server that spawns
+ * it owns. The values below are the contract the Studio UI is written against.
  */
 
 /** Runtime settings the Studio is allowed to read and write. Nothing else is exposed. */
@@ -124,7 +118,7 @@ export interface HostCapabilities {
 export const stageBlockedReason = (action: JobAction, host: HostCapabilities): string | null => {
   if (!host.hasFactory) return 'The demo factory is not installed on this host';
   if (!host.hasDependencies) {
-    return 'The demo factory has no node_modules on this host — run `npm ci` in src/demo-factory';
+    return 'The Demo Factory dependencies are not installed on this host — run `yarn install` at the repository root';
   }
   if ((action === 'record' || action === 'all') && !host.canRecord) {
     return 'This host has no browser for Playwright to drive';

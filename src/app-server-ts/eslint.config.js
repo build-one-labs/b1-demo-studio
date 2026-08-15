@@ -8,6 +8,10 @@ const mainConfig = require('../../eslint.config');
  * @type { import("eslint").Linter.Config[] }
  */
 module.exports = [
+  // The Demo Factory pipeline is linted with its own, deliberately minimal
+  // config (demo-factory/eslint.config.mjs) — see the `lint` script. Vendored
+  // ESM that stays diffable against upstream, not NestJS code.
+  { ignores: ['demo-factory/**'] },
   ...mainConfig,
   {
     languageOptions: {

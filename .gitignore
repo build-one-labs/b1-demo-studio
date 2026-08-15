@@ -46,3 +46,6 @@ node_modules
 # Workspace env files (.env.local, .env.fetched, .aws-token.env). Machine-written
 # or developer-local, and never committed — see .b1/env/.
 /.b1/
+
+# Demo factory local cache
+/src/demo-factory/.cache
