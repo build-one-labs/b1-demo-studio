@@ -13,7 +13,7 @@
   "templateObject": false,
   "attributes": {
     "definition": "43fb802c-8a35-4811-8ae1-9b9319d4a3de",
-    "description": "Author and produce a Build.One product video with the demo factory (src/demo-factory) — write demos/<id>/demo.yaml as a storyboard, verify every selector against the running app, then validate → prepare → record → render.",
+    "description": "Author and produce a Build.One product video with the demo factory (src/app-server-ts/demo-factory) — write demos/<id>/demo.yaml as a storyboard, verify every selector against the running app, then validate → prepare → record → render.",
     "triggers": "create a demo video, record a demo, make a product video, storyboard a demo, demo factory, add a scene, re-record a scene, regenerate the demo, demo.yaml",
     "type": "repo"
   },

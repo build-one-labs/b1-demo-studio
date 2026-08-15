@@ -41,10 +41,10 @@ RUN chmod +x ./start.sh
 # the distribution's Chromium once and points both at it, the same way
 # FFMPEG_PATH has always worked in media.mjs.
 #
-# This is not free: Chromium, ffmpeg and the factory's own dependencies add
-# several hundred megabytes to what was a slim node image. An operator who
-# never records from the deployed app can drop this whole block, and the Studio
-# will say so on screen instead of failing.
+# This is not free: Chromium and ffmpeg add a few hundred megabytes to what was
+# a slim node image. An operator who never records from the deployed app can
+# drop this whole block, and the Studio will say so on screen instead of
+# failing.
 # ---------------------------------------------------------------------------
 # The `&&` chain is the point: an image that reaches ECR without a working
 # ffmpeg or Chromium is one whose Studio shows "no browser · no ffmpeg" to an
@@ -57,20 +57,18 @@ RUN apk add --no-cache chromium ffmpeg font-noto ttf-freefont \
 
 # Absolute paths rather than a bare command name: these are handed to Playwright
 # as `executablePath` and to Remotion as its browser, and neither searches PATH.
-# They match what tools/provision-workspace.mjs writes for a workspace, so the
-# pipeline reads the same variables wherever it runs.
-ENV DEMO_FACTORY_ROOT=/workspace/src/demo-factory \
-    PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 \
+# They match what demo-factory/tools/provision-workspace.mjs writes for a
+# workspace, so the pipeline reads the same variables wherever it runs.
+ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 \
     PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium \
     REMOTION_BROWSER_EXECUTABLE=/usr/bin/chromium \
     FFMPEG_PATH=/usr/bin/ffmpeg \
     FFPROBE_PATH=/usr/bin/ffprobe
 
-# The factory is a standalone npm project, deliberately outside the yarn
-# workspaces, so it brings its own lockfile and its own node_modules.
-COPY --chown=node:node ./src/demo-factory/package.json ./src/demo-factory/package-lock.json /workspace/src/demo-factory/
-RUN cd /workspace/src/demo-factory && npm ci --omit=dev --no-audit --no-fund
-COPY --chown=node:node ./src/demo-factory /workspace/src/demo-factory
+# The pipeline itself: ESM sources the actions spawn, the Remotion composition
+# they bundle at render time, and the demo storyboards. Its dependencies are
+# this server's own, already in /workspace/node_modules above.
+COPY --chown=node:node ./src/app-server-ts/demo-factory ./demo-factory
 
 USER node
 CMD ["./start.sh"]

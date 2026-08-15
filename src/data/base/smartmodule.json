@@ -1,7 +1,7 @@
 [
   {
     "moduleDataFolder": "b1-demo-factory",
-    "moduleDescription": "Demo Factory — demo-as-code video pipeline (src/demo-factory): Remotion compositions, Playwright recorder and the screens that host them.",
+    "moduleDescription": "Demo Factory — demo-as-code video pipeline (src/app-server-ts/demo-factory): Remotion compositions, Playwright recorder and the screens that host them.",
     "moduleGuid": "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4",
     "moduleName": "b1-demo-factory",
     "modulePackage": "b1-demo-factory",

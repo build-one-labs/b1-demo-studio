@@ -1,10 +1,9 @@
 <!--
   Demo Factory Studio — the native component behind DemoFactoryScreen.
 
-  A port of the upstream Studio (src/demo-factory/studio/public, vendored here
-  for reference) from a standalone page onto a B1 screen. The layout is the
-  upstream one: storyboard on the left, preview and pipeline in the middle,
-  scene inspector on the right, pipeline log underneath.
+  A port of the Demo Factory's original standalone Studio page onto a B1
+  screen. The layout is the original one: storyboard on the left, preview and
+  pipeline in the middle, scene inspector on the right, pipeline log underneath.
 
   What changed in the port, and why:
 

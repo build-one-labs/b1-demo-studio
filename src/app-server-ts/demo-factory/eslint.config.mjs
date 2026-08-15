@@ -2,7 +2,7 @@ import globals from 'globals';
 import tsParser from '@typescript-eslint/parser';
 
 /**
- * ESLint configuration for the vendored demo-factory.
+ * ESLint configuration for the Demo Factory pipeline (demo-factory/).
  *
  * Deliberately minimal rather than the monorepo base config: this tree is
  * vendored from build-one-labs/b1-demo-factory and should stay diffable
@@ -11,8 +11,8 @@ import tsParser from '@typescript-eslint/parser';
  * pipeline runs under Node, and several action helpers execute inside the
  * recorded page via page.evaluate, so browser globals are real there too.
  *
- * lint-staged resolves the nearest config per file (config-lookup-from-file),
- * which is what scopes this to src/demo-factory without touching the root.
+ * The app server's `lint` script runs this over demo-factory/ explicitly and
+ * its own config ignores the folder, which is what keeps the two apart.
  *
  * @type { import("eslint").Linter.Config[] }
  */
@@ -35,5 +35,5 @@ export default [
       globals: {...globals.node, ...globals.browser},
     },
   },
-  {ignores: ['node_modules/**', 'output/**', 'public/**', '.cache/**', 'playwright/**']},
+  {ignores: ['**/node_modules/**', '**/output/**', '**/public/**', '**/.cache/**', '**/playwright/**']},
 ];

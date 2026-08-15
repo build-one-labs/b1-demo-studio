@@ -32,5 +32,9 @@
     "paths": {
       "@/*": ["src/*"]
     }
-  }
+  },
+  // The Demo Factory pipeline (demo-factory/) is ESM .mjs plus a React/Remotion
+  // composition that Remotion bundles itself at render time. Not part of the
+  // Nest build: it has its own tsconfig for the .tsx.
+  "exclude": ["node_modules", "dist", "demo-factory"]
 }

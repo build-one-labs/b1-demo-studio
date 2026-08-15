@@ -28,7 +28,7 @@ await loadDotEnv();
 // to the auth exchange cannot strand the demo recorder. It has two homes: in
 // the framework monorepo it is CLI source, and in a product repo the identical
 // file ships inside @buildone/swat-cli. Try both rather than assume either.
-const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
+const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..', '..', '..');
 const sessionCandidates = [
   path.join(repoRoot, 'src', 'cli', 'scripts', 'utils', 'browser-session.mjs'),
   path.join(repoRoot, 'node_modules', '@buildone', 'swat-cli', 'scripts', 'utils', 'browser-session.mjs'),

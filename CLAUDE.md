@@ -111,6 +111,8 @@ Server actions use Build.One decorators:
 - Actions are defined in `src/app-server-ts/src/server-actions/`
 - Template includes a sample Weather service demonstrating the pattern
 
+**Demo Factory:** The demo-as-code video pipeline (Playwright record → Remotion render) lives in `src/app-server-ts/demo-factory/` — ESM `.mjs` beside `src/`, excluded from Nest's tsc/ESLint, with its own `README.md`, `AUTHORING.md` and `ARCHITECTURE.md`. Its dependencies are the app server's; the `demo-factory` server actions spawn `demo-factory/src/cli.mjs`, and `yarn demo:*` scripts in `src/app-server-ts/package.json` run it from a shell. The Studio UI is the `DemoFactoryStudio` native component in `src/web-app` (blueprint app `b1-demo-factory`). In a Codespace, `.devcontainer/scripts/provision-demo-factory.sh` installs chromium/ffmpeg into the app-server container and writes `demo-factory/.env.app-server` (`yarn demo:provision` by hand).
+
 **Authentication:**
 - Global `B1AuthGuard` is applied at the app level
 - Uses Bearer token authentication

@@ -25,6 +25,6 @@ logs
 .env.*
 !.env.example
 
-# Demo Factory runs published by `npm run publish:web` in src/demo-factory:
+# Demo Factory runs published by `yarn demo:publish:web` in src/app-server-ts:
 # rendered clips and narration, reproducible from the demo.yaml.
 public/demo-factory

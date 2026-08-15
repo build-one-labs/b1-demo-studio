@@ -10,22 +10,28 @@ demo.yaml -> voice-over + cue timestamps -> Playwright scenes
           -> Remotion composition -> MP4 + SRT + run manifest
 ```
 
-Not part of the yarn workspaces on purpose — it is an npm project with its own
-lockfile (React/Remotion must not hoist into the Vue monorepo tree).
+Part of the app server: this folder sits beside `src/app-server-ts/src`, its
+dependencies are in the app server's `package.json` (installed by the root
+`yarn install`), and the `demo-factory` server actions spawn it as a child
+process. Nest's tsc and ESLint leave it alone — it is ESM `.mjs`, plus a
+React/Remotion composition (`src/remotion`) that Remotion bundles itself at
+render time; `tsconfig.json` and `eslint.config.mjs` here cover those.
 
 ## Quick start
 
 ```bash
-cd src/demo-factory
-npm ci
-npx playwright install --with-deps chromium   # no-op when already cached
-npm run demo                                  # validate -> auth -> prepare -> record -> render
-npm run publish:web                           # copy the run into the web app's public folder
+cd src/app-server-ts
+yarn demo <demo-id>                 # validate -> auth -> prepare -> record -> render
+yarn demo:publish:web <demo-id>     # copy the run into the web app's public folder
 ```
 
-In a Codespace this is already done for you — see *A workspace provisions
-itself* below — and the Studio screen records without any of it. `npm run
-provision` re-runs that setup after a stack restart.
+Stage by stage: `yarn demo:validate|demo:prepare|demo:record|demo:render
+<demo-id>` (each wraps `node demo-factory/src/cli.mjs`).
+
+In a Codespace the browser and ffmpeg the container needs are already in place —
+see *A workspace provisions itself* below — and the Studio screen records
+without any of it. `yarn demo:provision` re-runs that setup after a stack
+restart.
 
 The final video lands in `output/opportunities-map/<run-id>/opportunities-map.mp4`,
 next to the SRT captions and the reproducible `run-manifest.json`.
@@ -40,15 +46,15 @@ The blueprint app `b1-demo-factory` starts on `DemoFactoryScreen`, whose only
 content is the `b1_native_component` `DemoFactoryNativeComponent` →
 `DemoFactoryStudio` (`src/web-app/src/components/global/DemoFactoryStudio.vue`).
 
-That component is the upstream Studio (`studio/public`, vendored here for
-reference) ported onto a B1 screen: storyboard, scene inspector with cue
+That component is the Demo Factory's original standalone Studio ported onto a
+B1 screen: storyboard, scene inspector with cue
 markers, Voice-over and Actions tabs, the four pipeline stages, a timeline, the
 pipeline log, and a preview that streams whichever run you pick. Three
 deliberate differences from upstream:
 
 - **No second web server.** Every call goes to the `demo-factory` server actions
   in `src/app-server-ts`, so the dashboard is part of the application rather
-  than a `npm run studio` process somebody has to remember to start.
+  than a second process somebody has to remember to start.
 - **Polling, not SSE.** A B1 action is request/response, so the screen polls
   `job-status` while a stage runs. Same object, one fewer transport.
 - **The CLI owns validation.** `save-demo` writes the YAML, runs
@@ -64,23 +70,22 @@ alongside them.
 **The host decides which stages work.** The screen asks the server what it can
 do (`capabilities`) and disables the rest with the reason attached, rather than
 letting a stage fail deep inside a spawned process. That covers four things: the
-factory's `node_modules` (a workspace checkout has none until `npm ci` runs
-here — only the app server's image installs them at build time), a browser, an
-ffmpeg, and a workspace API key. `Run full demo` needs all four, because
+pipeline's dependencies (the app server's own, so present wherever `yarn
+install` ran), a browser, an ffmpeg, and a workspace API key. `Run full demo`
+needs all four, because
 `tools/run-demo.mjs` is every stage plus the auth mint; `start-job` refuses the
 same way, so the API is not a way around the check.
 
 **A workspace provisions itself.** The dev stack's app-server container is a
-stock slim node image with the repository bind-mounted: no factory
-dependencies, no chromium, no ffmpeg, and the generated compose file passes it
-`AUTH_URL` and no workspace API key. So a Codespace could not record at all,
-and `tools/provision-workspace.mjs` closes that gap — it is the Dockerfile
-block below, applied to a running dev stack:
+stock slim node image with the repository bind-mounted: no chromium, no ffmpeg,
+and the generated compose file passes it `AUTH_URL` and no workspace API key.
+So a Codespace could not record at all, and `tools/provision-workspace.mjs`
+closes that gap — it is the Dockerfile block below, applied to a running dev
+stack:
 
-- `npm ci` here, and Playwright's bundled ffmpeg into `.cache/ms-playwright`
-  (`recordVideo` will not start without Playwright's own, and will not take the
-  system one instead). Both land in the repository, so they outlive the
-  container.
+- Playwright's bundled ffmpeg into `.cache/ms-playwright` (`recordVideo` will
+  not start without Playwright's own, and will not take the system one
+  instead). It lands in the repository, so it outlives the container.
 - `apt-get install chromium ffmpeg` inside the app-server container. This is
   the one step the container's own lifetime bounds — the image is not ours and
   the compose file that picks it is generated — so it re-runs after a stack
@@ -101,14 +106,16 @@ deliberately not forwarded — the workspace's `AUTH_URL` and database URLs name
 hosts as seen from outside the compose network, and the container's own are the
 correct ones.
 
-`.devcontainer/scripts/orchestrators/codespace-startup.sh` runs both once the
-stack is up, so a fresh Codespace records without being asked. After restarting
-the stack by hand, `npm run provision` puts the container's half back. It is
-idempotent, and it never fails a startup: a workspace that records nothing
-should not break over a browser it will not use.
+`.devcontainer/scripts/provision-demo-factory.sh` runs the provisioner once the
+stack is up — as a `postAttachCommand`, and again from the catch-up prebuild for
+a Codespace whose prebuild image predates that hook — so a fresh Codespace
+records without being asked. After restarting the stack by hand, `yarn
+demo:provision` puts the container's half back. It is idempotent, and it never
+fails a startup: a workspace that records nothing should not break over a
+browser it will not use.
 
-`src/app-server-ts/Dockerfile` installs `chromium` and `ffmpeg` and ships the
-factory with its own `npm ci`, so all four stages work from a deployed app.
+`src/app-server-ts/Dockerfile` installs `chromium` and `ffmpeg` and copies this
+folder in beside `dist`, so all four stages work from a deployed app.
 One Chromium serves all three users: Playwright's managed download does not
 support musl, and Remotion otherwise fetches its own Chrome Headless Shell at
 render time — which needs network from inside a running container. Both are
@@ -117,8 +124,8 @@ pointed at the distribution's binary through
 same way `FFMPEG_PATH` has always worked in `media.mjs`. Leave those unset and
 each tool resolves its own browser exactly as before.
 
-That block is not free — Chromium, ffmpeg and the factory's dependencies add
-several hundred megabytes to a slim node image. Delete it if the deployed app
+That block is not free — Chromium and ffmpeg add a few hundred megabytes to a
+slim node image. Delete it if the deployed app
 never records, and the Studio will say so on screen.
 
 **Run artefacts are portable between mount points.** prepare and record write
@@ -137,7 +144,7 @@ run id identifies a run; the prefix in front of it does not.
 - **Auth**: `tools/b1-auth-state.mjs` mints the Playwright storage state from
   the workspace API key via the auth server's handoff flow (the same exchange
   `b1 inspect` and the E2E suite use), because the system-user password login
-  does not work against the default remote auth server. `npm run demo` runs it
+  does not work against the default remote auth server. `yarn demo` runs it
   automatically; upstream's interactive `tools/capture-auth.mjs` is kept for
   recording against a foreign environment.
 
@@ -175,8 +182,7 @@ run id identifies a run; the prefix in front of it does not.
   vanguard's Samples module but **not in this blueprint**, so it validates and
   renders but cannot record here.
 
-Run a non-default demo with the CLI directly:
-`node src/cli.mjs validate|prepare|record|render <demo-id>`.
+Every `yarn demo*` script takes the demo id as its argument.
 
 ### Why two scenes and not three
 
@@ -213,7 +219,7 @@ screen never appears. Use `http://localhost:8080/?app=sample-app`.
 render dies partway with `Compositor exited with signal SIGTERM`:
 
 ```bash
-REMOTION_OFFTHREADVIDEO_CACHE_MB=512 REMOTION_CONCURRENCY=2 npm run demo:render
+REMOTION_OFFTHREADVIDEO_CACHE_MB=512 REMOTION_CONCURRENCY=2 yarn demo:render <demo-id>
 ```
 
 **Salesforce credentials reach the app server through compose.**
@@ -241,12 +247,12 @@ Two recording constraints worth knowing before editing `demo.yaml`:
 - Every scene records in a **fresh browser context** — no scene may depend on
   UI state another scene left behind.
 - Re-record single scenes with
-  `node src/cli.mjs record <demo> --scenes=<id>` — but only from a run whose
+  `yarn demo:record <demo> --scenes=<id>` — but only from a run whose
   previous recording **completed**; an aborted run has no manifest to reuse.
   Narration is content-addressed under `.cache/narration/`, so unchanged text
   never calls ElevenLabs twice.
 
 Upstream extras not vendored (fetch from the source repo if needed): the local
 B1 fixture, the `payment-infrastructure` and `vibecode-sales-tour` reference
-demos, the source-video import tools, and the Studio UI (`npm run studio`
-upstream) that edits demo YAMLs in a browser.
+demos, the source-video import tools, and the standalone Studio UI that edits
+demo YAMLs in a browser (superseded here by the `DemoFactoryStudio` screen).

@@ -8,6 +8,7 @@
  */
 import { spawn } from 'node:child_process';
 import { access, mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
+import { createRequire } from 'node:module';
 import path from 'node:path';
 
 import { B1Action, B1ActionPayload, B1Service } from '@buildone/app-server-tslib';
@@ -30,11 +31,11 @@ import {
 /**
  * Server actions behind the Demo Factory Studio screen.
  *
- * These are the upstream Studio server (`src/demo-factory/studio/server.mjs`)
- * expressed as B1 actions, so the dashboard is part of the application instead
- * of a second web server the operator has to start by hand.
+ * The Demo Factory's original standalone Studio server, expressed as B1
+ * actions, so the dashboard is part of the application instead of a second web
+ * server the operator has to start by hand.
  *
- * Two deliberate differences from upstream:
+ * Two deliberate differences from that original:
  *
  * - **Polling, not SSE.** Upstream streams job state over `/api/events`. A B1
  *   action is a request/response endpoint, so `job` returns the same object and
@@ -108,11 +109,12 @@ const FFPROBE_PATHS = ['/usr/bin/ffprobe', '/usr/local/bin/ffprobe', 'ffprobe'];
 @B1Service({ basePath: 'demo-factory' })
 export class DemoFactoryStudio {
   /**
-   * The vendored pipeline. The app server's working directory is
-   * `<repo>/src/app-server-ts`, so its sibling is the default; the env var
-   * exists for deployments that mount the factory somewhere else.
+   * The pipeline: `demo-factory/` beside this server's `src/`, resolved from
+   * this file so it is the same directory from `src/` (dev, ts) and `dist/`
+   * (built). The env var exists for deployments that mount it somewhere else.
    */
-  private readonly projectRoot = process.env.DEMO_FACTORY_ROOT || path.resolve(process.cwd(), '..', 'demo-factory');
+  private readonly projectRoot =
+    process.env.DEMO_FACTORY_ROOT || path.resolve(__dirname, '..', '..', '..', 'demo-factory');
 
   private readonly demosRoot = path.join(this.projectRoot, 'demos');
 
@@ -330,18 +332,26 @@ export class DemoFactoryStudio {
   }
 
   /**
-   * The factory is a standalone npm project outside the yarn workspaces, so a
-   * checkout has no `node_modules` for it until somebody runs `npm ci` there —
-   * only the app server's own image does that at build time. `src/cli.mjs`
-   * imports Playwright and Remotion at load, before it reads its arguments, so
-   * a missing install makes every stage die identically with a module
-   * resolution stack trace from a child process. Cheaper to say so up front.
+   * The pipeline's dependencies are this server's (one package.json, installed
+   * by the root `yarn install`), so on a normal host this is true. It stays a
+   * check because `src/cli.mjs` imports Playwright and Remotion at load, before
+   * it reads its arguments: an image built without them makes every stage die
+   * identically with a module resolution stack trace from a child process.
+   * Cheaper to say so up front. Resolved the way the spawned process will
+   * resolve them — from the pipeline's directory, up the tree — not by
+   * looking for a `node_modules` folder that yarn is free to hoist away.
    */
   private async hasDependencies(): Promise<boolean> {
-    const modules = path.join(this.projectRoot, 'node_modules');
+    const resolve = createRequire(path.join(this.projectRoot, 'package.json'));
     const required = ['@playwright/test', '@remotion/bundler', '@remotion/renderer', 'yaml', 'zod'];
-    const found = await Promise.all(required.map((name) => this.exists(path.join(modules, name))));
-    return found.every(Boolean);
+    return required.every((name) => {
+      try {
+        resolve.resolve(name);
+        return true;
+      } catch {
+        return false;
+      }
+    });
   }
 
   /**

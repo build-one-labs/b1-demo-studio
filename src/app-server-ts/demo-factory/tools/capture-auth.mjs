@@ -5,7 +5,7 @@ import {stdin as input, stdout as output} from 'node:process';
 import {chromium} from '@playwright/test';
 import {loadDotEnv} from '../src/lib/env.mjs';
 
-// src/cli.mjs loads src/demo-factory/.env for every pipeline stage; these auth
+// src/cli.mjs loads demo-factory/.env for every pipeline stage; these auth
 // tools are separate entry points and were reading process.env raw, so a
 // B1_BASE_URL set in that .env reached the pipeline but never the login.
 await loadDotEnv();

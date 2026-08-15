@@ -35,7 +35,8 @@ const CONTENT_TYPES: Record<string, string> = {
  */
 @Controller('demo-factory/media')
 export class DemoFactoryMedia {
-  private readonly projectRoot = process.env.DEMO_FACTORY_ROOT || path.resolve(process.cwd(), '..', 'demo-factory');
+  private readonly projectRoot =
+    process.env.DEMO_FACTORY_ROOT || path.resolve(__dirname, '..', '..', '..', 'demo-factory');
 
   private outputRoot(): string {
     const configured = process.env.DEMO_OUTPUT_DIR;

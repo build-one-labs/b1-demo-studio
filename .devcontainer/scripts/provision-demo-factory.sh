@@ -5,17 +5,17 @@
 #
 # The Studio spawns the pipeline inside the *app server's* container, which in a
 # workspace is a stock slim node image with the repository bind-mounted: no
-# factory dependencies, no browser, no ffmpeg, no API key. Every stage button —
-# `Run full demo` first among them — is therefore disabled with a reason, and
-# stays disabled until somebody remembers to run `npm run provision` by hand.
-# This is that command, wired to the container's lifecycle instead.
+# browser, no ffmpeg, no API key. Every stage button — `Run full demo` first
+# among them — is therefore disabled with a reason, and stays disabled until
+# somebody remembers to run `yarn demo:provision` by hand. This is that command,
+# wired to the container's lifecycle instead.
 #
 # Two things it must not do: fail the attach, and run too early. Hence the
 # unconditional `exit 0` at the end, and the wait below.
 set -uo pipefail
 
 WORKSPACE_ROOT="${WORKSPACE_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}"
-FACTORY="${WORKSPACE_ROOT}/src/demo-factory"
+FACTORY="${WORKSPACE_ROOT}/src/app-server-ts/demo-factory"
 LOGFILE="${WORKSPACE_ROOT}/logs/workspace/demo-factory-provision.log"
 
 log() { echo "[demo-factory] $*"; }
@@ -53,7 +53,7 @@ DEADLINE=$(( $(date +%s) + 1800 ))
 while [ ! -f "$MARKER" ]; do
   if [ "$(date +%s)" -ge "$DEADLINE" ]; then
     log "the stack did not become operational within 30m — skipping"
-    log "run 'npm run provision' in src/demo-factory once it is up"
+    log "run 'yarn demo:provision' in src/app-server-ts once it is up"
     exit 0
   fi
   sleep 5

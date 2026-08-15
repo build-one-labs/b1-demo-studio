@@ -15,7 +15,7 @@ import path from 'node:path';
 import {ensureDir, loadLatestRun, projectRoot, readJson, writeJson} from '../src/lib/files.mjs';
 
 const demoId = process.argv[2] || 'sales-tour-planning';
-const webAppPublic = path.resolve(projectRoot, '..', 'web-app', 'public', 'demo-factory');
+const webAppPublic = path.resolve(projectRoot, '..', '..', 'web-app', 'public', 'demo-factory');
 
 const {runId, runDir} = await loadLatestRun(demoId);
 const renderResult = await readJson(path.join(runDir, 'render-result.json'));

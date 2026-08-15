@@ -618,42 +618,28 @@ fi
 # <<< b1-framework-prebuild-guard <<<
 
 
-# The Demo Factory's own dependencies. It is an npm project outside the yarn
-# workspaces, so the install above does not reach it, and without them every
-# stage button on the Demo Factory Studio screen is disabled — the pipeline's
-# entry point imports Playwright and Remotion before it reads its arguments.
-#
-# Only the repository half here (`--repo-only`): the container half installs
-# apt packages into the app server's container, which does not exist at
-# container-create time and is recreated by the stack start anyway. That half
-# is .devcontainer/scripts/provision-demo-factory.sh, on postAttachCommand.
-#
-# Under PREBUILD_CHECK — the catch-up prebuild the stack start runs when the
-# workspace was fast-forwarded past its prebuild image's commit — the whole
-# provisioning is launched instead, detached. That is the one start where the
-# postAttachCommand hook is not there to do it: Codespaces resolved postAttach
-# from the devcontainer.json in the (older) image, and a hook that arrived in
-# the fast-forward is not in that list. This file, by contrast, is read from
-# the checkout as it is now. The script waits for the stack itself, and its
-# lock stops the two paths from doubling up when both are present.
-#
-# `|| true`: onCreateCommand runs under `set -e`, and no state of the Demo
-# Factory is worth failing container creation over.
-if [[ -d "${WORKSPACE_ROOT}/src/demo-factory" ]]; then
-    if [[ "${PREBUILD_CHECK:-}" == "true" ]]; then
-        log INFO "Launching Demo Factory provisioning in the background (waits for the stack)"
-        mkdir -p "${WORKSPACE_ROOT}/logs/workspace"
-        # setsid + every standard descriptor redirected: this prebuild's output
-        # is being captured through a pipe, and a child still holding it would
-        # keep the stack start waiting on a job that is itself waiting for the
-        # stack start.
-        setsid bash "${WORKSPACE_ROOT}/.devcontainer/scripts/provision-demo-factory.sh" \
-            >> "${WORKSPACE_ROOT}/logs/workspace/demo-factory-provision.log" 2>&1 < /dev/null &
-        disown || true
-    else
-        log INFO "Installing Demo Factory dependencies"
-        node "${WORKSPACE_ROOT}/src/demo-factory/tools/provision-workspace.mjs" --repo-only || true
-    fi
+# The Demo Factory Studio's pipeline runs inside the app server's container,
+# which in a workspace is a stock slim node image: no browser, no ffmpeg, no
+# workspace API key. .devcontainer/scripts/provision-demo-factory.sh puts them
+# there once the stack is up (its dependencies are the app server's, installed
+# by the `yarn install` above). It is wired as a postAttachCommand — but under
+# PREBUILD_CHECK, the catch-up prebuild the stack start runs when the workspace
+# was fast-forwarded past its prebuild image's commit, it is launched from here
+# as well: Codespaces resolved postAttach from the devcontainer.json in the
+# (older) image, and a hook that arrived in the fast-forward is not in that
+# list. This file, by contrast, is read from the checkout as it is now. The
+# script waits for the stack itself, and its lock stops the two paths from
+# doubling up when both are present.
+if [[ "${PREBUILD_CHECK:-}" == "true" && -f "${WORKSPACE_ROOT}/.devcontainer/scripts/provision-demo-factory.sh" ]]; then
+    log INFO "Launching Demo Factory provisioning in the background (waits for the stack)"
+    mkdir -p "${WORKSPACE_ROOT}/logs/workspace"
+    # setsid + every standard descriptor redirected: this prebuild's output is
+    # being captured through a pipe, and a child still holding it would keep
+    # the stack start waiting on a job that is itself waiting for the stack
+    # start.
+    setsid bash "${WORKSPACE_ROOT}/.devcontainer/scripts/provision-demo-factory.sh" \
+        >> "${WORKSPACE_ROOT}/logs/workspace/demo-factory-provision.log" 2>&1 < /dev/null &
+    disown || true
 fi
 
 # Ensure the workspace scripts are executable
