@@ -125,7 +125,41 @@ if (!container) {
 }
 
 log('restarting the app server so it picks them up…');
-await run('docker', ['restart', container], {maxBuffer: 8 * 1024 * 1024}).then(
-  () => log('app server restarted'),
-  (error) => log(`could not restart the app server (${error.message.split('\n')[0]}); restart it to apply`),
+const restarted = await run('docker', ['restart', container], {maxBuffer: 8 * 1024 * 1024}).then(
+  () => true,
+  (error) => {
+    log(`could not restart the app server (${error.message.split('\n')[0]}); restart it to apply`);
+    return false;
+  },
 );
+
+/**
+ * Wait until the server answers again, rather than returning to a caller the
+ * moment the container is up.
+ *
+ * `docker restart` returns when the *container* is running, which in a
+ * workspace is the start of a `npm run build`, the migrations and a tsc
+ * compile — the better part of a minute in which nothing is listening. A caller
+ * that reports on the stack in that window reports a healthy server as down.
+ *
+ * Any HTTP response counts, 401 included: what is being waited for is a server
+ * accepting connections, not an authorized request. Probed from inside the
+ * container so this does not depend on how compose publishes the port.
+ */
+const probe = `require('node:http')
+  .get({host: '127.0.0.1', port: 3000, path: '/api/healthcheck', timeout: 2000}, () => process.exit(0))
+  .on('error', () => process.exit(1))
+  .on('timeout', () => process.exit(1))`;
+
+if (restarted) {
+  const deadline = Date.now() + 180_000;
+  let listening = false;
+  while (!listening && Date.now() < deadline) {
+    listening = await run('docker', ['exec', container, 'node', '-e', probe]).then(
+      () => true,
+      () => false,
+    );
+    if (!listening) await new Promise((resolve) => setTimeout(resolve, 2000));
+  }
+  log(listening ? 'app server restarted' : 'app server restarted, but did not answer within 3m — check its logs');
+}
