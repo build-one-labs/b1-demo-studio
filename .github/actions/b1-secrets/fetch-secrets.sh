@@ -17,9 +17,11 @@
 # Multi-line values are masked line by line as well as whole, because the runner
 # matches masks against individual log lines.
 #
-# The exception is a value too short to mask without collateral damage; see
-# MIN_MASK_LENGTH below, which exists because masking a two-character one broke
-# a release.
+# There are two exceptions. A value too short to mask without collateral damage
+# (see MIN_MASK_LENGTH below, which exists because masking a two-character one
+# broke a release), and a value the calling workflow declares non-sensitive (see
+# UNMASKED_KEYS). Both are exported in the clear; the first is warned about
+# because nobody chose it, the second is not because somebody did.
 #
 # PRECEDENCE
 # A variable already set in the job environment is left alone and reported. That
@@ -40,6 +42,7 @@ AUTH_URL="${B1_SECRETS_AUTH_URL:-}"
 API_KEY="${B1_SECRETS_API_KEY:-}"
 SCOPE="${B1_SECRETS_SCOPE:-}"
 REQUIRE="${B1_SECRETS_REQUIRE:-}"
+UNMASKED_KEYS="${B1_SECRETS_UNMASKED_KEYS:-}"
 
 # Outside a runner these land in throwaway files rather than failing, so the
 # script can be tested and run by hand.
@@ -127,10 +130,41 @@ env_name_from_secret_key() {
 # Below this, masking does more harm than good — see the note at the mask.
 MIN_MASK_LENGTH=8
 
+# The values declared non-sensitive by the caller — see the `unmasked-keys` input
+# in action.yml, which carries the default list and the reasoning for it. These
+# are deployment coordinates: a Portainer account name, a registry path, an
+# environment name. They live in the secret store only because that is where
+# provisioning puts them, and they are masked today only because everything here
+# is. Masking one protects nothing (the credential beside it is what matters) and
+# costs the same global search-and-replace over the run's output that the
+# short-value note below describes.
+#
+# THE DECLARATION LIVES IN THIS REPOSITORY, NOT THE STORE.
+# That is the whole point of putting it here. Whoever can write a shared
+# organization or global secret can already set any variable in any job that
+# reads one — but they cannot decide that their value stops being masked, because
+# that takes a change to a reviewed file. A flag on the secret itself would hand
+# the same person both halves.
+#
+# Accepts either form of a name — `portainer-account` as the store holds it, or
+# `PORTAINER_ACCOUNT` as the job sees it — since both are what someone reading
+# the log has in front of them. Entries are normalised to the variable name and
+# matched against that. A name no secret answers to is simply inert: the list is
+# shared by every caller, so most jobs declare more than they fetch.
+declared_unmasked=' '
+for entry in ${UNMASKED_KEYS}; do
+  if entry_name=$(env_name_from_secret_key "${entry}"); then
+    declared_unmasked+="${entry_name} "
+  else
+    fail "unmasked-keys entry '${entry}' is not a usable secret key or variable name."
+  fi
+done
+
 exported=0
 kept=0
 skipped_keys=()
 unmasked_names=()
+declared_names=()
 exported_names=()
 kept_names=()
 
@@ -171,7 +205,15 @@ while IFS=$'\t' read -r key encoded; do
   # cannot be kept secret by masking anyway — it appears by chance in ordinary
   # output. If such a value really is sensitive, it needs to be longer; if it is
   # not, it belongs in an Actions variable rather than the secret store.
-  if ((${#value} >= MIN_MASK_LENGTH)); then
+  #
+  # A value the workflow declared non-sensitive is not masked either, and not
+  # warned about — the warning exists to surface a decision nobody made, and
+  # here somebody made it. It is still reported by name below, because a value
+  # leaving this step in the clear should never be something you have to read
+  # the workflow file to discover.
+  if [[ "${declared_unmasked}" == *" ${name} "* ]]; then
+    declared_names+=("${name}")
+  elif ((${#value} >= MIN_MASK_LENGTH)); then
     echo "::add-mask::${value}"
     if [[ "${value}" == *$'\n'* ]]; then
       while IFS= read -r line; do
@@ -204,6 +246,9 @@ done < <(printf '%s' "${body}" | jq -r "${SECRET_STREAM_FILTER}" 2>/dev/null)
 echo "Exported ${exported} secret(s): ${exported_names[*]:-none}"
 if [[ ${kept} -gt 0 ]]; then
   echo "Left ${kept} already set in the environment: ${kept_names[*]}"
+fi
+if [[ ${#declared_names[@]} -gt 0 ]]; then
+  echo "Exported unmasked, declared non-sensitive: ${declared_names[*]}"
 fi
 if [[ ${#unmasked_names[@]} -gt 0 ]]; then
   echo "::warning title=B1 secrets::Exported without masking, being shorter than ${MIN_MASK_LENGTH} characters: ${unmasked_names[*]}. A value this short cannot be masked without redacting ordinary text from the whole run. Store it as an Actions variable if it is not sensitive, or make it longer if it is."

@@ -16,7 +16,8 @@
   // Mount SSH agent socket for git operations, Docker socket for shared daemon, and Claude config for persistence
   "mounts": [
     "type=bind,source=${localEnv:HOME}${localEnv:USERPROFILE}/.ssh,target=/home/vscode/.ssh,readonly",
-    "source=vanguard-claude-config,target=/home/vscode/.claude,type=volume"
+    "source=vanguard-claude-config,target=/home/vscode/.claude,type=volume",
+    "source=vanguard-codex-config,target=/home/vscode/.codex,type=volume"
   ],
 
   // Development tools and runtime features
@@ -76,7 +77,7 @@
   // onCreateCommand: Runs once when container is first created (dependency installation, initial build)
   "onCreateCommand": "./.devcontainer/setup/prebuild.sh",
   // postCreateCommand: Set up SSH permissions, fix workspace and Claude config ownership, and configure docker-compose user
-  "postCreateCommand": "bash -c 'chmod 600 ~/.ssh/* 2>/dev/null || true && sudo chown -R vscode:vscode ${containerWorkspaceFolder} /home/vscode/.claude 2>/dev/null || true && node_modules/@buildone/swat-cli/scripts/devcontainer/lib/configure-docker-user.sh'",
+  "postCreateCommand": "bash -c 'chmod 600 ~/.ssh/* 2>/dev/null || true && sudo chown -R vscode:vscode ${containerWorkspaceFolder} /home/vscode/.claude /home/vscode/.codex 2>/dev/null || true && node_modules/@buildone/swat-cli/scripts/devcontainer/lib/configure-docker-user.sh'",
   // postStartCommand: Runs each time the container starts
   "postStartCommand": "node_modules/@buildone/swat-cli/scripts/devcontainer/orchestrators/poststart.sh",
   // postAttachCommand: Runs when you attach to the container

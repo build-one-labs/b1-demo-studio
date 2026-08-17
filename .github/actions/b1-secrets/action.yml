@@ -34,6 +34,38 @@ inputs:
       it wins over the general one. Pass an empty string to resolve unscoped.
     required: false
     default: ${{ github.repository }}
+  unmasked-keys:
+    description: >
+      Whitespace-separated names that are not sensitive and should be exported
+      without masking. Either form works — the store's key or the variable name.
+      Setting this REPLACES the default list below rather than adding to it.
+
+      The default is the framework's deployment coordinates: names, hostnames and
+      identifiers that live in the secret store only because that is where
+      provisioning puts them. Masking one protects nothing (the credential beside
+      it is what matters) and costs a global search-and-replace over the run's
+      whole output — `portainer-account` holds "b1", and masking it once redacted
+      "b1" from image names, package names and branch names across an entire
+      workflow, emptying the version output that every publish job reads.
+
+      Anything that authenticates is deliberately absent and should stay absent:
+      the AWS pair, every *_API_KEY, PORTAINER_PASSWORD, GITHUB_TOKEN.
+
+      Declaring it here rather than as a flag on the secret keeps the decision in
+      a reviewed file. Whoever can write a shared organization or global secret
+      can already set any variable in a job that reads one — but they cannot
+      decide their value stops being masked, because that takes a change to this
+      repository.
+    required: false
+    default: >-
+      auth-url
+      neon-project-id
+      portainer-account
+      portainer-environment
+      portainer-url
+      portainer-username
+      publish-app-name
+      publish-docker-repository
   require:
     description: >
       Whitespace-separated variable names that must end up set (e.g.
@@ -58,4 +90,5 @@ runs:
         B1_SECRETS_API_KEY: ${{ inputs.api-key }}
         B1_SECRETS_SCOPE: ${{ inputs.scope }}
         B1_SECRETS_REQUIRE: ${{ inputs.require }}
+        B1_SECRETS_UNMASKED_KEYS: ${{ inputs.unmasked-keys }}
       run: ${GITHUB_ACTION_PATH}/fetch-secrets.sh

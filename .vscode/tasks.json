@@ -50,6 +50,18 @@
       "problemMatcher": []
     },
     {
+      "label": "Codex",
+      "type": "shell",
+      "command": "node_modules/@buildone/swat-cli/scripts/devcontainer/lib/task-runner.sh start_codex",
+      "isBackground": true,
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "focus": false
+      },
+      "problemMatcher": []
+    },
+    {
       "label": "Host Terminal",
       "type": "shell",
       "command": "node_modules/@buildone/swat-cli/scripts/devcontainer/lib/task-runner.sh start_host_terminal",
@@ -86,7 +98,8 @@
     },
     {
       "label": "Dev Tasks",
-      "dependsOn": ["Stack Startup", "App Appserver", "Web App", "Claude", "Demo Factory"],
+      "dependsOn": ["Stack Startup", "App Appserver", "Web App", "Claude",
+        "Codex", "Demo Factory"],
       "dependsOrder": "parallel",
       "presentation": {
         "reveal": "always",

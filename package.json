@@ -14,8 +14,8 @@
     "syncpack:fix": "yarn dlx syncpack fix-mismatches"
   },
   "devDependencies": {
-    "@buildone/swat-cli": "24.3.0-VG.409",
-    "@buildone/swat-vscode": "24.3.0-VG.409",
+    "@buildone/swat-cli": "24.3.0-VG.410",
+    "@buildone/swat-vscode": "24.3.0-VG.410",
     "@eslint/js": "^9.14.0",
     "eslint": "^9.19.0",
     "eslint-config-prettier": "^10.0.1",
