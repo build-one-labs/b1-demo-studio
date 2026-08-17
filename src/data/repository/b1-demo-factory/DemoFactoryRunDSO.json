@@ -1,0 +1,28 @@
+{
+  "createdAt": "2026-08-17 09:34:20.616129",
+  "createdBy": "1nd7tSsWQull81DW5XEYcEbeMwtIk1R0",
+  "howToUse": "",
+  "label": "",
+  "moduleGuid": "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4",
+  "objectDescription": "Recorded and rendered runs, newest first. Written by DemoFactoryRunIngest after a pipeline job and reconciled against demo-factory/output on start — rows whose run directory is gone are dropped. keyFields=runId.",
+  "objectMasterGuid": "49b67af7-2346-40c3-8ba3-ff546ed534cd",
+  "objectName": "DemoFactoryRunDSO",
+  "objectTypeGuid": "7f9b0fa6-4d9d-486e-a87c-9c8936822da0",
+  "owner": "1nd7tSsWQull81DW5XEYcEbeMwtIk1R0",
+  "status": "Active",
+  "templateObject": false,
+  "attributes": {
+    "data": "4aba2ea0-cbcb-41c5-8d36-83e39316c69f",
+    "defaultOrderBy": "createdAt desc",
+    "foreignFields": "demoId,id",
+    "initialFetch": "#none",
+    "keyFields": "runId",
+    "serverType": "app"
+  },
+  "instances": [],
+  "links": [],
+  "tags": [],
+  "tenantId": null,
+  "validFrom": null,
+  "validUntil": null
+}

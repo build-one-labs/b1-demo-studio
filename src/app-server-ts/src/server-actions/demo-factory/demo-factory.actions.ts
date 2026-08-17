@@ -1,51 +1,45 @@
 /* eslint-disable security/detect-non-literal-fs-filename --
- * This service exists to read and write the demo factory's files, so every path
- * it touches is built at runtime. The rule's concern — attacker-controlled path
- * traversal — is handled at the door instead: every id from the browser goes
- * through assertSafeId(), and every path through safeChildPath(), which refuses
- * anything resolving outside its configured root. Disabling per line would put
- * ten copies of that sentence in the file.
+ * This service exists to run the demo factory's pipeline and keep its job log,
+ * so the paths it touches are built at runtime. The rule's concern —
+ * attacker-controlled path traversal — is handled at the door instead: every id
+ * from the browser goes through assertSafeId(), and every path through
+ * safeChildPath(), which refuses anything resolving outside its configured root.
  */
 import { spawn } from 'node:child_process';
 import { createWriteStream, WriteStream } from 'node:fs';
-import { access, mkdir, readdir, readFile, rm, writeFile } from 'node:fs/promises';
-import { createRequire } from 'node:module';
+import { mkdir, readdir, rm } from 'node:fs/promises';
 import path from 'node:path';
 
 import { B1Action, B1ActionPayload, B1Service } from '@buildone/app-server-tslib';
-import YAML from 'yaml';
+import { Logger } from '@nestjs/common';
 
-import {
-  ALLOWED_ENV_KEYS,
-  assertSafeId,
-  buildJobCommand,
-  HostCapabilities,
-  JobAction,
-  publicSettings,
-  resolveApiKey,
-  safeChildPath,
-  SECRET_ENV_KEYS,
-  stageBlockedReason,
-  stageBlockedReasons
-} from './demo-factory.lib';
+import { DemoFactoryHost } from './demo-factory.host';
+import { buildJobCommand, JobAction, stageBlockedReason } from './demo-factory.lib';
+import { DemoFactoryMaterializer } from './demo-factory.materializer';
+import { DSO, JobRow } from './demo-factory.rows';
+import { DemoFactoryRunIngest } from './demo-factory.run-ingest';
+import { DemoFactorySeedService } from './demo-factory.seed';
+import { DemoFactoryStore } from './demo-factory.store';
 
 /**
  * Server actions behind the Demo Factory Studio screen.
  *
- * The Demo Factory's original standalone Studio server, expressed as B1
- * actions, so the dashboard is part of the application instead of a second web
- * server the operator has to start by hand.
+ * What is left here is what cannot be a data source: starting, watching and
+ * cancelling a pipeline job. Everything the screen *shows* — demos, scenes,
+ * runs, settings, the host's capabilities — is a `b1_data_source_temporary` in
+ * the `b1-demo-factory` module now, read and written by the framework's own
+ * data-source machinery; the services beside this file keep those in step with
+ * the files the pipeline reads and writes.
  *
- * Two deliberate differences from that original:
+ * Two deliberate differences from the Studio's original standalone server:
  *
  * - **Polling, not SSE.** Upstream streams job state over `/api/events`. A B1
  *   action is a request/response endpoint, so `job` returns the same object and
  *   the screen polls it while a job runs. Same shape, one fewer transport.
  * - **The CLI owns validation.** Upstream re-parses the demo with the zod schema
  *   in-process. Importing that schema here would mean a second copy of it in a
- *   different language, free to drift; instead `saveDemo` writes the file, runs
- *   `cli.mjs validate`, and restores the previous contents if it fails. The
- *   schema stays in exactly one place.
+ *   different language, free to drift; the materializer writes the file and
+ *   runs `cli.mjs validate` instead. The schema stays in exactly one place.
  */
 
 interface JobLogLine {
@@ -93,141 +87,23 @@ const LOG_LIMIT = 600;
  */
 const LOG_FILES_KEPT = 50;
 
-/**
- * Where a system browser and ffmpeg live when nothing was configured.
- *
- * The app server image installs both and names them in its own environment, so
- * these are the fallback for every other host: a workspace whose provisioner
- * has not run yet, or an image built from a different distribution, where the
- * tools are present under a name this server was never told.
- *
- * Absolute paths only. A discovered browser is handed to Playwright as
- * `executablePath` and to Remotion as its browser executable, and neither
- * searches PATH — so a bare command name would satisfy the capability check and
- * then fail at launch, which is exactly the confusion this is here to remove.
- */
-const CHROMIUM_PATHS = [
-  '/usr/bin/chromium',
-  '/usr/bin/chromium-browser',
-  '/usr/lib/chromium/chromium',
-  '/usr/bin/google-chrome-stable',
-  '/usr/bin/google-chrome'
-];
-
-/** `ffmpeg` last: unqualified on PATH is what the pipeline itself falls back to. */
-const FFMPEG_PATHS = ['/usr/bin/ffmpeg', '/usr/local/bin/ffmpeg', 'ffmpeg'];
-
-const FFPROBE_PATHS = ['/usr/bin/ffprobe', '/usr/local/bin/ffprobe', 'ffprobe'];
-
 @B1Service({ basePath: 'demo-factory' })
 export class DemoFactoryStudio {
-  /**
-   * The pipeline: `demo-factory/` beside this server's `src/`, resolved from
-   * this file so it is the same directory from `src/` (dev, ts) and `dist/`
-   * (built). The env var exists for deployments that mount it somewhere else.
-   */
-  private readonly projectRoot =
-    process.env.DEMO_FACTORY_ROOT || path.resolve(__dirname, '..', '..', '..', 'demo-factory');
+  private readonly logger = new Logger(DemoFactoryStudio.name);
 
-  private readonly demosRoot = path.join(this.projectRoot, 'demos');
-
-  /**
-   * Settings live in this process, exactly as upstream keeps them in the Studio
-   * server: they carry an ElevenLabs key, and writing that into demo YAML or
-   * handing it back to a browser would leak it.
-   */
-  private runtimeEnv: Record<string, string> = Object.fromEntries(
-    ALLOWED_ENV_KEYS.map((key) => [key, process.env[key] || ''])
-  );
-
-  /**
-   * What `tools/provision-workspace.mjs` left for this server, beneath anything
-   * typed into the Settings tab.
-   *
-   * The app server sees the pipeline's host differently from a workspace shell:
-   * its Chromium is a container path, and the web app to record is
-   * `caddy:8080` on the compose network rather than `localhost:8080`. Those
-   * values cannot live in the factory's own `.env`, which the CLI also reads
-   * from a shell, where both would be wrong. So the provisioner writes
-   * `.env.app-server` and this reads it.
-   *
-   * Re-read rather than read once: on a fresh Codespace the provisioner runs
-   * after the stack is up, minutes after this server first booted, and `nest
-   * --watch` restarts often enough that a cache would be the only thing making
-   * the timing matter.
-   */
-  private provisionedEnv: Record<string, string> = {};
-
-  /**
-   * Tool paths this server found by probing, beneath both of the above.
-   *
-   * Detection and use have to agree: a host where the capability check says
-   * "browser ok" because it found `/usr/bin/chromium` must also spawn the
-   * pipeline with that path, or Record is enabled and then dies looking for a
-   * managed download that was never there.
-   */
-  private discoveredEnv: Record<string, string> = {};
-
-  /** What each probe found, so a polling screen does not re-spawn every tool per second. */
-  private probed: Record<string, string | null> = {};
+  constructor(
+    private readonly host: DemoFactoryHost,
+    private readonly store: DemoFactoryStore,
+    private readonly materializer: DemoFactoryMaterializer,
+    private readonly seed: DemoFactorySeedService,
+    private readonly runIngest: DemoFactoryRunIngest
+  ) {}
 
   private job: JobState = idleJob();
 
   private activeChild: ReturnType<typeof spawn> | undefined;
 
   private jobLog: WriteStream | undefined;
-
-  private async loadProvisionedEnv(): Promise<void> {
-    const allowed = new Set<string>(ALLOWED_ENV_KEYS);
-    const values: Record<string, string> = {};
-    try {
-      const text = await readFile(path.join(this.projectRoot, '.env.app-server'), 'utf8');
-      for (const line of text.split(/\r?\n/)) {
-        const trimmed = line.trim();
-        const separator = trimmed.indexOf('=');
-        if (!trimmed || trimmed.startsWith('#') || separator < 1) continue;
-        const key = trimmed.slice(0, separator).trim();
-        if (allowed.has(key))
-          values[key] = trimmed
-            .slice(separator + 1)
-            .trim()
-            .replace(/^(["'])(.*)\1$/, '$2');
-      }
-    } catch {
-      // No provisioning on this host is a normal state, not a failure: a
-      // deployed image sets the same variables in its own environment.
-    }
-    this.provisionedEnv = values;
-  }
-
-  /** The effective value of a setting: operator's, else provisioned, else unset. */
-  private setting(key: string): string {
-    return this.runtimeEnv[key] || this.provisionedEnv[key] || '';
-  }
-
-  private effectiveSettings(): Record<string, string> {
-    return Object.fromEntries(ALLOWED_ENV_KEYS.map((key) => [key, this.setting(key)]));
-  }
-
-  private outputRoot(): string {
-    const configured = this.setting('DEMO_OUTPUT_DIR') || process.env.DEMO_OUTPUT_DIR;
-    return configured ? path.resolve(this.projectRoot, configured) : path.join(this.projectRoot, 'output');
-  }
-
-  private async exists(file: string): Promise<boolean> {
-    return access(file).then(
-      () => true,
-      () => false
-    );
-  }
-
-  private async readJson<T>(file: string): Promise<T | null> {
-    try {
-      return JSON.parse(await readFile(file, 'utf8')) as T;
-    } catch {
-      return null;
-    }
-  }
 
   private appendLog(chunk: unknown, stream: 'stdout' | 'stderr'): void {
     const text = String(chunk).replace(/\r/g, '').trimEnd();
@@ -259,7 +135,7 @@ export class DemoFactoryStudio {
       await this.pruneJobLogs(path.dirname(file));
       this.jobLog = createWriteStream(file, { flags: 'a' });
       this.jobLog.write(
-        `# ${this.job.startedAt} ${this.job.action} ${this.job.demoId}\n# node ${script} ${args.join(' ')} (cwd ${this.projectRoot})\n`
+        `# ${this.job.startedAt} ${this.job.action} ${this.job.demoId}\n# node ${script} ${args.join(' ')} (cwd ${this.host.projectRoot})\n`
       );
     } catch (error) {
       // A log that cannot be opened is not a reason to refuse to run the job.
@@ -285,302 +161,47 @@ export class DemoFactoryStudio {
     }
   }
 
-  private async listDemos() {
-    if (!(await this.exists(this.demosRoot))) return [];
-    const entries = await readdir(this.demosRoot, { withFileTypes: true });
-    const demos = [];
-    for (const entry of entries) {
-      if (!entry.isDirectory()) continue;
-      const file = path.join(this.demosRoot, entry.name, 'demo.yaml');
-      if (!(await this.exists(file))) continue;
-      try {
-        const document = YAML.parse(await readFile(file, 'utf8'));
-        demos.push({
-          id: document.id,
-          title: document.title,
-          description: document.description,
-          sceneCount: document.scenes?.length || 0
-        });
-      } catch (error) {
-        // A broken YAML is still a demo the operator needs to see and fix.
-        demos.push({
-          id: entry.name,
-          title: entry.name,
-          description: (error as Error).message,
-          sceneCount: 0,
-          invalid: true
-        });
-      }
+  /**
+   * Mirror the job into its data source — on transitions only.
+   *
+   * Never per log line: a clob commit rewrites the whole array, and a render
+   * logs several hundred of them. The live tail stays on `jobStatus`; what the
+   * data source adds is a history that survives this process, which the tail
+   * does not.
+   */
+  private async recordJob(): Promise<void> {
+    if (!this.job.id) return;
+    const row: JobRow = {
+      id: this.job.id,
+      action: this.job.action,
+      demoId: this.job.demoId,
+      status: this.job.status,
+      step: this.job.step,
+      startedAt: this.job.startedAt,
+      finishedAt: this.job.finishedAt,
+      exitCode: this.job.exitCode,
+      logFile: this.job.logFile
+    };
+    try {
+      const existing = await this.store.read<JobRow>(DSO.job);
+      await this.store.commit(
+        DSO.job,
+        existing.some((job) => job.id === row.id) ? { updatedRecords: [row] } : { createdRecords: [row] }
+      );
+    } catch (error) {
+      // History is a nicety; the job itself must not depend on it.
+      this.logger.warn(`Could not record the job: ${(error as Error).message}`);
     }
-    return demos.sort((left, right) => String(left.title).localeCompare(String(right.title)));
   }
 
-  /**
-   * What this host can actually do, so the screen can say so instead of letting
-   * a stage fail mysteriously. The app server image installs ffmpeg and a
-   * system Chromium and names them in its environment; anywhere else `record`
-   * and `render` depend on what this finds.
-   */
-  private async capabilities(): Promise<HostCapabilities & { pipelineRoot: string }> {
-    // The one gate every caller passes through, so the one place to pick up
-    // what the workspace provisioner may have written since the last call.
-    await this.loadProvisionedEnv();
-    const browsersPath = this.setting('PLAYWRIGHT_BROWSERS_PATH') || process.env.PLAYWRIGHT_BROWSERS_PATH;
-    const [ffmpeg, ffprobe, managedBrowsers, systemChromium, hasFactory, hasDependencies] = await Promise.all([
-      this.resolveTool('FFMPEG_PATH', FFMPEG_PATHS, ['-version']),
-      this.resolveTool('FFPROBE_PATH', FFPROBE_PATHS, ['-version']),
-      // Either Playwright's own download (default cache or PLAYWRIGHT_BROWSERS_PATH)
-      // or a system Chromium the image installed instead — a slim base image
-      // cannot always run the managed download.
-      this.hasManagedBrowser(browsersPath || path.join(process.env.HOME || '/root', '.cache', 'ms-playwright')),
-      this.resolveTool('PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH', CHROMIUM_PATHS, ['--version']),
-      this.exists(this.demosRoot),
-      this.hasDependencies()
-    ]);
-
-    const apiKey = this.workspaceApiKey();
-
-    // Only absolute paths are worth passing on — see CHROMIUM_PATHS. A tool
-    // found unqualified on PATH still counts as present, because the child
-    // process inherits the same PATH and falls back to it the same way.
-    this.discoveredEnv = {
-      ...(systemChromium?.startsWith('/')
-        ? { PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH: systemChromium, REMOTION_BROWSER_EXECUTABLE: systemChromium }
-        : {}),
-      ...(ffmpeg?.startsWith('/') ? { FFMPEG_PATH: ffmpeg } : {}),
-      ...(ffprobe?.startsWith('/') ? { FFPROBE_PATH: ffprobe } : {}),
-      // Under the unqualified name: the pipeline is given the key that was
-      // found, not the variable it happened to be scoped under.
-      ...(apiKey ? { B1_USER_API_KEY: apiKey } : {})
-    };
-
-    return {
-      pipelineRoot: this.projectRoot,
-      hasFactory,
-      hasDependencies,
-      canRecord: managedBrowsers || Boolean(systemChromium),
-      // Both, not just ffmpeg: render measures every clip with ffprobe before it
-      // composes anything, so an image with one and not the other fails late.
-      canRender: Boolean(ffmpeg) && Boolean(ffprobe),
-      canAuthenticate: Boolean(this.setting('B1_USER_API_KEY') || apiKey)
-    };
-  }
-
-  /**
-   * The configured tool if it runs, else the first candidate that does.
-   *
-   * A configured value is never silently replaced: an operator who typed a path
-   * into Settings and got it wrong should see the stage blocked, not watch this
-   * quietly record with some other browser they did not choose.
-   */
-  private async resolveTool(key: string, candidates: string[], args: string[]): Promise<string | null> {
-    const configured = this.setting(key);
-    if (configured) return (await this.canSpawn(configured, args)) ? configured : null;
-    if (key in this.probed) return this.probed[key];
-    for (const candidate of candidates) {
-      if (await this.canSpawn(candidate, args)) return (this.probed[key] = candidate);
-    }
-    return (this.probed[key] = null);
-  }
-
-  /**
-   * A Playwright browser cache with a browser in it.
-   *
-   * The directory alone is not the signal it looks like: a workspace points
-   * `PLAYWRIGHT_BROWSERS_PATH` at a cache holding nothing but Playwright's
-   * bundled ffmpeg, which `recordVideo` needs and which is not a browser.
-   */
-  private async hasManagedBrowser(root: string): Promise<boolean> {
-    const entries = await readdir(root).catch(() => [] as string[]);
-    return entries.some((name) => name.startsWith('chromium'));
-  }
-
-  /**
-   * The pipeline's dependencies are this server's (one package.json, installed
-   * by the root `yarn install`), so on a normal host this is true. It stays a
-   * check because `src/cli.mjs` imports Playwright and Remotion at load, before
-   * it reads its arguments: an image built without them makes every stage die
-   * identically with a module resolution stack trace from a child process.
-   * Cheaper to say so up front. Resolved the way the spawned process will
-   * resolve them — from the pipeline's directory, up the tree — not by
-   * looking for a `node_modules` folder that yarn is free to hoist away.
-   */
-  private async hasDependencies(): Promise<boolean> {
-    const resolve = createRequire(path.join(this.projectRoot, 'package.json'));
-    const required = ['@playwright/test', '@remotion/bundler', '@remotion/renderer', 'yaml', 'zod'];
-    return required.every((name) => {
-      try {
-        resolve.resolve(name);
-        return true;
-      } catch {
-        return false;
-      }
-    });
-  }
-
-  /**
-   * `all` signs the recording browser in with the user API key for this
-   * deployment's auth server, which is named for it
-   * (`B1_USER_API_KEY__TRY_AUTH_TEST_BUILD_ONE`).
-   *
-   * Returned rather than merely counted, because the pipeline reads the
-   * unqualified `B1_USER_API_KEY` and nothing scoped: the same rule as the
-   * browser and ffmpeg paths — what the capability check found is what the
-   * spawned process is given, so "can authenticate" and "did authenticate"
-   * cannot disagree.
-   */
-  private workspaceApiKey(): string {
-    return resolveApiKey(process.env, process.env.AUTH_URL)?.key || '';
-  }
-
-  private canSpawn(command: string, args: string[]): Promise<boolean> {
-    return new Promise((resolve) => {
-      const child = spawn(command, args, { stdio: 'ignore', shell: false });
-      child.once('error', () => resolve(false));
-      child.once('exit', (code) => resolve(code === 0));
-    });
-  }
-
-  private async loadDemoDocument(demoId: string) {
-    assertSafeId(demoId, 'demo id');
-    const file = safeChildPath(this.demosRoot, demoId, 'demo.yaml');
-    const raw = await readFile(file, 'utf8');
-    return { demo: YAML.parse(raw), raw, file };
-  }
-
-  /** Run a pipeline stage to completion and return its exit code and output. */
-  private runCli(script: string, args: string[]): Promise<{ code: number; output: string }> {
-    return new Promise((resolve) => {
-      const child = spawn(process.execPath, [script, ...args], {
-        cwd: this.projectRoot,
-        env: { ...process.env, ...this.definedEnv() },
-        shell: false,
-        stdio: ['ignore', 'pipe', 'pipe']
-      });
-      let output = '';
-      child.stdout?.on('data', (data) => (output += String(data)));
-      child.stderr?.on('data', (data) => (output += String(data)));
-      child.once('error', (error) => resolve({ code: -1, output: `${output}${error.message}` }));
-      child.once('exit', (code) => resolve({ code: code ?? -1, output }));
-    });
-  }
-
-  /** Discovered paths first, so anything configured still wins over a probe. */
-  private definedEnv(): Record<string, string> {
-    return {
-      ...this.discoveredEnv,
-      ...Object.fromEntries(Object.entries(this.effectiveSettings()).filter(([, value]) => value !== ''))
-    };
-  }
-
-  @B1Action({ description: 'Demos, runtime settings, host capabilities and the current job in one call' })
+  @B1Action({ description: 'The current job, after making sure the data sources match this host' })
   async state() {
-    const capabilities = await this.capabilities();
-    return {
-      demos: await this.listDemos(),
-      settings: publicSettings(this.effectiveSettings()),
-      // `blocked` carries the reason per stage so the screen renders the
-      // server's own verdict instead of reimplementing the rule.
-      capabilities: { ...capabilities, blocked: stageBlockedReasons(capabilities) },
-      job: this.job
-    };
-  }
-
-  @B1Action({ description: 'Read one demo definition' })
-  async getDemo({ body: { demoId = '' } = {} }: B1ActionPayload<{ demoId?: string }> = {}) {
-    const { demo, raw } = await this.loadDemoDocument(demoId);
-    return { demo, raw };
-  }
-
-  /**
-   * Write a demo, then prove it still validates — restoring the previous file
-   * if it does not, so the editor can never leave an unrunnable demo on disk.
-   */
-  @B1Action({ description: 'Write a demo definition, rolling back if it no longer validates' })
-  async saveDemo({ body: { demoId = '', demo } = {} }: B1ActionPayload<{ demoId?: string; demo?: unknown }> = {}) {
-    assertSafeId(demoId, 'demo id');
-    if (!demo || typeof demo !== 'object') throw new Error('A demo document is required');
-    if ((demo as { id?: string }).id !== demoId) throw new Error('Demo id cannot be changed from this editor');
-
-    const file = safeChildPath(this.demosRoot, demoId, 'demo.yaml');
-    const previous = await readFile(file, 'utf8');
-    await writeFile(file, YAML.stringify(demo, { lineWidth: 0 }), 'utf8');
-
-    const { code, output } = await this.runCli('src/cli.mjs', ['validate', demoId]);
-    if (code !== 0) {
-      await writeFile(file, previous, 'utf8');
-      throw new Error(`Not saved — the demo no longer validates:\n${output.trim()}`);
-    }
-    return { demo, validated: true };
-  }
-
-  @B1Action({ description: 'Create a demo by copying an existing one' })
-  async createDemo({
-    body: { id = '', title = '', sourceId = '' } = {}
-  }: B1ActionPayload<{ id?: string; title?: string; sourceId?: string }> = {}) {
-    assertSafeId(id, 'demo id');
-    assertSafeId(sourceId, 'source demo id');
-    const targetDirectory = safeChildPath(this.demosRoot, id);
-    if (await this.exists(targetDirectory)) throw new Error('A demo with this id already exists');
-
-    const { demo: source } = await this.loadDemoDocument(sourceId);
-    // A demo document is YAML data, so a JSON round trip is a faithful deep copy
-    // and keeps the file inside the eslint config's Node 16 baseline.
-    const demo = { ...JSON.parse(JSON.stringify(source)), id, title: String(title).trim() || id };
-    demo.description = `Created from ${sourceId} in the Demo Factory Studio.`;
-
-    await mkdir(targetDirectory, { recursive: false });
-    await writeFile(path.join(targetDirectory, 'demo.yaml'), YAML.stringify(demo, { lineWidth: 0 }), 'utf8');
-
-    const { code, output } = await this.runCli('src/cli.mjs', ['validate', id]);
-    if (code !== 0) throw new Error(`Created, but it does not validate:\n${output.trim()}`);
-    return { demo };
-  }
-
-  @B1Action({ description: 'Recorded and rendered runs for a demo, newest first' })
-  async runs({ body: { demoId = '' } = {} }: B1ActionPayload<{ demoId?: string }> = {}) {
-    assertSafeId(demoId, 'demo id');
-    const root = safeChildPath(this.outputRoot(), demoId);
-    if (!(await this.exists(root))) return { runs: [] };
-
-    const entries = await readdir(root, { withFileTypes: true });
-    const runs = [];
-    for (const entry of entries
-      .filter((value) => value.isDirectory())
-      .sort((a, b) => b.name.localeCompare(a.name))
-      .slice(0, 30)) {
-      const runDir = safeChildPath(root, entry.name);
-      const manifest = await this.readJson<{
-        createdAt?: string;
-        narrationProvider?: string;
-        scenes?: {
-          id: string;
-          title: string;
-          clipFile?: string;
-          recordedDurationMs?: number;
-          narrationDurationMs?: number;
-        }[];
-      }>(path.join(runDir, 'run-manifest.json'));
-      const result = await this.readJson<{ totalDurationMs?: number }>(path.join(runDir, 'render-result.json'));
-      const hasVideo = await this.exists(path.join(runDir, `${demoId}.mp4`));
-
-      runs.push({
-        runId: entry.name,
-        createdAt: manifest?.createdAt || entry.name.split('--')[0],
-        provider: manifest?.narrationProvider || null,
-        sceneCount: manifest?.scenes?.length || 0,
-        recordedScenes: manifest?.scenes?.filter((scene) => scene.clipFile).length || 0,
-        durationMs: result?.totalDurationMs || null,
-        hasVideo,
-        scenes: (manifest?.scenes || []).map((scene) => ({
-          id: scene.id,
-          title: scene.title,
-          durationMs: scene.recordedDurationMs || scene.narrationDurationMs || null,
-          hasClip: Boolean(scene.clipFile)
-        }))
-      });
-    }
-    return { runs };
+    // The screen opens with this call, which makes it the first authenticated
+    // moment of the process on a host with no service key — and therefore the
+    // first point at which the data sources can be brought in line with this
+    // host. It runs once; every later call falls straight through.
+    await this.seed.ensureReconciled();
+    return { job: this.job };
   }
 
   @B1Action({ description: 'Start a pipeline stage (validate, prepare, record, render or all)' })
@@ -591,10 +212,16 @@ export class DemoFactoryStudio {
     const command = buildJobCommand({ action, demoId, scenes, voice });
 
     // The screen disables what this host cannot do, but it is not the only
-    // caller and its capability snapshot is as old as its last `state`. Refuse
+    // caller and its capability snapshot is as old as its last fetch. Refuse
     // here too, with the reason, rather than spawn a child that cannot succeed.
-    const blocked = stageBlockedReason(action, await this.capabilities());
+    const blocked = stageBlockedReason(action, await this.host.capabilities());
     if (blocked) throw new Error(`Cannot run ${action} on this host — ${blocked}.`);
+
+    // The demo data source is the source of truth, and the pipeline reads a
+    // file — so the file is written from it here, before anything is spawned.
+    // A demo that no longer validates throws out of this call rather than
+    // failing three stages later inside a child process.
+    await this.materializer.materializeIfPresent(demoId);
 
     const startedAt = new Date().toISOString();
     this.job = {
@@ -607,11 +234,16 @@ export class DemoFactoryStudio {
       // Named, not opened, so the first response already tells the caller where
       // to look — including the caller watching a job that this server will not
       // live long enough to report the end of.
-      logFile: path.join(this.outputRoot(), 'logs', `${startedAt.replace(/[.:]/g, '-')}--${demoId}--${action}.log`),
+      logFile: path.join(
+        this.host.outputRoot(),
+        'logs',
+        `${startedAt.replace(/[.:]/g, '-')}--${demoId}--${action}.log`
+      ),
       startedAt,
       finishedAt: null,
       exitCode: null
     };
+    await this.recordJob();
 
     // Deliberately not awaited: the action returns immediately and the screen
     // polls `job`, which is what keeps a 90-second render from timing out the
@@ -624,8 +256,8 @@ export class DemoFactoryStudio {
     await this.openJobLog(script, args);
     try {
       const child = spawn(process.execPath, [script, ...args], {
-        cwd: this.projectRoot,
-        env: { ...process.env, ...this.definedEnv() },
+        cwd: this.host.projectRoot,
+        env: { ...process.env, ...this.host.definedEnv() },
         shell: false,
         stdio: ['ignore', 'pipe', 'pipe']
       });
@@ -644,6 +276,28 @@ export class DemoFactoryStudio {
       this.job.finishedAt = new Date().toISOString();
       this.activeChild = undefined;
       await this.closeJobLog();
+      // Both run in the continuation of the request that started the job, so
+      // they carry its credentials — a job started from the screen writes its
+      // rows as the person who clicked.
+      await this.ingestRun();
+      await this.recordJob();
+    }
+  }
+
+  /**
+   * Fold whatever the job left on disk into the run data sources.
+   *
+   * Scoped to the demo that ran, and never allowed to fail the job: the run
+   * happened whether or not its rows could be written, and the start-up
+   * reconcile picks up anything missed here.
+   */
+  private async ingestRun(): Promise<void> {
+    const demoId = this.job.demoId;
+    if (!demoId) return;
+    try {
+      await this.runIngest.reconcile(demoId);
+    } catch (error) {
+      this.appendLog(`The run finished, but its results could not be recorded: ${(error as Error).message}`, 'stderr');
     }
   }
 
@@ -661,21 +315,15 @@ export class DemoFactoryStudio {
     return this.job;
   }
 
-  @B1Action({ description: 'Runtime settings, with secrets reduced to whether they are configured' })
-  async getSettings() {
-    await this.loadProvisionedEnv();
-    return { settings: publicSettings(this.effectiveSettings()) };
-  }
-
-  @B1Action({ description: 'Update runtime settings held in the server process' })
-  async saveSettings({ body: { values = {} } = {} }: B1ActionPayload<{ values?: Record<string, string> }> = {}) {
-    for (const [key, value] of Object.entries(values)) {
-      if (!(ALLOWED_ENV_KEYS as readonly string[]).includes(key)) continue;
-      // A blank secret means "leave the configured one alone", never "clear it":
-      // the browser is never told the value, so it cannot send it back.
-      if (SECRET_ENV_KEYS.has(key) && !value) continue;
-      this.runtimeEnv[key] = String(value ?? '');
-    }
-    return { settings: publicSettings(this.effectiveSettings()) };
+  /**
+   * Re-run the reconcile by hand.
+   *
+   * The same pass runs by itself at start-up (or on the first `state` call of
+   * the process); this is for after a `git pull` that brought a new demo, or
+   * after recording a run from a shell rather than from this screen.
+   */
+  @B1Action({ description: 'Reconcile the demo and run data sources with this host' })
+  async reseed() {
+    return this.seed.reseed();
   }
 }

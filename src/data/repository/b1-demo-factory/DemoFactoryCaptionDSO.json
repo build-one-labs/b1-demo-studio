@@ -1,0 +1,28 @@
+{
+  "createdAt": "2026-08-17 09:34:41.509762",
+  "createdBy": "1nd7tSsWQull81DW5XEYcEbeMwtIk1R0",
+  "howToUse": "",
+  "label": "",
+  "moduleGuid": "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4",
+  "objectDescription": "Caption cues per run scene, one row per cue. Ingested from the run's captions/*.srt; the downloadable .srt still streams from the media controller. keyFields=id (<runId>:<sceneId>:<index>).",
+  "objectMasterGuid": "9e5a1d69-57d5-4182-b47e-685a96d3137d",
+  "objectName": "DemoFactoryCaptionDSO",
+  "objectTypeGuid": "7f9b0fa6-4d9d-486e-a87c-9c8936822da0",
+  "owner": "1nd7tSsWQull81DW5XEYcEbeMwtIk1R0",
+  "status": "Active",
+  "templateObject": false,
+  "attributes": {
+    "data": "fb54ae8b-0c36-418b-94b1-0ae9d8710d03",
+    "defaultOrderBy": "startMs",
+    "foreignFields": "runId,runId",
+    "initialFetch": "#none",
+    "keyFields": "id",
+    "serverType": "app"
+  },
+  "instances": [],
+  "links": [],
+  "tags": [],
+  "tenantId": null,
+  "validFrom": null,
+  "validUntil": null
+}

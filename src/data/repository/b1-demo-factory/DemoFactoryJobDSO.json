@@ -1,0 +1,26 @@
+{
+  "createdAt": "2026-08-17 09:34:58.72003",
+  "createdBy": "1nd7tSsWQull81DW5XEYcEbeMwtIk1R0",
+  "howToUse": "",
+  "label": "",
+  "moduleGuid": "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4",
+  "objectDescription": "Pipeline job history, newest first. Written only on transitions (start, step, finish, cancel) — never per log line, because every clob commit rewrites the whole array. The live log tail stays on the job-status action. keyFields=id.",
+  "objectMasterGuid": "53f97661-3b0d-4299-a028-7fe894b02667",
+  "objectName": "DemoFactoryJobDSO",
+  "objectTypeGuid": "7f9b0fa6-4d9d-486e-a87c-9c8936822da0",
+  "owner": "1nd7tSsWQull81DW5XEYcEbeMwtIk1R0",
+  "status": "Active",
+  "templateObject": false,
+  "attributes": {
+    "data": "cf865af2-19d6-4740-9c8a-6eaea00924cb",
+    "defaultOrderBy": "startedAt desc",
+    "keyFields": "id",
+    "serverType": "app"
+  },
+  "instances": [],
+  "links": [],
+  "tags": [],
+  "tenantId": null,
+  "validFrom": null,
+  "validUntil": null
+}

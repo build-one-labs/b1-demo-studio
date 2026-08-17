@@ -1,0 +1,28 @@
+{
+  "createdAt": "2026-08-17 09:34:39.066485",
+  "createdBy": "1nd7tSsWQull81DW5XEYcEbeMwtIk1R0",
+  "howToUse": "",
+  "label": "",
+  "moduleGuid": "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4",
+  "objectDescription": "Narration per run scene — provider, spoken text, duration and cue offsets. The character-level alignment stays on disk; alignmentUrl and audioUrl point at the demo-factory media controller. keyFields=id (<runId>:<sceneId>).",
+  "objectMasterGuid": "de3d761d-add2-4e8a-8bee-83375c1fb3d9",
+  "objectName": "DemoFactoryNarrationDSO",
+  "objectTypeGuid": "7f9b0fa6-4d9d-486e-a87c-9c8936822da0",
+  "owner": "1nd7tSsWQull81DW5XEYcEbeMwtIk1R0",
+  "status": "Active",
+  "templateObject": false,
+  "attributes": {
+    "data": "291dd087-12ab-40c2-b6ec-42374f8cbd9f",
+    "defaultOrderBy": "sequence",
+    "foreignFields": "runId,runId",
+    "initialFetch": "#none",
+    "keyFields": "id",
+    "serverType": "app"
+  },
+  "instances": [],
+  "links": [],
+  "tags": [],
+  "tenantId": null,
+  "validFrom": null,
+  "validUntil": null
+}

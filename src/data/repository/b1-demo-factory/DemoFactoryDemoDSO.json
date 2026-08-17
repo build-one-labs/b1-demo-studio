@@ -1,0 +1,27 @@
+{
+  "createdAt": "2026-08-17 09:34:08.585738",
+  "createdBy": "1nd7tSsWQull81DW5XEYcEbeMwtIk1R0",
+  "howToUse": "",
+  "label": "",
+  "moduleGuid": "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4",
+  "objectDescription": "Demo definitions for the Demo Factory Studio — source of truth for demos/<id>/demo.yaml, which the server materializes before running a pipeline stage. Seeded and reconciled from disk on app-server start by DemoFactorySeedService. keyFields=id.",
+  "objectMasterGuid": "5a803abc-1dd7-4f2a-be30-d0bc10d18d9c",
+  "objectName": "DemoFactoryDemoDSO",
+  "objectTypeGuid": "7f9b0fa6-4d9d-486e-a87c-9c8936822da0",
+  "owner": "1nd7tSsWQull81DW5XEYcEbeMwtIk1R0",
+  "status": "Active",
+  "templateObject": false,
+  "attributes": {
+    "data": "c5c4d16b-117f-40d2-9364-c5222352584b",
+    "defaultOrderBy": "title",
+    "keyFields": "id",
+    "serverEventsHandler": "DemoFactoryMaterializer",
+    "serverType": "app"
+  },
+  "instances": [],
+  "links": [],
+  "tags": [],
+  "tenantId": null,
+  "validFrom": null,
+  "validUntil": null
+}

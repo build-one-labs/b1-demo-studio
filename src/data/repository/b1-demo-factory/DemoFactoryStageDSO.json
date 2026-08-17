@@ -1,0 +1,27 @@
+{
+  "createdAt": "2026-08-17 09:34:52.433394",
+  "createdBy": "1nd7tSsWQull81DW5XEYcEbeMwtIk1R0",
+  "howToUse": "",
+  "label": "",
+  "moduleGuid": "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4",
+  "objectDescription": "The pipeline stages the Studio offers, with the server's own verdict on whether this host can run each one. Rows are overwritten from stageBlockedReasons() in onAfterFetch, so the payload is only a shape. keyFields=id.",
+  "objectMasterGuid": "8d0c95ab-277a-4f1e-86b8-892d67887fd6",
+  "objectName": "DemoFactoryStageDSO",
+  "objectTypeGuid": "7f9b0fa6-4d9d-486e-a87c-9c8936822da0",
+  "owner": "1nd7tSsWQull81DW5XEYcEbeMwtIk1R0",
+  "status": "Active",
+  "templateObject": false,
+  "attributes": {
+    "data": "47ffb428-1268-4787-bdb6-835c09303928",
+    "defaultOrderBy": "sequence",
+    "keyFields": "id",
+    "serverEventsHandler": "DemoFactoryStageEvents",
+    "serverType": "app"
+  },
+  "instances": [],
+  "links": [],
+  "tags": [],
+  "tenantId": null,
+  "validFrom": null,
+  "validUntil": null
+}

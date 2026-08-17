@@ -1,0 +1,29 @@
+{
+  "createdAt": "2026-08-17 09:34:16.980911",
+  "createdBy": "1nd7tSsWQull81DW5XEYcEbeMwtIk1R0",
+  "howToUse": "",
+  "label": "",
+  "moduleGuid": "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4",
+  "objectDescription": "Scenes of a demo, one row per scene. Detail of DemoFactoryDemoDSO via a Join link (foreignFields demoId,id). Reassembled with the demo row into demo.yaml on save. keyFields=id (<demoId>:<sceneId>).",
+  "objectMasterGuid": "fed9022e-8527-46e7-9c60-4c7332436725",
+  "objectName": "DemoFactorySceneDSO",
+  "objectTypeGuid": "7f9b0fa6-4d9d-486e-a87c-9c8936822da0",
+  "owner": "1nd7tSsWQull81DW5XEYcEbeMwtIk1R0",
+  "status": "Active",
+  "templateObject": false,
+  "attributes": {
+    "data": "3d7cc425-8d59-4890-86b7-0293f3e64292",
+    "defaultOrderBy": "sequence",
+    "foreignFields": "demoId,id",
+    "initialFetch": "#none",
+    "keyFields": "id",
+    "serverEventsHandler": "DemoFactoryMaterializer",
+    "serverType": "app"
+  },
+  "instances": [],
+  "links": [],
+  "tags": [],
+  "tenantId": null,
+  "validFrom": null,
+  "validUntil": null
+}
