@@ -1,0 +1,27 @@
+{
+  "createdAt": "2026-08-17 09:34:47.492877",
+  "createdBy": "1nd7tSsWQull81DW5XEYcEbeMwtIk1R0",
+  "howToUse": "",
+  "label": "",
+  "moduleGuid": "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4",
+  "objectDescription": "Runtime settings of the demo pipeline, one row per allowed env key. Values are recomputed live in onAfterFetch; secret keys (ELEVENLABS_API_KEY, B1_USER_API_KEY) carry an empty value and only report `configured`, because a clob write is exported to git. keyFields=key.",
+  "objectMasterGuid": "9ee708a5-062f-4fbc-8d61-90cea1e96284",
+  "objectName": "DemoFactorySettingDSO",
+  "objectTypeGuid": "7f9b0fa6-4d9d-486e-a87c-9c8936822da0",
+  "owner": "1nd7tSsWQull81DW5XEYcEbeMwtIk1R0",
+  "status": "Active",
+  "templateObject": false,
+  "attributes": {
+    "data": "945d297b-8692-4934-a304-7bf379facfba",
+    "defaultOrderBy": "sequence",
+    "keyFields": "key",
+    "serverEventsHandler": "DemoFactorySettingEvents",
+    "serverType": "app"
+  },
+  "instances": [],
+  "links": [],
+  "tags": [],
+  "tenantId": null,
+  "validFrom": null,
+  "validUntil": null
+}

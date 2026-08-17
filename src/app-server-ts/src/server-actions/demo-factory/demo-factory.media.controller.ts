@@ -10,6 +10,7 @@ import path from 'node:path';
 
 import { Controller, Get, Headers, NotFoundException, Param, Res } from '@nestjs/common';
 
+import { DemoFactoryHost } from './demo-factory.host';
 import { assertSafeId, safeChildPath } from './demo-factory.lib';
 
 import type { Response } from 'express';
@@ -35,13 +36,7 @@ const CONTENT_TYPES: Record<string, string> = {
  */
 @Controller('demo-factory/media')
 export class DemoFactoryMedia {
-  private readonly projectRoot =
-    process.env.DEMO_FACTORY_ROOT || path.resolve(__dirname, '..', '..', '..', 'demo-factory');
-
-  private outputRoot(): string {
-    const configured = process.env.DEMO_OUTPUT_DIR;
-    return configured ? path.resolve(this.projectRoot, configured) : path.join(this.projectRoot, 'output');
-  }
+  constructor(private readonly host: DemoFactoryHost) {}
 
   @Get(':demoId/:runId/:file')
   async media(
@@ -56,7 +51,7 @@ export class DemoFactoryMedia {
     // assertSafeId would reject; safeChildPath is what actually contains it.
     if (!/^[\w.:-]+$/.test(runId) || !/^[\w.-]+$/.test(file)) throw new NotFoundException();
 
-    const resolved = safeChildPath(this.outputRoot(), demoId, runId, file);
+    const resolved = safeChildPath(this.host.outputRoot(), demoId, runId, file);
     const info = await stat(resolved).catch(() => null);
     if (!info?.isFile()) throw new NotFoundException();
 

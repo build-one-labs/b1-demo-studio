@@ -7,15 +7,17 @@
 
   What changed in the port, and why:
 
-  - The Studio's own Node server is gone. Every call goes to the B1 server
-    actions in app-server-ts, so the dashboard is part of the application
-    instead of a second server somebody has to remember to start.
+  - The Studio's own Node server is gone. What the screen shows — demos and
+    their scenes, runs and their scenes, settings, the host's capabilities —
+    comes from the data sources on DemoFactoryScreen, wired to this component
+    with Data and Join links; the server keeps `demos/<id>/demo.yaml` in step
+    with them. Only the job (start, poll, cancel) is still a server action.
   - Upstream streams job state over SSE. A B1 action is request/response, so
     this polls `job` while one is running — same object, one fewer transport.
-  - The host advertises what it can do (`capabilities`). The app server image
-    installs ffmpeg and a system Chromium, but a host without them disables
-    Record and Render with the reason shown, rather than failing deep inside a
-    spawned process.
+  - The host advertises what it can do (the stage and host data sources). The
+    app server image installs ffmpeg and a system Chromium, but a host without
+    them disables Record and Render with the reason shown, rather than failing
+    deep inside a spawned process.
 -->
 <template>
   <div class="dfs">
@@ -115,7 +117,7 @@
                 <select
                   v-if="runs.length"
                   :value="selectedRunId"
-                  @change="selectedRunId = ($event.target as HTMLSelectElement).value"
+                  @change="selectRun(($event.target as HTMLSelectElement).value)"
                 >
                   <option v-for="run in runs" :key="run.runId" :value="run.runId">
                     {{ run.runId.slice(0, 19) }} · {{ run.recordedScenes }}/{{ run.sceneCount }}
@@ -392,14 +394,10 @@
           >Demo ID<input v-model="newDemo.id" pattern="[a-z0-9][a-z0-9-]*" placeholder="customer-onboarding" required
         /></label>
         <label>Title<input v-model="newDemo.title" placeholder="Customer Onboarding" required /></label>
-        <label
-          >Start from
-          <select v-model="newDemo.sourceId">
-            <option v-for="entry in demos" :key="entry.id" :value="entry.id">{{ entry.title }}</option>
-          </select>
-        </label>
+        <label>Start from<input :value="demo?.title || '—'" readonly /></label>
         <p class="dfs-help">
-          Settings and scene structure are copied. Adapt narration, routes and actions before recording.
+          Settings and scene structure are copied from the open demo. Adapt narration, routes and actions before
+          recording.
         </p>
         <div class="dfs-dialog-actions">
           <button type="button" class="dfs-btn ghost" @click="newDemoOpen = false">Cancel</button>
@@ -413,7 +411,91 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue';
+import { computed, onBeforeUnmount, onMounted, reactive, ref, unref, watch, type Ref } from 'vue';
+
+/*
+ * Data comes from the screen's data sources, not from server actions.
+ *
+ * DemoFactoryScreen carries ten `b1_data_source_temporary` instances beside
+ * this component. Demos feed this component over a Data link and drive their
+ * scenes and runs over Join links; runs drive their scenes, narration and
+ * captions the same way. Selecting a demo or a run is therefore
+ * `repositionTo()` on the parent data source — the framework refetches every
+ * child, filtered server-side. Writes go through `commitChanges()`, and the
+ * server's handlers keep `demos/<id>/demo.yaml` in step (and refuse a change
+ * the pipeline would not validate — that refusal arrives as a toast from the
+ * framework, and `commitChanges` returns undefined).
+ *
+ * The only server actions left are the ones that cannot be a data source:
+ * starting, polling and cancelling a pipeline job.
+ */
+
+// ---- Row shapes (mirrors demo-factory.rows.ts on the server) ---------------
+
+type DemoRow = {
+  id: string;
+  title: string;
+  description: string;
+  schemaVersion: number;
+  settings: Record<string, any>;
+  sceneCount: number;
+  invalid: boolean;
+  invalidReason: string;
+  sourceHash: string;
+  driftedFromFile: boolean;
+  updatedAt: string | null;
+};
+type SceneRow = {
+  id: string;
+  demoId: string;
+  sceneId: string;
+  sequence: number;
+  title: string;
+  route: string;
+  narration: string;
+  actions: unknown[];
+  assertions: unknown[];
+};
+type RunRow = {
+  runId: string;
+  demoId: string;
+  createdAt: string;
+  provider: string | null;
+  sceneCount: number;
+  recordedScenes: number;
+  durationMs: number | null;
+  hasVideo: boolean;
+  videoUrl: string;
+  srtUrl: string;
+};
+type RunSceneRow = {
+  id: string;
+  runId: string;
+  sceneId: string;
+  sequence: number;
+  durationMs: number | null;
+  hasClip: boolean;
+};
+type SettingRow = {
+  key: string;
+  label: string;
+  value: string;
+  configured: boolean;
+  secret: boolean;
+  source: string;
+  sequence: number;
+};
+type StageRow = { id: string; label: string; hint: string; sequence: number; allowed: boolean; blockedReason: string };
+type HostRow = {
+  id: string;
+  hasFactory: boolean;
+  hasDependencies: boolean;
+  canRecord: boolean;
+  canRender: boolean;
+  canAuthenticate: boolean;
+};
+
+// ---- The editor's own document shape ----------------------------------------
 
 type Scene = {
   id: string;
@@ -423,14 +505,13 @@ type Scene = {
   actions?: unknown[];
   assertions?: unknown[];
 };
-type Demo = { id: string; title: string; scenes: Scene[]; settings: Record<string, any> };
-type Run = {
-  runId: string;
-  sceneCount: number;
-  recordedScenes: number;
-  durationMs: number | null;
-  hasVideo: boolean;
-  scenes: { id: string; durationMs: number | null; hasClip: boolean }[];
+type Demo = {
+  id: string;
+  title: string;
+  description: string;
+  schemaVersion: number;
+  scenes: Scene[];
+  settings: Record<string, any>;
 };
 type Job = {
   status: string;
@@ -442,44 +523,100 @@ type Job = {
   demoId: string | null;
 };
 
+// ---- Framework surface this component relies on ----------------------------
+
+/**
+ * The parts of a framework data source instance used here. Structural rather
+ * than imported: the framework ships these types under its own path aliases,
+ * and this component only needs the handful of members below.
+ */
+type MaybeRef<T> = T | Ref<T>;
+type Dso<T> = {
+  records: MaybeRef<T[]>;
+  selectedRecord: MaybeRef<T | undefined | null>;
+  fetchRecords(): Promise<void>;
+  repositionTo(identifier: string | number): void;
+  commitChanges(payload: {
+    createdRecords?: T[];
+    updatedRecords?: T[];
+    deletedRecords?: T[];
+  }): Promise<{ createdRecords: T[]; updatedRecords: T[]; deletedRecords: T[] } | undefined>;
+};
+type HostInstance = {
+  parent: HostInstance | null;
+  getObject<T = unknown>(name: string): T | null;
+};
+
+const props = defineProps<{ instance?: HostInstance }>();
+
 const ACTIONS = '/service/app/server-actions/demo-factory/demo-factory-studio';
-const MEDIA = '/service/app/demo-factory/media';
 
 const views = [
   { id: 'demos', label: 'Demos', icon: '▣' },
   { id: 'runs', label: 'Runs', icon: '↗' },
   { id: 'settings', label: 'Settings', icon: '⚙' }
 ];
-const steps = [
-  { id: 'validate', label: 'Validate', hint: 'Schema and cues' },
-  { id: 'prepare', label: 'Prepare', hint: 'Voice and timing' },
-  { id: 'record', label: 'Record', hint: 'Drives a browser' },
-  { id: 'render', label: 'Render', hint: 'MP4 and SRT' }
-];
 const tabs = ['Scene', 'Voice-over', 'Actions'];
+
+// ---- Data sources -----------------------------------------------------------
+
+/**
+ * Data-source instances live beside this component on the screen; `getObject`
+ * searches descendants, so they are resolved from the root of the tree — which
+ * also keeps this working should the instances ever be nested under it.
+ */
+function resolveDso<T>(name: string): Dso<T> | null {
+  let node = props.instance ?? null;
+  while (node?.parent) node = node.parent;
+  return (node?.getObject<Dso<T>>(name) as Dso<T> | null) ?? null;
+}
+
+const demoDso = ref<Dso<DemoRow> | null>(null);
+const sceneDso = ref<Dso<SceneRow> | null>(null);
+const runDso = ref<Dso<RunRow> | null>(null);
+const runSceneDso = ref<Dso<RunSceneRow> | null>(null);
+const settingDso = ref<Dso<SettingRow> | null>(null);
+const stageDso = ref<Dso<StageRow> | null>(null);
+const hostDso = ref<Dso<HostRow> | null>(null);
+
+/**
+ * A data source's rows or selection as a computed. `unref` because the
+ * instance may hand these over as refs or already unwrapped, depending on how
+ * the framework wrapped the tree — both are tracked either way.
+ */
+function rows<T>(dso: Ref<Dso<T> | null>) {
+  return computed<T[]>(() => (dso.value ? (unref(dso.value.records) ?? []) : []));
+}
+function selected<T>(dso: Ref<Dso<T> | null>) {
+  return computed<T | undefined>(() => (dso.value ? (unref(dso.value.selectedRecord) ?? undefined) : undefined));
+}
+
+const demoRows = rows(demoDso);
+const currentDemoRow = selected(demoDso);
+const sceneRows = computed(() =>
+  rows(sceneDso)
+    .value.filter((row) => row.demoId === currentDemoRow.value?.id)
+    .sort((left, right) => left.sequence - right.sequence)
+);
+const runs = rows(runDso);
+const currentRun = selected(runDso);
+const runSceneRows = computed(() =>
+  rows(runSceneDso)
+    .value.filter((row) => row.runId === currentRun.value?.runId)
+    .sort((left, right) => left.sequence - right.sequence)
+);
+const settingRows = computed(() => [...rows(settingDso).value].sort((left, right) => left.sequence - right.sequence));
+const stageRows = computed(() => [...rows(stageDso).value].sort((left, right) => left.sequence - right.sequence));
+const hostRow = computed(() => rows(hostDso).value[0]);
+
+// ---- Screen state -----------------------------------------------------------
 
 const view = ref('demos');
 const inspectorTab = ref('Scene');
-const demos = ref<{ id: string; title: string }[]>([]);
+/** The document being edited — the selected demo row plus its scene rows, as one object. */
 const demo = ref<Demo | null>(null);
 const sceneIndex = ref(0);
-const runs = ref<Run[]>([]);
-const selectedRunId = ref('');
-const settings = ref<Record<string, { value?: string; configured: boolean; secret: boolean }>>({});
 const settingDraft = ref<Record<string, string>>({});
-const capabilities = ref({
-  hasFactory: false,
-  hasDependencies: false,
-  canRecord: false,
-  canRender: false,
-  canAuthenticate: false,
-  // Why each stage cannot run here, straight from the server — the rule lives
-  // in demo-factory.lib.ts and this screen only renders its verdict. Blocked
-  // until that verdict arrives, so a stage is never offered on a guess.
-  blocked: Object.fromEntries(
-    ['validate', 'prepare', 'record', 'render', 'all'].map((id) => [id, 'Checking what this host can run…'])
-  ) as Record<string, string | null>
-});
 const job = ref<Job>({ status: 'idle', step: null, logs: [], exitCode: null, demoId: null });
 const dirty = ref(false);
 const validation = ref<'unknown' | 'valid' | 'invalid'>('unknown');
@@ -489,24 +626,19 @@ const toast = ref('');
 const toastBad = ref(false);
 const logCollapsed = ref(false);
 const newDemoOpen = ref(false);
-const newDemo = reactive({ id: '', title: '', sourceId: '' });
+const newDemo = reactive({ id: '', title: '' });
 const logRef = ref<HTMLElement | null>(null);
 
 let poll: ReturnType<typeof setInterval> | undefined;
 
+// ---- Derived ---------------------------------------------------------------
+
+const demos = computed(() => demoRows.value.map((row) => ({ id: row.id, title: row.title })));
+const selectedRunId = computed(() => currentRun.value?.runId || '');
 const scene = computed(() => demo.value?.scenes?.[sceneIndex.value] || null);
 const busy = computed(() => job.value.status === 'running');
-const currentRun = computed(() => runs.value.find((run) => run.runId === selectedRunId.value) || runs.value[0]);
-const videoUrl = computed(() =>
-  currentRun.value?.hasVideo && demo.value
-    ? `${MEDIA}/${demo.value.id}/${currentRun.value.runId}/${demo.value.id}.mp4`
-    : ''
-);
-const srtUrl = computed(() =>
-  currentRun.value?.hasVideo && demo.value
-    ? `${MEDIA}/${demo.value.id}/${currentRun.value.runId}/${demo.value.id}.srt`
-    : ''
-);
+const videoUrl = computed(() => currentRun.value?.videoUrl || '');
+const srtUrl = computed(() => currentRun.value?.srtUrl || '');
 const logText = computed(() => job.value.logs.map((line) => line.text).join('\n') || 'Ready.');
 const jobSubtitle = computed(() =>
   job.value.status === 'idle'
@@ -536,14 +668,32 @@ const timeline = computed(() =>
   }))
 );
 const totalDuration = computed(() => timeline.value.reduce((sum, item) => sum + item.durationMs, 0));
+
+/** The four pipeline stages as buttons; `all` is the header's "Run full demo". */
+const steps = computed(() => stageRows.value.filter((stage) => stage.id !== 'all'));
 const progressPercent = computed(() => {
   if (job.value.status === 'complete') return 100;
-  const index = steps.findIndex((step) => step.id === job.value.step);
-  return index < 0 ? 0 : Math.round(((index + (job.value.status === 'running' ? 0.5 : 1)) / steps.length) * 100);
+  const index = steps.value.findIndex((step) => step.id === job.value.step);
+  return index < 0 ? 0 : Math.round(((index + (job.value.status === 'running' ? 0.5 : 1)) / steps.value.length) * 100);
 });
 
+/** The Settings tab, keyed the way the template reads it. */
+const settings = computed<Record<string, { value?: string; configured: boolean; secret: boolean }>>(() =>
+  Object.fromEntries(
+    settingRows.value.map((row) => [row.key, { value: row.value, configured: row.configured, secret: row.secret }])
+  )
+);
+
+const capabilities = computed(() => ({
+  hasFactory: hostRow.value?.hasFactory ?? false,
+  hasDependencies: hostRow.value?.hasDependencies ?? false,
+  canRecord: hostRow.value?.canRecord ?? false,
+  canRender: hostRow.value?.canRender ?? false,
+  canAuthenticate: hostRow.value?.canAuthenticate ?? false
+}));
+
 function cuesIn(text: string): string[] {
-  return [...text.matchAll(/\[cue:([a-zA-Z0-9_-]+)\]/g)].map((match) => match[1]);
+  return [...text.matchAll(/\[cue:([a-zA-Z0-9_-]+)\]/g)].map((match) => match[1] ?? '');
 }
 
 function formatDuration(milliseconds = 0): string {
@@ -553,7 +703,7 @@ function formatDuration(milliseconds = 0): string {
 
 /** A recorded duration when one exists, else the same words-per-minute estimate the pipeline uses. */
 function sceneDuration(item: Scene, index: number): number {
-  const recorded = currentRun.value?.scenes?.[index]?.durationMs;
+  const recorded = runSceneRows.value[index]?.durationMs;
   if (recorded) return recorded;
   const words = (item.narration || '')
     .replace(/\[cue:[^\]]+\]/g, '')
@@ -565,11 +715,18 @@ function sceneDuration(item: Scene, index: number): number {
   return Math.max(5000, (words / wpm) * 60_000 + (settings.holdAfterMs || 1000) + (settings.holdBeforeMs || 500));
 }
 
-const sceneRecorded = (id: string) => Boolean(currentRun.value?.scenes?.find((item) => item.id === id)?.hasClip);
+const sceneRecorded = (id: string) => Boolean(runSceneRows.value.find((item) => item.sceneId === id)?.hasClip);
 const stepDone = (id: string) =>
   job.value.status === 'complete' &&
-  steps.findIndex((s) => s.id === job.value.step) >= steps.findIndex((s) => s.id === id);
-const stepBlockedReason = (id: string) => capabilities.value.blocked[id] || '';
+  steps.value.findIndex((s) => s.id === job.value.step) >= steps.value.findIndex((s) => s.id === id);
+// Why each stage cannot run here, straight from the server — the rule lives in
+// demo-factory.lib.ts and this screen only renders its verdict. Blocked until
+// that verdict arrives, so a stage is never offered on a guess.
+const stepBlockedReason = (id: string) => {
+  const stage = stageRows.value.find((row) => row.id === id);
+  if (!stage) return 'Checking what this host can run…';
+  return stage.allowed ? '' : stage.blockedReason || 'Not available on this host';
+};
 const stepAllowed = (id: string) => !stepBlockedReason(id);
 // "Pipeline found" was true of a checkout whose node_modules had never been
 // installed, which is the state every stage fails in.
@@ -580,6 +737,8 @@ const hostSummary = computed(() =>
       ? 'Pipeline found'
       : 'Pipeline not installed'
 );
+
+// ---- The remaining server actions: the job -----------------------------------
 
 async function call<T>(action: string, body: Record<string, unknown> = {}): Promise<T> {
   const response = await fetch(`${ACTIONS}/${action}`, {
@@ -603,48 +762,140 @@ function markDirty() {
   validation.value = 'unknown';
 }
 
-async function loadState() {
-  const state = await call<{
-    demos: typeof demos.value;
-    settings: typeof settings.value;
-    capabilities: typeof capabilities.value;
-    job: Job;
-  }>('state');
-  demos.value = state.demos;
-  settings.value = state.settings;
-  capabilities.value = state.capabilities;
-  job.value = state.job;
-  newDemo.sourceId = state.demos[0]?.id || '';
-  if (!demo.value && state.demos.length) await openDemo(state.demos[0].id);
+// ---- Document <-> rows ------------------------------------------------------
+
+/** The editor's document, assembled from the selected demo row and its scene rows. */
+function assembleDemo(row: DemoRow, scenes: SceneRow[]): Demo {
+  return {
+    id: row.id,
+    title: row.title,
+    description: row.description,
+    schemaVersion: row.schemaVersion,
+    settings: JSON.parse(JSON.stringify(row.settings ?? {})),
+    scenes: scenes.map((item) => ({
+      id: item.sceneId,
+      title: item.title,
+      route: item.route,
+      narration: item.narration,
+      actions: JSON.parse(JSON.stringify(item.actions ?? [])),
+      assertions: JSON.parse(JSON.stringify(item.assertions ?? []))
+    }))
+  };
 }
 
-async function openDemo(demoId: string) {
-  const value = await call<{ demo: Demo }>('get-demo', { demoId });
-  demo.value = value.demo;
-  sceneIndex.value = 0;
-  dirty.value = false;
-  validation.value = 'unknown';
-  await loadRuns();
+/** The scene rows a document describes — same keys and sequence rule as the server. */
+function sceneRowsOf(document: Demo): SceneRow[] {
+  return document.scenes.map((item, index) => ({
+    id: `${document.id}:${item.id}`,
+    demoId: document.id,
+    sceneId: item.id,
+    sequence: index + 1,
+    title: item.title,
+    route: item.route,
+    narration: item.narration,
+    actions: item.actions ?? [],
+    assertions: item.assertions ?? []
+  }));
 }
 
-async function loadRuns() {
-  if (!demo.value) return;
-  const value = await call<{ runs: Run[] }>('runs', { demoId: demo.value.id });
-  runs.value = value.runs;
-  selectedRunId.value = value.runs[0]?.runId || '';
-}
+const same = (left: unknown, right: unknown) => JSON.stringify(left) === JSON.stringify(right);
 
-async function saveDemo() {
-  if (!demo.value) return;
-  try {
-    await call('save-demo', { demoId: demo.value.id, demo: demo.value });
-    dirty.value = false;
-    validation.value = 'valid';
-    notify('Saved and validated.');
-  } catch (saveError) {
-    validation.value = 'invalid';
-    notify((saveError as Error).message, true);
+/**
+ * Rebuild the editor's document from the rows — when the selection changes,
+ * and when the rows change underneath an editor that has nothing unsaved.
+ * An edit in progress is never replaced by a refetch.
+ */
+function rebuildDraft(force = false) {
+  const row = currentDemoRow.value;
+  if (!row) {
+    demo.value = null;
+    return;
   }
+  if (!force && dirty.value && demo.value?.id === row.id) return;
+  demo.value = assembleDemo(row, sceneRows.value);
+  if (sceneIndex.value >= demo.value.scenes.length) sceneIndex.value = 0;
+  if (force || demo.value.id !== row.id) {
+    dirty.value = false;
+    validation.value = 'unknown';
+  }
+}
+
+watch(
+  () => currentDemoRow.value?.id,
+  () => {
+    sceneIndex.value = 0;
+    dirty.value = false;
+    validation.value = 'unknown';
+    rebuildDraft(true);
+  }
+);
+watch(sceneRows, () => rebuildDraft());
+watch(
+  () => currentDemoRow.value,
+  () => rebuildDraft(),
+  { deep: true }
+);
+
+// ---- Actions on the document ------------------------------------------------
+
+function openDemo(demoId: string) {
+  demoDso.value?.repositionTo(demoId);
+}
+
+function selectRun(runId: string) {
+  runDso.value?.repositionTo(runId);
+}
+
+/**
+ * Save: the scene rows first, then the demo row.
+ *
+ * Every write is validated by the server before it lands, and a refusal comes
+ * back as a toast (and `undefined` here). Scenes go first because that is where
+ * a demo usually breaks — a cue reference, an action target — so a bad scene
+ * stops the save before the demo row is touched.
+ */
+async function saveDemo() {
+  const document = demo.value;
+  const row = currentDemoRow.value;
+  if (!document || !row || !sceneDso.value || !demoDso.value) return;
+
+  const wanted = sceneRowsOf(document);
+  const existing = sceneRows.value;
+  const existingById = new Map(existing.map((item) => [item.id, item]));
+  const wantedIds = new Set(wanted.map((item) => item.id));
+
+  const sceneChanges = {
+    createdRecords: wanted.filter((item) => !existingById.has(item.id)),
+    updatedRecords: wanted.filter((item) => existingById.has(item.id) && !same(existingById.get(item.id), item)),
+    deletedRecords: existing.filter((item) => !wantedIds.has(item.id))
+  };
+  const scenesChanged =
+    sceneChanges.createdRecords.length + sceneChanges.updatedRecords.length + sceneChanges.deletedRecords.length > 0;
+
+  if (scenesChanged && !(await sceneDso.value.commitChanges(sceneChanges))) {
+    validation.value = 'invalid';
+    return;
+  }
+
+  const demoChanged =
+    row.title !== document.title || row.description !== document.description || !same(row.settings, document.settings);
+  if (demoChanged) {
+    const saved = await demoDso.value.commitChanges({
+      updatedRecords: [
+        { ...row, title: document.title, description: document.description, settings: document.settings }
+      ]
+    });
+    if (!saved) {
+      validation.value = 'invalid';
+      return;
+    }
+  }
+
+  dirty.value = false;
+  validation.value = 'valid';
+  // The server stamps the demo row after a scene change (scene count, source
+  // hash); a refetch of the parent cascades to its children.
+  await demoDso.value.fetchRecords();
 }
 
 async function runJob(action: string) {
@@ -671,7 +922,9 @@ function startPolling() {
         stopPolling();
         if (job.value.status === 'complete') {
           validation.value = 'valid';
-          await loadRuns();
+          // The server ingests the run's files into the run data sources as the
+          // job ends; this picks them up.
+          await runDso.value?.fetchRecords();
           notify('Job complete.');
         } else if (job.value.status === 'failed') {
           // The log panel is collapsible and the tail is long; carrying the last
@@ -702,7 +955,7 @@ function editSetting(pathParts: string[], event: Event) {
   const value = (event.target as HTMLInputElement | HTMLSelectElement).value;
   let node: Record<string, any> = demo.value.settings;
   for (const key of pathParts.slice(0, -1)) node = node[key] ??= {};
-  node[pathParts[pathParts.length - 1]] = value;
+  node[pathParts[pathParts.length - 1] ?? ''] = value;
   markDirty();
 }
 
@@ -710,7 +963,7 @@ function editToggle(pathParts: string[], event: Event) {
   if (!demo.value) return;
   let node: Record<string, any> = demo.value.settings;
   for (const key of pathParts.slice(0, -1)) node = node[key] ??= {};
-  node[pathParts[pathParts.length - 1]] = (event.target as HTMLInputElement).checked;
+  node[pathParts[pathParts.length - 1] ?? ''] = (event.target as HTMLInputElement).checked;
   markDirty();
 }
 
@@ -761,32 +1014,69 @@ function deleteScene() {
   markDirty();
 }
 
+/**
+ * Create a demo as a copy of the open one: its row first (a demo with no
+ * scenes yet is not written to disk), then its scenes, which is the write that
+ * validates and materializes the new file.
+ */
 async function createDemo() {
-  try {
-    await call('create-demo', { ...newDemo });
-    newDemoOpen.value = false;
-    await loadState();
-    await openDemo(newDemo.id);
-    notify('Demo created.');
-  } catch (createError) {
-    notify((createError as Error).message, true);
+  const source = demo.value;
+  const sourceRow = currentDemoRow.value;
+  if (!source || !sourceRow || !demoDso.value || !sceneDso.value) return;
+  const id = newDemo.id.trim();
+  if (!/^[a-z0-9][a-z0-9-]*$/.test(id)) {
+    notify('A demo id is lowercase letters, digits and hyphens.', true);
+    return;
   }
+  if (demoRows.value.some((row) => row.id === id)) {
+    notify('A demo with this id already exists.', true);
+    return;
+  }
+
+  const created = await demoDso.value.commitChanges({
+    createdRecords: [
+      {
+        ...sourceRow,
+        id,
+        title: newDemo.title.trim() || id,
+        description: `Created from ${source.id} in the Demo Factory Studio.`,
+        settings: JSON.parse(JSON.stringify(source.settings)),
+        sourceHash: '',
+        driftedFromFile: false,
+        updatedAt: null
+      }
+    ]
+  });
+  if (!created) return;
+
+  const scenes = await sceneDso.value.commitChanges({
+    createdRecords: sceneRowsOf({ ...source, id })
+  });
+  if (!scenes) {
+    notify('The demo was created but its scenes were refused — see the message above.', true);
+  }
+
+  newDemoOpen.value = false;
+  newDemo.id = '';
+  newDemo.title = '';
+  await demoDso.value.fetchRecords();
+  demoDso.value.repositionTo(id);
+  notify('Demo created.');
 }
 
 async function saveSettings() {
-  try {
-    const value = await call<{ settings: typeof settings.value }>('save-settings', {
-      values: { ...settingDraft.value }
-    });
-    settings.value = value.settings;
-    settingDraft.value = {};
-    // Several settings decide what this host can run — an API key, a browser
-    // path, an ffmpeg path — so the stage buttons are re-asked, not left stale.
-    await loadState();
-    notify('Settings saved.');
-  } catch (settingsError) {
-    notify((settingsError as Error).message, true);
-  }
+  if (!settingDso.value) return;
+  const changed = settingRows.value
+    .filter((row) => row.key in settingDraft.value)
+    .map((row) => ({ ...row, value: settingDraft.value[row.key] ?? '' }));
+  if (changed.length === 0) return;
+
+  const saved = await settingDso.value.commitChanges({ updatedRecords: changed });
+  if (!saved) return;
+  settingDraft.value = {};
+  // Several settings decide what this host can run — an API key, a browser
+  // path, an ffmpeg path — so the stage verdicts are re-asked, not left stale.
+  await Promise.all([settingDso.value.fetchRecords(), stageDso.value?.fetchRecords(), hostDso.value?.fetchRecords()]);
 }
 
 // Keep the log pinned to the newest line while a job streams into it.
@@ -797,12 +1087,33 @@ watch(logText, () => {
 });
 
 onMounted(async () => {
+  demoDso.value = resolveDso<DemoRow>('DemoFactoryDemoDSO');
+  sceneDso.value = resolveDso<SceneRow>('DemoFactorySceneDSO');
+  runDso.value = resolveDso<RunRow>('DemoFactoryRunDSO');
+  runSceneDso.value = resolveDso<RunSceneRow>('DemoFactoryRunSceneDSO');
+  settingDso.value = resolveDso<SettingRow>('DemoFactorySettingDSO');
+  stageDso.value = resolveDso<StageRow>('DemoFactoryStageDSO');
+  hostDso.value = resolveDso<HostRow>('DemoFactoryHostDSO');
+
+  if (!demoDso.value || !sceneDso.value || !runDso.value) {
+    error.value =
+      'The Demo Factory data sources are not on this screen. DemoFactoryScreen needs the DemoFactory*DSO instances and their links.';
+    return;
+  }
+
   try {
-    await loadState();
+    // `state` is also what makes sure the data sources match this host before
+    // anything is shown — on a workspace whose server holds no key of its own,
+    // this call is the first that can. Refetch afterwards so a demo it imported
+    // is not missed by a fetch that raced it.
+    const state = await call<{ job: Job }>('state');
+    job.value = state.job;
+    await demoDso.value.fetchRecords();
     if (job.value.status === 'running') startPolling();
   } catch (loadError) {
     error.value = `Could not reach the demo factory: ${(loadError as Error).message}`;
   }
+  rebuildDraft(true);
 });
 
 onBeforeUnmount(stopPolling);

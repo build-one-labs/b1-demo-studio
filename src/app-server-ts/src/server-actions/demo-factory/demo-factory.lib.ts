@@ -1,3 +1,4 @@
+import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 
 /**
@@ -81,6 +82,72 @@ export const resolveApiKey = (
   }
   return null;
 };
+
+/**
+ * The pipeline: `demo-factory/` beside this server's `src/`, resolved from the
+ * caller's directory so it is the same directory from `src/` (dev, ts) and
+ * `dist/` (built). The env var exists for deployments that mount it elsewhere.
+ *
+ * Every part of the server that touches the factory resolves it through here —
+ * the actions, the media controller and the data-source services — because a
+ * host where two of them disagree is a host where the Studio lists a run the
+ * media controller cannot find.
+ */
+export const projectRootFrom = (dirname: string): string =>
+  process.env.DEMO_FACTORY_ROOT || path.resolve(dirname, '..', '..', '..', 'demo-factory');
+
+/**
+ * What `tools/provision-workspace.mjs` left for this server in
+ * `demo-factory/.env.app-server`, restricted to the keys the Studio may read.
+ *
+ * The app server sees the pipeline's host differently from a workspace shell:
+ * its Chromium is a container path, the web app to record is `caddy:8080` on
+ * the compose network, and its API key arrives here rather than in its
+ * environment. Those values cannot live in the factory's own `.env`, which the
+ * CLI also reads from a shell where all of them would be wrong.
+ *
+ * Read on every call rather than once: on a fresh Codespace the provisioner
+ * runs after the stack is up, minutes after this server first booted, so a
+ * cache would be the only thing making the timing matter. A missing file is a
+ * normal state — a deployed image sets the same variables in its environment.
+ */
+export const readProvisionedEnv = async (projectRoot: string): Promise<Record<string, string>> => {
+  const allowed = new Set<string>(ALLOWED_ENV_KEYS);
+  const values: Record<string, string> = {};
+  try {
+    // The path is the fixed factory root plus a literal name — nothing from a
+    // caller reaches it, which is what the rule guards against.
+    // eslint-disable-next-line security/detect-non-literal-fs-filename
+    const text = await readFile(path.join(projectRoot, '.env.app-server'), 'utf8');
+    for (const line of text.split(/\r?\n/)) {
+      const trimmed = line.trim();
+      const separator = trimmed.indexOf('=');
+      if (!trimmed || trimmed.startsWith('#') || separator < 1) continue;
+      const key = trimmed.slice(0, separator).trim();
+      if (allowed.has(key))
+        values[key] = trimmed
+          .slice(separator + 1)
+          .trim()
+          .replace(/^(["'])(.*)\1$/, '$2');
+    }
+  } catch {
+    // No provisioning on this host.
+  }
+  return values;
+};
+
+/**
+ * The user API key this server may act with when no request is in flight —
+ * the environment's scoped key first, else the one the provisioner wrote.
+ *
+ * A *user* key deliberately: the framework's guard resolves `x-api-key` to the
+ * user who owns it and refuses an organization key, which "resolves to no
+ * user" — a request has to run as somebody.
+ */
+export const serviceApiKey = async (projectRoot: string): Promise<string> =>
+  resolveApiKey(process.env, process.env.AUTH_URL)?.key ||
+  (await readProvisionedEnv(projectRoot)).B1_USER_API_KEY ||
+  '';
 
 const ID_PATTERN = /^[\da-z][\da-z-]*$/;
 

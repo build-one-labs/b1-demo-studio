@@ -4,7 +4,7 @@
   "howToUse": "",
   "label": "",
   "moduleGuid": "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4",
-  "objectDescription": "Initial screen of the b1-demo-factory app: hosts the demo-factory Remotion root via the native-component mechanism.",
+  "objectDescription": "Initial screen of the b1-demo-factory app: hosts the Demo Factory Studio native component, fed by the module's temporary data sources — demos and scenes (Join), runs and their scenes, narration and captions (Join), plus settings, stages, host and job history.",
   "objectMasterGuid": "d6c2b1d8-70bc-408b-9559-4006065e29a9",
   "objectName": "DemoFactoryScreen",
   "objectTypeGuid": "d188099d-8548-49f0-86e4-c4b28dda9ecc",
@@ -33,9 +33,128 @@
           "instances": []
         }
       ]
+    },
+    {
+      "instanceName": "DemoFactoryDemoDSO",
+      "objectInstanceGuid": "06fe2975-01dc-4f22-a5b1-7f80baeb84ac",
+      "objectMasterGuid": "5a803abc-1dd7-4f2a-be30-d0bc10d18d9c",
+      "attributes": {},
+      "instances": []
+    },
+    {
+      "instanceName": "DemoFactorySceneDSO",
+      "objectInstanceGuid": "912c38b5-e584-4197-82e7-ed5b3e78e643",
+      "objectMasterGuid": "fed9022e-8527-46e7-9c60-4c7332436725",
+      "attributes": {},
+      "instances": []
+    },
+    {
+      "instanceName": "DemoFactoryRunDSO",
+      "objectInstanceGuid": "395eb9a5-4a0c-473c-90de-f452cd20cfb1",
+      "objectMasterGuid": "49b67af7-2346-40c3-8ba3-ff546ed534cd",
+      "attributes": {},
+      "instances": []
+    },
+    {
+      "instanceName": "DemoFactoryRunSceneDSO",
+      "objectInstanceGuid": "a91ae665-0770-4792-b11d-69ce0953f42e",
+      "objectMasterGuid": "2189c867-4a1d-428e-8a0d-980a35c0fe32",
+      "attributes": {},
+      "instances": []
+    },
+    {
+      "instanceName": "DemoFactoryNarrationDSO",
+      "objectInstanceGuid": "85961f15-9778-49cb-8463-b0f4c7818675",
+      "objectMasterGuid": "de3d761d-add2-4e8a-8bee-83375c1fb3d9",
+      "attributes": {},
+      "instances": []
+    },
+    {
+      "instanceName": "DemoFactoryCaptionDSO",
+      "objectInstanceGuid": "624d02b3-b488-420a-8779-bb6259aa9ba6",
+      "objectMasterGuid": "9e5a1d69-57d5-4182-b47e-685a96d3137d",
+      "attributes": {},
+      "instances": []
+    },
+    {
+      "instanceName": "DemoFactorySettingDSO",
+      "objectInstanceGuid": "bdf8a62b-ee04-4196-af17-c1042b0e0723",
+      "objectMasterGuid": "9ee708a5-062f-4fbc-8d61-90cea1e96284",
+      "attributes": {},
+      "instances": []
+    },
+    {
+      "instanceName": "DemoFactoryStageDSO",
+      "objectInstanceGuid": "0baaab98-d5a5-4008-ab49-0351b9cb5ffc",
+      "objectMasterGuid": "8d0c95ab-277a-4f1e-86b8-892d67887fd6",
+      "attributes": {},
+      "instances": []
+    },
+    {
+      "instanceName": "DemoFactoryHostDSO",
+      "objectInstanceGuid": "c70f10bf-c6bb-4678-ab9d-6b5ac985ac4a",
+      "objectMasterGuid": "ea473534-6458-4dfc-9508-f2d07d897cf5",
+      "attributes": {},
+      "instances": []
+    },
+    {
+      "instanceName": "DemoFactoryJobDSO",
+      "objectInstanceGuid": "3c602a23-9a21-4d44-8339-0bbf9035b311",
+      "objectMasterGuid": "53f97661-3b0d-4299-a028-7fe894b02667",
+      "attributes": {},
+      "instances": []
     }
   ],
-  "links": [],
+  "links": [
+    {
+      "linkGuid": "8b5a958a-7316-40da-8d96-551a587311be",
+      "linkName": "Primary",
+      "linkTypeGuid": "c21ecef7-8939-4534-b458-66945464b796",
+      "targetObjectInstanceGuid": "06fe2975-01dc-4f22-a5b1-7f80baeb84ac"
+    },
+    {
+      "linkGuid": "c04fd8f5-9b54-4efc-bf4c-f8622de1ca0b",
+      "linkName": "Data",
+      "linkTypeGuid": "d37727fb-24ff-7ea3-0e14-a5d9d8526f38",
+      "sourceObjectInstanceGuid": "06fe2975-01dc-4f22-a5b1-7f80baeb84ac",
+      "targetObjectInstanceGuid": "869b58a4-5fca-4666-a896-1b19835d621b"
+    },
+    {
+      "linkGuid": "4657e0f6-4f4f-4f64-bce1-dbd2400ec219",
+      "linkName": "Join",
+      "linkTypeGuid": "8bf587d6-57c7-29a2-e114-26c2384051bc",
+      "sourceObjectInstanceGuid": "06fe2975-01dc-4f22-a5b1-7f80baeb84ac",
+      "targetObjectInstanceGuid": "912c38b5-e584-4197-82e7-ed5b3e78e643"
+    },
+    {
+      "linkGuid": "ed017cb9-19e5-4d1e-b614-bfe98cca9cb2",
+      "linkName": "Join",
+      "linkTypeGuid": "8bf587d6-57c7-29a2-e114-26c2384051bc",
+      "sourceObjectInstanceGuid": "06fe2975-01dc-4f22-a5b1-7f80baeb84ac",
+      "targetObjectInstanceGuid": "395eb9a5-4a0c-473c-90de-f452cd20cfb1"
+    },
+    {
+      "linkGuid": "f5b95b46-b587-43e0-b64e-53f8a75c64af",
+      "linkName": "Join",
+      "linkTypeGuid": "8bf587d6-57c7-29a2-e114-26c2384051bc",
+      "sourceObjectInstanceGuid": "395eb9a5-4a0c-473c-90de-f452cd20cfb1",
+      "targetObjectInstanceGuid": "a91ae665-0770-4792-b11d-69ce0953f42e"
+    },
+    {
+      "linkGuid": "b7badfe6-38de-4de1-ab0c-a03eaeb09697",
+      "linkName": "Join",
+      "linkTypeGuid": "8bf587d6-57c7-29a2-e114-26c2384051bc",
+      "sourceObjectInstanceGuid": "395eb9a5-4a0c-473c-90de-f452cd20cfb1",
+      "targetObjectInstanceGuid": "85961f15-9778-49cb-8463-b0f4c7818675"
+    },
+    {
+      "linkGuid": "62780e43-dcb2-4f93-a44b-f9392257abe0",
+      "linkName": "Join",
+      "linkTypeGuid": "8bf587d6-57c7-29a2-e114-26c2384051bc",
+      "sourceObjectInstanceGuid": "395eb9a5-4a0c-473c-90de-f452cd20cfb1",
+      "targetObjectInstanceGuid": "624d02b3-b488-420a-8779-bb6259aa9ba6"
+    }
+  ],
   "tags": [],
   "tenantId": null,
   "validFrom": null,
