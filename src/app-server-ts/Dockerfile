@@ -1,4 +1,4 @@
-FROM node:24-alpine
+FROM node:24-bookworm-slim
 
 ARG BUILD_VERSION
 ARG BUILD_DATE
@@ -35,11 +35,10 @@ RUN chmod +x ./start.sh
 # Without the tools below the Studio disables both stages (see the
 # `capabilities` action) and only Validate and Prepare work.
 #
-# One Chromium, three users. Playwright's managed download does not support
-# musl, and Remotion fetches its own Chrome Headless Shell at render time —
-# which needs network from inside a running container. So the image installs
-# the distribution's Chromium once and points both at it, the same way
-# FFMPEG_PATH has always worked in media.mjs.
+# One Chromium, three users. Without an explicit executable, Playwright and
+# Remotion each resolve or download their own browser, including at runtime.
+# The image installs the distribution's Chromium once and points both at it,
+# the same way FFMPEG_PATH has always worked in media.mjs.
 #
 # This is not free: Chromium and ffmpeg add a few hundred megabytes to what was
 # a slim node image. An operator who never records from the deployed app can
@@ -56,11 +55,18 @@ RUN chmod +x ./start.sh
 # binary into a cache shared with the runtime node user even though the image
 # also has system ffmpeg for rendering.
 #
-# Remotion wraps Chromium with `setpriv --pdeathsig SIGKILL` on Linux. BusyBox
-# exposes a smaller setpriv applet at /bin/setpriv, but it does not implement
-# --pdeathsig and makes the render browser exit before its first frame. Alpine's
-# dedicated setpriv package replaces that applet with the util-linux binary.
-RUN apk add --no-cache chromium ffmpeg font-noto setpriv ttf-freefont \
+# Remotion's renderer includes a native compositor. Its musl build segfaults
+# while extracting frame 0 on Alpine even when the normalized H.264 input is
+# valid, so this image deliberately uses Debian/glibc. util-linux supplies the
+# `setpriv --pdeathsig` wrapper Remotion uses to tie Chromium to its parent.
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends \
+    chromium \
+    ffmpeg \
+    fonts-freefont-ttf \
+    fonts-noto-core \
+    util-linux \
+  && rm -rf /var/lib/apt/lists/* \
   && ffmpeg -version > /dev/null \
   && ffprobe -version > /dev/null \
   && /usr/bin/chromium --version > /dev/null \
