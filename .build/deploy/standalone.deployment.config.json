@@ -3,7 +3,7 @@
   "services": {
     "swat_app_server_ts": {
       "environment": {
-        "B1_DEFAULT_APP": "${B1_DEFAULT_APP:-sample-app}",
+        "B1_DEFAULT_APP": "${B1_DEFAULT_APP:-b1-demo-factory}",
         "REPOSITORY": "build-one-labs/b1-demo-studio"
       }
     },
