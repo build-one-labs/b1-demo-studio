@@ -55,10 +55,18 @@ RUN chmod +x ./start.sh
 # the FFmpeg revision from its own browser registry, so install that small
 # binary into a cache shared with the runtime node user even though the image
 # also has system ffmpeg for rendering.
-RUN apk add --no-cache chromium ffmpeg font-noto ttf-freefont \
+#
+# Remotion wraps Chromium with `setpriv --pdeathsig SIGKILL` on Linux. BusyBox
+# exposes a smaller setpriv applet at /bin/setpriv, but it does not implement
+# --pdeathsig and makes the render browser exit before its first frame. Alpine's
+# dedicated setpriv package installs the util-linux implementation in /usr/bin,
+# ahead of /bin on PATH.
+RUN apk add --no-cache chromium ffmpeg font-noto setpriv ttf-freefont \
   && ffmpeg -version > /dev/null \
   && ffprobe -version > /dev/null \
   && /usr/bin/chromium --version > /dev/null \
+  && command -v setpriv | grep -q '^/usr/bin/setpriv$' \
+  && setpriv --help 2>&1 | grep -q -- '--pdeathsig' \
   && PLAYWRIGHT_BROWSERS_PATH=/ms-playwright npx playwright install ffmpeg \
   && chown -R node:node /ms-playwright
 
