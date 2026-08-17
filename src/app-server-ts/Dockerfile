@@ -50,16 +50,24 @@ RUN chmod +x ./start.sh
 # ffmpeg or Chromium is one whose Studio shows "no browser · no ffmpeg" to an
 # operator with no way to tell why. Prove both run here, at build time, where
 # the failure is a red job instead of a dead button.
+#
+# Playwright's recordVideo implementation does not use FFMPEG_PATH. It resolves
+# the FFmpeg revision from its own browser registry, so install that small
+# binary into a cache shared with the runtime node user even though the image
+# also has system ffmpeg for rendering.
 RUN apk add --no-cache chromium ffmpeg font-noto ttf-freefont \
   && ffmpeg -version > /dev/null \
   && ffprobe -version > /dev/null \
-  && /usr/bin/chromium --version > /dev/null
+  && /usr/bin/chromium --version > /dev/null \
+  && PLAYWRIGHT_BROWSERS_PATH=/ms-playwright npx playwright install ffmpeg \
+  && chown -R node:node /ms-playwright
 
 # Absolute paths rather than a bare command name: these are handed to Playwright
 # as `executablePath` and to Remotion as its browser, and neither searches PATH.
 # They match what demo-factory/tools/provision-workspace.mjs writes for a
 # workspace, so the pipeline reads the same variables wherever it runs.
 ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 \
+    PLAYWRIGHT_BROWSERS_PATH=/ms-playwright \
     PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium \
     REMOTION_BROWSER_EXECUTABLE=/usr/bin/chromium \
     FFMPEG_PATH=/usr/bin/ffmpeg \
