@@ -1,0 +1,295 @@
+name: B1 Update
+run-name: B1 Update${{ inputs.version && format(' to {0}', inputs.version) || ' to the newest release' }}
+
+# WHAT THIS IS
+# Moving a repository to a newer Build.One release is one command — `b1 update
+# <version>` — and everything it does is a file change: the @buildone packages
+# move, the repository migrations that ship with them rewrite workflows, tasks
+# and configuration, and the deployment files are regenerated. File changes
+# belong in a pull request, reviewed and checked, rather than in whichever
+# workspace happened to run the command and then had to push the result.
+#
+# So this runs the command on a runner and hands back a branch.
+#
+# WHY MANUAL ONLY
+# There is no schedule here. Taking a new framework version is a decision with
+# a release note attached, and a repository that wants it nightly can add a
+# `schedule:` trigger below — the job resolves the newest published version on
+# its own when no version is given, so it needs nothing else to run unattended.
+#
+# WHY THE CHECKS ARE DISPATCHED RATHER THAN JUST HAPPENING
+# GitHub does not start workflows for a pull request opened with GITHUB_TOKEN.
+# That guard is deliberate — it is what stops a workflow creating work for
+# itself forever — and it means an update pull request would otherwise sit with
+# no checks at all. Rather than keep a personal access token in every customer
+# repository to get around it, the last step asks for the runs explicitly. They
+# appear as their own runs against the branch instead of as checks on the pull
+# request; that is the trade, and it is stated on the pull request itself.
+#
+# WHAT IT NEEDS
+# The AUTH_URL and B1_ORG_API_KEY Actions secrets — the AWS credentials for the
+# package registry are fetched with them — and, for the pull request itself,
+# "Allow GitHub Actions to create and approve pull requests" enabled under
+# Settings → Actions → General. Without that last one the branch is still
+# pushed and the run says which setting to turn on.
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to update to, e.g. 24.3.0-VG.412. Empty takes the newest published one.'
+        required: false
+        default: ''
+      branch:
+        description: 'Branch to open the pull request from. Empty uses b1-update/<version>.'
+        required: false
+        default: ''
+      checks:
+        description: 'Workflows to start against the new branch once the pull request is open. Empty starts none.'
+        required: false
+        default: 'build.yml e2e.yml'
+
+permissions:
+  contents: write # push the update branch
+  pull-requests: write # open the pull request
+  actions: write # start the checks against it
+
+# Two updates at once would race for the same branch name and leave two pull
+# requests changing the same files. Queued rather than cancelled: a run that has
+# already pushed should be allowed to finish opening its pull request.
+concurrency:
+  group: b1-update-${{ github.repository }}
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      # Every script `b1` launches resolves its paths from this; the CLI does
+      # not derive it.
+      WORKSPACE_ROOT: ${{ github.workspace }}
+      # The dispatch inputs are read as environment, never interpolated into a
+      # `run:` script. An expression is substituted before bash ever sees the
+      # line, so a version string containing shell syntax would run as shell;
+      # as environment it is data whatever it contains. They are validated
+      # below as well, because a branch name is also a filesystem path.
+      INPUT_VERSION: ${{ inputs.version }}
+      INPUT_BRANCH: ${{ inputs.branch }}
+      INPUT_CHECKS: ${{ inputs.checks }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v5
+
+      # One organization key, and the AWS pair the package registry needs comes
+      # back from the secret store as job environment.
+      - name: Fetch this repository's secrets
+        uses: ./.github/actions/b1-secrets
+        with:
+          auth-url: ${{ secrets.AUTH_URL }}
+          api-key: ${{ secrets.B1_ORG_API_KEY }}
+          require: B1_ACCESS_KEY_ID B1_SECRET_ACCESS_KEY
+
+      - uses: ./.github/actions/setup-node
+        with:
+          aws-access-key-id: ${{ env.B1_ACCESS_KEY_ID || secrets.B1_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.B1_SECRET_ACCESS_KEY || secrets.B1_SECRET_ACCESS_KEY }}
+          focus-workspaces: app app-server-ts web-app data
+
+      # `b1 update` installs the new CLI and then re-invokes `b1` — the new one,
+      # which is the point — by name. Nothing puts the workspace binaries on
+      # PATH on a runner, and without this the update stops halfway, having
+      # changed package.json and nothing else.
+      - name: Put the workspace binaries on PATH
+        run: echo "${GITHUB_WORKSPACE}/node_modules/.bin" >> "${GITHUB_PATH}"
+
+      # setup-node mints this for its own install and exports it; a repository
+      # whose copy of the action does not is one `yarn add` away from a 401
+      # that says nothing about why. Minted here only when it is missing.
+      - name: Make sure the package registry stays authorised
+        run: |
+          set -euo pipefail
+          if [[ -n "${CODEARTIFACT_AUTH_TOKEN:-}" ]]; then
+            echo "Already authorised by setup-node."
+            exit 0
+          fi
+          token=$(aws codeartifact get-authorization-token \
+            --domain buildone --domain-owner 653306034207 \
+            --region eu-central-1 --query authorizationToken --output text)
+          echo "::add-mask::${token}"
+          echo "CODEARTIFACT_AUTH_TOKEN=${token}" >> "${GITHUB_ENV}"
+
+      - name: Work out which version to update to
+        id: target
+        run: |
+          set -euo pipefail
+          installed=$(jq -r '.version' node_modules/@buildone/swat-cli/package.json)
+
+          version="${INPUT_VERSION}"
+          if [[ -z "${version}" ]]; then
+            # The registry's own answer to "what is newest", so an unattended
+            # run needs no version list kept anywhere.
+            version=$(yarn npm info @buildone/swat-cli --fields version --json | jq -r '.version')
+          fi
+
+          # `b1 update` puts the version into a shell command and into
+          # package.json, and the branch name below becomes a path on disk.
+          # Both are checked here rather than trusted.
+          if [[ ! "${version}" =~ ^[A-Za-z0-9][A-Za-z0-9._+-]*$ ]]; then
+            echo "::error title=B1 update::'${version}' is not a version string."
+            exit 1
+          fi
+
+          branch="${INPUT_BRANCH:-b1-update/${version}}"
+          if [[ ! "${branch}" =~ ^[A-Za-z0-9][A-Za-z0-9._/-]*$ || "${branch}" == *".."* ]]; then
+            echo "::error title=B1 update::'${branch}' is not a usable branch name."
+            exit 1
+          fi
+
+          {
+            echo "version=${version}"
+            echo "installed=${installed}"
+            echo "branch=${branch}"
+          } >> "${GITHUB_OUTPUT}"
+
+          # Not a failure: "we are already there" is a perfectly good outcome
+          # for a button somebody pressed to find out.
+          if [[ "${version}" == "${installed}" ]]; then
+            echo "current=true" >> "${GITHUB_OUTPUT}"
+            echo "::notice title=B1 update::Already on ${installed} — nothing to update."
+          else
+            echo "current=false" >> "${GITHUB_OUTPUT}"
+            echo "Updating ${installed} → ${version} on ${branch}"
+          fi
+
+      # Checked before the update rather than at the push, which is twenty
+      # minutes later and has already rewritten the checkout.
+      - name: Check the branch is free
+        if: steps.target.outputs.current == 'false'
+        env:
+          BRANCH: ${{ steps.target.outputs.branch }}
+        run: |
+          set -euo pipefail
+          if git ls-remote --exit-code --heads origin "${BRANCH}" >/dev/null 2>&1; then
+            echo "::error title=B1 update::${BRANCH} already exists. Merge or delete its pull request, or dispatch again with another branch name."
+            exit 1
+          fi
+
+      - name: Update
+        if: steps.target.outputs.current == 'false'
+        env:
+          VERSION: ${{ steps.target.outputs.version }}
+          BRANCH: ${{ steps.target.outputs.branch }}
+        run: |
+          set -euo pipefail
+          git switch -c "${BRANCH}"
+          # --yes because the confirmation this command opens with is about a
+          # workspace's unexported blueprint work and a stack going down, and
+          # there is neither here. A fresh checkout has no generated .deploy/,
+          # so the update skips the stack entirely and is packages, migrations
+          # and deployment files.
+          b1 update "${VERSION}" --yes
+
+      - name: Commit what changed
+        id: commit
+        if: steps.target.outputs.current == 'false'
+        env:
+          VERSION: ${{ steps.target.outputs.version }}
+          INSTALLED: ${{ steps.target.outputs.installed }}
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+
+          # A release with no migrations and no package changes reaching this
+          # repository is possible, and an empty pull request helps nobody.
+          if git diff --cached --quiet; then
+            echo "changed=false" >> "${GITHUB_OUTPUT}"
+            echo "::notice title=B1 update::${VERSION} changed no files in this repository, so there is no pull request to open."
+            exit 0
+          fi
+
+          echo "changed=true" >> "${GITHUB_OUTPUT}"
+          git commit --quiet -m "chore: update Build.One to ${VERSION}" -m "From ${INSTALLED}, by the B1 Update workflow."
+          git diff --stat HEAD~1 HEAD | tail -n 40 > /tmp/b1-update-stat.txt
+
+      - name: Open the pull request
+        id: pr
+        if: steps.commit.outputs.changed == 'true'
+        env:
+          VERSION: ${{ steps.target.outputs.version }}
+          INSTALLED: ${{ steps.target.outputs.installed }}
+          BRANCH: ${{ steps.target.outputs.branch }}
+          BASE: ${{ github.ref_name }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          git push --quiet --set-upstream origin "${BRANCH}"
+
+          body=$(mktemp)
+          {
+            printf '`b1 update %s`, run by the [B1 Update workflow](%s).\n\n' "${VERSION}" "${RUN_URL}"
+            printf '| | |\n|---|---|\n| From | `%s` |\n| To | `%s` |\n\n' "${INSTALLED}" "${VERSION}"
+            printf 'The packages moved, the repository migrations that ship with them were applied, and the deployment files were regenerated.\n\n'
+            printf '<details><summary>Files changed</summary>\n\n```\n'
+            cat /tmp/b1-update-stat.txt
+            printf '```\n\n</details>\n\n'
+            printf -- '---\n\n'
+            printf 'GitHub does not start workflows for a pull request opened by Actions, so the checks were asked for separately and run against `%s` rather than appearing here. Their results are in the [Actions tab](%s/%s/actions?query=branch%%3A%s).\n' \
+              "${BRANCH}" "${GITHUB_SERVER_URL}" "${GITHUB_REPOSITORY}" "${BRANCH}"
+          } > "${body}"
+
+          if ! url=$(gh pr create \
+            --base "${BASE}" \
+            --head "${BRANCH}" \
+            --title "chore: update Build.One to ${VERSION}" \
+            --body-file "${body}"); then
+            echo "::error title=B1 update::The branch was pushed but the pull request could not be created. If this says 'GitHub Actions is not permitted to create pull requests', turn on Settings → Actions → General → Allow GitHub Actions to create and approve pull requests. Otherwise open the pull request from ${BRANCH} by hand."
+            exit 1
+          fi
+          echo "url=${url}" >> "${GITHUB_OUTPUT}"
+
+      - name: Start the checks against the branch
+        if: steps.commit.outputs.changed == 'true' && inputs.checks != ''
+        env:
+          BRANCH: ${{ steps.target.outputs.branch }}
+        run: |
+          set -uo pipefail
+          # Not `set -e`: a repository whose CI is named something else, or
+          # whose build workflow has no workflow_dispatch trigger, should get a
+          # line telling it so — not a red run over a pull request that is
+          # perfectly good.
+          for workflow in ${INPUT_CHECKS}; do
+            if gh workflow run "${workflow}" --ref "${BRANCH}"; then
+              echo "Started ${workflow} against ${BRANCH}."
+            else
+              echo "::warning title=B1 update::Could not start ${workflow} — it may not exist in this repository, or may not accept a manual run. Start the checks on ${BRANCH} by hand, or set the workflow's 'checks' input to the ones this repository has."
+            fi
+          done
+
+      - name: Summarise
+        if: always() && steps.target.outputs.version != ''
+        env:
+          VERSION: ${{ steps.target.outputs.version }}
+          INSTALLED: ${{ steps.target.outputs.installed }}
+          BRANCH: ${{ steps.target.outputs.branch }}
+          CURRENT: ${{ steps.target.outputs.current }}
+          CHANGED: ${{ steps.commit.outputs.changed }}
+          PR_URL: ${{ steps.pr.outputs.url }}
+        run: |
+          {
+            echo "### B1 Update"
+            echo ""
+            if [[ "${CURRENT}" == "true" ]]; then
+              echo "Already on \`${INSTALLED}\`. Nothing to do."
+            elif [[ -n "${PR_URL}" ]]; then
+              echo "\`${INSTALLED}\` → \`${VERSION}\` on \`${BRANCH}\`."
+              echo ""
+              echo "${PR_URL}"
+            elif [[ "${CHANGED}" == "false" ]]; then
+              echo "\`${VERSION}\` changed no files in this repository. No pull request opened."
+            else
+              echo "\`${INSTALLED}\` → \`${VERSION}\` did not finish. The log above says where it stopped."
+            fi
+          } >> "${GITHUB_STEP_SUMMARY}"

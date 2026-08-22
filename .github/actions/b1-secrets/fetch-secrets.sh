@@ -18,9 +18,9 @@
 # matches masks against individual log lines.
 #
 # There are two exceptions. A value too short to mask without collateral damage
-# (see MIN_MASK_LENGTH below, which exists because masking a two-character one
+# (see min_mask_length below, which exists because masking a two-character one
 # broke a release), and a value the calling workflow declares non-sensitive (see
-# UNMASKED_KEYS). Both are exported in the clear; the first is warned about
+# unmasked_keys). Both are exported in the clear; the first is warned about
 # because nobody chose it, the second is not because somebody did.
 #
 # PRECEDENCE
@@ -38,11 +38,32 @@
 # =============================================================================
 set -uo pipefail
 
-AUTH_URL="${B1_SECRETS_AUTH_URL:-}"
-API_KEY="${B1_SECRETS_API_KEY:-}"
-SCOPE="${B1_SECRETS_SCOPE:-}"
-REQUIRE="${B1_SECRETS_REQUIRE:-}"
-UNMASKED_KEYS="${B1_SECRETS_UNMASKED_KEYS:-}"
+# EVERY VARIABLE IN THIS SCRIPT IS LOWERCASE, AND THAT IS LOAD-BEARING.
+# The export loop decides a secret is already pinned in the job environment with
+# `[[ -n "${!name:-}" ]]`, where `name` came from env_name_from_secret_key. An
+# indirect expansion cannot tell a variable inherited from the job from one this
+# script set a moment ago, so any local name that a secret key could also
+# produce is a secret this script silently drops.
+#
+# That is not hypothetical. These five were once uppercase, and `auth-url` — a
+# key in the default unmasked-keys list below, so plainly one we expect to
+# export — resolved to the AUTH_URL assigned here. Every repository ran CI
+# without it, the log said "Left 1 already set in the environment: AUTH_URL",
+# and the first workflow that actually read the value failed twelve minutes
+# into a stack that could not reach an auth server.
+#
+# env_name_from_secret_key can only ever emit ^[A-Z][A-Z0-9_]*$, so a name
+# holding a lowercase letter cannot collide with one — by construction, not by
+# our remembering to check. Keep them lowercase. GITHUB_ENV and GITHUB_OUTPUT
+# below are the deliberate exceptions: those two are meant to come from the
+# runner, and a secret named `github-env` has no business overwriting either.
+# The workspace half of this fetch follows the same rule — see the `api_key`
+# local in devcontainer/orchestrators/fetch-user-secrets.sh.
+auth_url="${B1_SECRETS_AUTH_URL:-}"
+api_key="${B1_SECRETS_API_KEY:-}"
+scope="${B1_SECRETS_SCOPE:-}"
+require="${B1_SECRETS_REQUIRE:-}"
+unmasked_keys="${B1_SECRETS_UNMASKED_KEYS:-}"
 
 # Outside a runner these land in throwaway files rather than failing, so the
 # script can be tested and run by hand.
@@ -54,36 +75,36 @@ fail() {
   exit 1
 }
 
-[[ -n "${AUTH_URL}" ]] || fail "auth-url is empty. Set it to the auth server the API key was minted at."
-[[ -n "${API_KEY}" ]] || fail "api-key is empty. Provide an organization API key (b1o_…)."
+[[ -n "${auth_url}" ]] || fail "auth-url is empty. Set it to the auth server the API key was minted at."
+[[ -n "${api_key}" ]] || fail "api-key is empty. Provide an organization API key (b1o_…)."
 
-AUTH_URL="${AUTH_URL%/}"
+auth_url="${auth_url%/}"
 
 # The key travels in a request header, so the transport has to be encrypted
 # before the request is made — there is no undoing it afterwards. curl reads a
 # scheme-less URL as http://, which would put the key on the wire in clear text
 # and then fail on the redirect to https.
-case "${AUTH_URL}" in
+case "${auth_url}" in
   https://*) ;;
   http://localhost | http://localhost:* | http://127.0.0.1 | http://127.0.0.1:*) ;;
-  *) fail "auth-url (${AUTH_URL}) is not https. Refusing to send the API key over an unencrypted connection." ;;
+  *) fail "auth-url (${auth_url}) is not https. Refusing to send the API key over an unencrypted connection." ;;
 esac
 
 command -v jq >/dev/null 2>&1 || fail "jq is required and is not on PATH."
 
 query=''
-if [[ -n "${SCOPE}" ]]; then
+if [[ -n "${scope}" ]]; then
   # Percent-encode the '/' so owner/name cannot be read as a path segment.
-  query="?scope=${SCOPE//\//%2F}"
-  echo "Resolving secrets from ${AUTH_URL} for scope ${SCOPE}"
+  query="?scope=${scope//\//%2F}"
+  echo "Resolving secrets from ${auth_url} for scope ${scope}"
 else
-  echo "Resolving secrets from ${AUTH_URL} (unscoped)"
+  echo "Resolving secrets from ${auth_url} (unscoped)"
 fi
 
 response=$(curl -sS --connect-timeout 10 --max-time 30 -w '\n%{http_code}' \
-  -H "x-api-key: ${API_KEY}" \
-  "${AUTH_URL}/api/secrets/resolve-all${query}" 2>/dev/null) ||
-  fail "Could not reach ${AUTH_URL}. Check the auth server is up and the runner has network access."
+  -H "x-api-key: ${api_key}" \
+  "${auth_url}/api/secrets/resolve-all${query}" 2>/dev/null) ||
+  fail "Could not reach ${auth_url}. Check the auth server is up and the runner has network access."
 
 http_code="${response##*$'\n'}"
 body="${response%$'\n'*}"
@@ -91,7 +112,7 @@ body="${response%$'\n'*}"
 case "${http_code}" in
   200) ;;
   401 | 403)
-    fail "The auth server rejected the API key. A key only works at the server that minted it — check the key was minted at ${AUTH_URL}, and that it has not been revoked."
+    fail "The auth server rejected the API key. A key only works at the server that minted it — check the key was minted at ${auth_url}, and that it has not been revoked."
     ;;
   *) fail "The auth server answered HTTP ${http_code}." ;;
 esac
@@ -102,7 +123,7 @@ esac
 # so a value holding spaces or newlines survives the read loop intact; tab
 # because the server's key charset has no tab in it, so a malformed key keeps
 # its whole self on the left of the split instead of being silently cut in half.
-SECRET_STREAM_FILTER='
+secret_stream_filter='
   .secrets[]
   | .key as $k
   | .secret as $s
@@ -128,7 +149,7 @@ env_name_from_secret_key() {
 }
 
 # Below this, masking does more harm than good — see the note at the mask.
-MIN_MASK_LENGTH=8
+min_mask_length=8
 
 # The values declared non-sensitive by the caller — see the `unmasked-keys` input
 # in action.yml, which carries the default list and the reasoning for it. These
@@ -152,7 +173,7 @@ MIN_MASK_LENGTH=8
 # matched against that. A name no secret answers to is simply inert: the list is
 # shared by every caller, so most jobs declare more than they fetch.
 declared_unmasked=' '
-for entry in ${UNMASKED_KEYS}; do
+for entry in ${unmasked_keys}; do
   if entry_name=$(env_name_from_secret_key "${entry}"); then
     declared_unmasked+="${entry_name} "
   else
@@ -199,7 +220,7 @@ while IFS=$'\t' read -r key encoded; do
   # which is not a valid Docker tag, and the publish failed a long way from the
   # cause.
   #
-  # So a value below MIN_MASK_LENGTH is exported unmasked and named in a warning.
+  # So a value below min_mask_length is exported unmasked and named in a warning.
   # This is the same rule GitLab enforces on masked variables, and for the same
   # reason: a secret that short cannot be masked without breaking the log, and
   # cannot be kept secret by masking anyway — it appears by chance in ordinary
@@ -213,7 +234,7 @@ while IFS=$'\t' read -r key encoded; do
   # the workflow file to discover.
   if [[ "${declared_unmasked}" == *" ${name} "* ]]; then
     declared_names+=("${name}")
-  elif ((${#value} >= MIN_MASK_LENGTH)); then
+  elif ((${#value} >= min_mask_length)); then
     echo "::add-mask::${value}"
     if [[ "${value}" == *$'\n'* ]]; then
       while IFS= read -r line; do
@@ -240,7 +261,7 @@ while IFS=$'\t' read -r key encoded; do
 
   exported=$((exported + 1))
   exported_names+=("${name}")
-done < <(printf '%s' "${body}" | jq -r "${SECRET_STREAM_FILTER}" 2>/dev/null)
+done < <(printf '%s' "${body}" | jq -r "${secret_stream_filter}" 2>/dev/null)
 
 # Names only — never values.
 echo "Exported ${exported} secret(s): ${exported_names[*]:-none}"
@@ -251,7 +272,7 @@ if [[ ${#declared_names[@]} -gt 0 ]]; then
   echo "Exported unmasked, declared non-sensitive: ${declared_names[*]}"
 fi
 if [[ ${#unmasked_names[@]} -gt 0 ]]; then
-  echo "::warning title=B1 secrets::Exported without masking, being shorter than ${MIN_MASK_LENGTH} characters: ${unmasked_names[*]}. A value this short cannot be masked without redacting ordinary text from the whole run. Store it as an Actions variable if it is not sensitive, or make it longer if it is."
+  echo "::warning title=B1 secrets::Exported without masking, being shorter than ${min_mask_length} characters: ${unmasked_names[*]}. A value this short cannot be masked without redacting ordinary text from the whole run. Store it as an Actions variable if it is not sensitive, or make it longer if it is."
 fi
 if [[ ${#skipped_keys[@]} -gt 0 ]]; then
   echo "::warning title=B1 secrets::Skipped ${#skipped_keys[@]} secret(s) whose name cannot be an environment variable: ${skipped_keys[*]}"
@@ -261,9 +282,9 @@ printf 'count=%s\n' "${exported}" >>"${GITHUB_OUTPUT}"
 
 # A job that names what it needs fails here, with the names, rather than three
 # steps later inside a tool that only says it could not authenticate.
-if [[ -n "${REQUIRE}" ]]; then
+if [[ -n "${require}" ]]; then
   missing=()
-  for name in ${REQUIRE}; do
+  for name in ${require}; do
     # An exported value is not in this shell's environment — it reaches the job
     # through $GITHUB_ENV, which the runner applies after this step. So check
     # what was exported here as well as what was already set.
@@ -272,6 +293,6 @@ if [[ -n "${REQUIRE}" ]]; then
     fi
   done
   if [[ ${#missing[@]} -gt 0 ]]; then
-    fail "Required secret(s) not available from ${AUTH_URL}: ${missing[*]}. Provision them for this organization (or this repository's scope), or set them as Actions secrets."
+    fail "Required secret(s) not available from ${auth_url}: ${missing[*]}. Provision them for this organization (or this repository's scope), or set them as Actions secrets."
   fi
 fi

@@ -1,0 +1,22 @@
+{
+  "name": "e2e",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "End-to-end (Playwright) tests for this application",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "scripts": {
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:report": "playwright show-report",
+    "report": "node ../../node_modules/@buildone/swat-cli/scripts/reports/e2e-report.mjs --input test-results/e2e-results.json --out-dir test-results",
+    "codegen": "playwright codegen http://localhost:8080"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.62.1",
+    "@types/node": "^24.0.0"
+  }
+}
