@@ -9,9 +9,36 @@ import {
   useCurrentFrame,
   useVideoConfig,
 } from 'remotion';
-import type {Caption, DemoScene, DemoVideoProps} from './types';
+import type {Caption, DemoScene, DemoVideoProps, Timelapse} from './types';
 
 const msToFrames = (milliseconds: number, fps: number) => Math.max(1, Math.round((milliseconds / 1000) * fps));
+
+/**
+ * The clip cut into playback segments: real time outside the timelapses, and
+ * each timelapse squeezed into its narration budget. Output times are
+ * scene-local; clip times seek into the source video.
+ */
+type PlaybackSegment = {outFromMs: number; durationMs: number; clipFromMs: number; rate: number};
+
+const playbackSegments = (scene: DemoScene): PlaybackSegment[] => {
+  const clipEndMs = scene.recordedDurationMs;
+  const timelapses = [...(scene.timelapses ?? [])].sort((a, b) => a.fromMs - b.fromMs);
+  const segments: PlaybackSegment[] = [];
+  let clipMs = 0;
+  let outMs = 0;
+  const push = (durationMs: number, clipFromMs: number, rate: number) => {
+    if (durationMs <= 0) return;
+    segments.push({outFromMs: outMs, durationMs, clipFromMs, rate});
+    outMs += durationMs;
+  };
+  for (const lapse of timelapses) {
+    push(lapse.fromMs - clipMs, clipMs, 1);
+    push(lapse.targetMs, lapse.fromMs, (lapse.toMs - lapse.fromMs) / lapse.targetMs);
+    clipMs = lapse.toMs;
+  }
+  push(clipEndMs - clipMs, clipMs, 1);
+  return segments;
+};
 
 const CaptionOverlay: React.FC<{captions: Caption[]; offsetMs: number}> = ({captions, offsetMs}) => {
   const frame = useCurrentFrame();
@@ -72,12 +99,48 @@ const SceneTitle: React.FC<{scene: DemoScene; props: DemoVideoProps}> = ({scene,
   );
 };
 
+const FastForwardBadge: React.FC<{accentColor: string; rate: number}> = ({accentColor, rate}) => (
+  <div style={{
+    position: 'absolute',
+    left: 28,
+    bottom: 130,
+    display: 'flex',
+    alignItems: 'center',
+    gap: 10,
+    padding: '9px 16px',
+    borderRadius: 10,
+    background: 'rgba(11, 16, 32, .78)',
+    color: '#fff',
+    font: '700 21px Inter, Arial, sans-serif',
+    letterSpacing: '.02em',
+  }}>
+    <span style={{color: accentColor}}>▶▶</span>
+    <span>{`${Math.max(2, Math.round(rate))}× — working live`}</span>
+  </div>
+);
+
 const Scene: React.FC<{scene: DemoScene; props: DemoVideoProps}> = ({scene, props}) => {
   const {fps} = useVideoConfig();
   const narrationFrame = msToFrames(scene.narrationOffsetMs, fps);
+  const segments = playbackSegments(scene);
   return (
     <AbsoluteFill style={{background: props.branding.backgroundColor}}>
-      <OffthreadVideo src={staticFile(scene.clipAsset)} muted />
+      {segments.map((segment) => (
+        <Sequence
+          key={`${scene.id}-${segment.outFromMs}`}
+          from={Math.round((segment.outFromMs / 1000) * fps)}
+          durationInFrames={msToFrames(segment.durationMs, fps)}
+          name={segment.rate > 1 ? `${scene.id} ×${segment.rate.toFixed(1)}` : undefined}
+        >
+          <OffthreadVideo
+            src={staticFile(scene.clipAsset)}
+            muted
+            startFrom={Math.round((segment.clipFromMs / 1000) * fps)}
+            playbackRate={segment.rate}
+          />
+          {segment.rate > 1 ? <FastForwardBadge accentColor={props.branding.accentColor} rate={segment.rate} /> : null}
+        </Sequence>
+      ))}
       <Sequence from={narrationFrame}>
         <Audio src={staticFile(scene.narrationAsset)} />
       </Sequence>
@@ -103,7 +166,7 @@ export const DemoVideo: React.FC<DemoVideoProps> = (props) => {
   return (
     <AbsoluteFill style={{background: props.branding.backgroundColor}}>
       {props.scenes.map((scene) => {
-        const duration = msToFrames(scene.recordedDurationMs, props.fps);
+        const duration = msToFrames(scene.effectiveDurationMs ?? scene.recordedDurationMs, props.fps);
         const from = cursor;
         cursor += duration;
         return (

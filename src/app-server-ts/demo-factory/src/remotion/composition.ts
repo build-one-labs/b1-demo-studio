@@ -14,12 +14,17 @@ export const DEMO_COMPOSITION = {
   fps: 30,
 } as const;
 
-/** Total frames = the sum of every scene's recorded duration, at the run's fps. */
+/**
+ * Total frames = the sum of every scene's playback duration, at the run's fps.
+ * A scene with timelapses plays shorter than it recorded; effectiveDurationMs
+ * carries that, and older manifests without it fall back to the recorded one.
+ */
 export const demoDurationInFrames = (props: DemoVideoProps): number =>
   Math.max(
     1,
     props.scenes.reduce(
-      (sum, scene) => sum + Math.max(1, Math.round((scene.recordedDurationMs / 1000) * props.fps)),
+      (sum, scene) =>
+        sum + Math.max(1, Math.round(((scene.effectiveDurationMs ?? scene.recordedDurationMs) / 1000) * props.fps)),
       0
     )
   );

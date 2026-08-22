@@ -42,8 +42,19 @@ const run = promisify(execFile);
  * The container's own values are the correct ones and must win.
  *
  * Add a line here when a connector starts reading a new secret.
+ *
+ * The ElevenLabs pair is the demo factory's voice-over: the pipeline runs
+ * inside the app-server container, so a key set as a Codespace secret never
+ * reaches it without this forward.
  */
-const FORWARDED = ['SALESFORCE_INSTANCE_URL', 'SALESFORCE_CLIENT_ID', 'SALESFORCE_CLIENT_SECRET'];
+const FORWARDED = [
+  'SALESFORCE_INSTANCE_URL',
+  'SALESFORCE_CLIENT_ID',
+  'SALESFORCE_CLIENT_SECRET',
+  'ELEVENLABS_API_KEY',
+  'ELEVENLABS_VOICE_ID',
+  'ELEVENLABS_MODEL_ID',
+];
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const envFile = path.join(repoRoot, 'src', 'app-server-ts', '.env');

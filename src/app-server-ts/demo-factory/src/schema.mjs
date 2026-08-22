@@ -10,7 +10,7 @@ const targetSchema = z.object({
 }).refine((target) => Object.values(target).some(Boolean), 'A target selector is required');
 
 const actionSchema = z.object({
-  action: z.enum(['goto', 'click', 'fill', 'press', 'hover', 'highlight', 'waitFor', 'screenshot']),
+  action: z.enum(['goto', 'click', 'dblclick', 'fill', 'type', 'press', 'hover', 'highlight', 'waitFor', 'screenshot']),
   atCue: z.string().optional(),
   atMs: z.number().int().nonnegative().optional(),
   offsetMs: z.number().int().optional(),
@@ -20,8 +20,34 @@ const actionSchema = z.object({
   key: z.string().optional(),
   durationMs: z.number().int().positive().optional(),
   timeoutMs: z.number().int().positive().optional(),
+  /** `type` only: milliseconds between keystrokes. */
+  delayMs: z.number().int().nonnegative().optional(),
+  /**
+   * `waitFor` only: record the wait in real time, then compress it to
+   * `targetMs` in the rendered video. Without `targetMs`, the compressed
+   * length is the narration's own budget — the gap to the next cue-bound
+   * action — so the footage after the wait lands back on its cue.
+   */
+  timelapse: z.union([z.literal(true), z.object({targetMs: z.number().int().positive().optional()})]).optional(),
+  /**
+   * `waitFor` only: the target must stay visible this long, continuously,
+   * before the wait counts as met. For states that flicker — an agent's
+   * status chip reads "Ready" between working steps — a plain visibility
+   * wait fires on the flicker; this rides it out.
+   */
+  stableMs: z.number().int().positive().optional(),
+  /**
+   * `waitFor` only: a rescue click. While the wait's own target has not
+   * appeared, this target is clicked whenever it is visible (at most every
+   * `everyMs`, default 45s) — for live environments that fail transiently
+   * and offer a Retry button.
+   */
+  retry: z.object({
+    target: targetSchema,
+    everyMs: z.number().int().positive().optional(),
+  }).optional(),
   name: z.string().optional(),
-});
+}).refine((action) => (!action.timelapse && !action.stableMs && !action.retry) || action.action === 'waitFor', {message: 'timelapse, stableMs and retry are only valid on waitFor actions'});
 
 const assertionSchema = z.union([
   z.object({visible: targetSchema}),
@@ -33,6 +59,18 @@ const sceneSchema = z.object({
   title: z.string().min(1),
   route: z.string().startsWith('/'),
   narration: z.string().min(1),
+  actions: z.array(actionSchema).default([]),
+  assertions: z.array(assertionSchema).default([]),
+});
+
+/**
+ * Actions run before any scene records, in a browser context that is never
+ * filmed — resetting the environment, seeding state, dismissing first-run
+ * dialogs. No narration, so `atCue` has nothing to bind to: actions run in
+ * order, each as soon as the one before it finished.
+ */
+const setupSchema = z.object({
+  route: z.string().startsWith('/'),
   actions: z.array(actionSchema).default([]),
   assertions: z.array(assertionSchema).default([]),
 });
@@ -83,5 +121,6 @@ export const demoSchema = z.object({
       showSceneTitles: z.boolean().default(true),
     }),
   }),
+  setup: setupSchema.optional(),
   scenes: z.array(sceneSchema).min(1),
 });

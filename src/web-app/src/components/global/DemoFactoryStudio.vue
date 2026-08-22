@@ -394,10 +394,13 @@
           >Demo ID<input v-model="newDemo.id" pattern="[a-z0-9][a-z0-9-]*" placeholder="customer-onboarding" required
         /></label>
         <label>Title<input v-model="newDemo.title" placeholder="Customer Onboarding" required /></label>
-        <label>Start from<input :value="demo?.title || '—'" readonly /></label>
+        <label>Start from<input :value="demo?.title || 'Blank demo'" readonly /></label>
         <p class="dfs-help">
-          Settings and scene structure are copied from the open demo. Adapt narration, routes and actions before
-          recording.
+          {{
+            demo
+              ? 'Settings and scene structure are copied from the open demo. Adapt narration, routes and actions before recording.'
+              : 'Starts from a blank template with default settings and one starter scene.'
+          }}
         </p>
         <div class="dfs-dialog-actions">
           <button type="button" class="dfs-btn ghost" @click="newDemoOpen = false">Cancel</button>
@@ -1015,14 +1018,66 @@ function deleteScene() {
 }
 
 /**
- * Create a demo as a copy of the open one: its row first (a demo with no
- * scenes yet is not written to disk), then its scenes, which is the write that
- * validates and materializes the new file.
+ * The document a demo starts from when none is open to copy: every field the
+ * schema requires, with the same defaults the reference demos use. One starter
+ * scene, because a demo with no scenes is never written to disk.
+ */
+function blankDemo(id: string): Demo {
+  return {
+    id,
+    title: id,
+    description: '',
+    schemaVersion: 1,
+    settings: {
+      language: 'en',
+      viewport: { width: 1920, height: 1080 },
+      fps: 30,
+      baseUrl: { env: 'B1_BASE_URL', fallback: 'http://localhost:8080/' },
+      authStateEnv: 'B1_AUTH_STATE',
+      headlessEnv: 'DEMO_HEADLESS',
+      holdBeforeMs: 700,
+      holdAfterMs: 1400,
+      cursor: { enabled: true, moveDurationMs: 700, clickLeadMs: 120, clickEffectDurationMs: 560, sizePx: 30 },
+      narration: {
+        provider: 'auto',
+        voiceIdEnv: 'ELEVENLABS_VOICE_ID',
+        apiKeyEnv: 'ELEVENLABS_API_KEY',
+        modelIdEnv: 'ELEVENLABS_MODEL_ID',
+        defaultModelId: 'eleven_multilingual_v2',
+        languageCodeEnv: 'ELEVENLABS_LANGUAGE_CODE',
+        defaultLanguageCode: 'en',
+        wordsPerMinute: 132
+      },
+      branding: {
+        productName: 'Build.One',
+        accentColor: '#1266f1',
+        backgroundColor: '#0b1020',
+        textColor: '#f7f8ff',
+        showCaptions: true,
+        showSceneTitles: true
+      }
+    },
+    scenes: [
+      {
+        id: 'opening',
+        title: 'Opening scene',
+        route: '/',
+        narration: 'Describe what this scene shows.',
+        actions: [],
+        assertions: []
+      }
+    ]
+  };
+}
+
+/**
+ * Create a demo — as a copy of the open one when a demo is selected, from a
+ * blank starter template otherwise. Its row first (a demo with no scenes yet
+ * is not written to disk), then its scenes, which is the write that validates
+ * and materializes the new file.
  */
 async function createDemo() {
-  const source = demo.value;
-  const sourceRow = currentDemoRow.value;
-  if (!source || !sourceRow || !demoDso.value || !sceneDso.value) return;
+  if (!demoDso.value || !sceneDso.value) return;
   const id = newDemo.id.trim();
   if (!/^[a-z0-9][a-z0-9-]*$/.test(id)) {
     notify('A demo id is lowercase letters, digits and hyphens.', true);
@@ -1033,14 +1088,23 @@ async function createDemo() {
     return;
   }
 
+  const source = demo.value && currentDemoRow.value ? demo.value : blankDemo(id);
+  const description =
+    demo.value && currentDemoRow.value
+      ? `Created from ${source.id} in the Demo Factory Studio.`
+      : 'Created in the Demo Factory Studio.';
+
   const created = await demoDso.value.commitChanges({
     createdRecords: [
       {
-        ...sourceRow,
         id,
         title: newDemo.title.trim() || id,
-        description: `Created from ${source.id} in the Demo Factory Studio.`,
+        description,
+        schemaVersion: source.schemaVersion,
         settings: JSON.parse(JSON.stringify(source.settings)),
+        sceneCount: source.scenes.length,
+        invalid: false,
+        invalidReason: '',
         sourceHash: '',
         driftedFromFile: false,
         updatedAt: null

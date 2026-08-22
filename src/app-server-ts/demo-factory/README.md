@@ -174,7 +174,13 @@ run id identifies a run; the prefix in front of it does not.
 
 ## Demos
 
-- **`opportunities-map`** — the default, and recorded. Two scenes on
+- **`b1-vibecode-governance`** — the ten-minute product video (vibe coding +
+  governance), recorded **live** against `vanguard-develop.test.build.one`:
+  an agent really builds the app on every take, with `timelapse:` waits
+  compressing the build in the render and a `setup:` repository reset before
+  each take. Needs a session-cookie auth state and an ElevenLabs key — the
+  header comment in its `demo.yaml` is the run book.
+- **`opportunities-map`** — recorded locally. Two scenes on
   `OpportunitiesMapScreen` (mini-apps): the live Salesforce list, and the same
   connector source plotted on a map. 69 seconds, silent and captioned.
 - **`sales-tour-planning`** — the vendored original, kept as an authoring
@@ -292,12 +298,17 @@ restart — both are above.
 
 ## Authoring
 
-See `AUTHORING.md` (scene rules, actions, cue markers, synthetic cursor) and
-`ARCHITECTURE.md` (pipeline stages, timing model). The short version: narration
-text carries `[cue:name]` markers; ElevenLabs returns character-level
-timestamps, so every browser action bound to a cue fires exactly when the voice
-reaches that word. Selectors prefer `data-demo-id`, then `role`+`name`, with
-CSS as the last resort.
+See `TUTORIAL.md` (the full walkthrough from empty project to finished MP4),
+`AUTHORING.md` (scene rules, actions, cue markers, timelapse, setup block,
+synthetic cursor) and `ARCHITECTURE.md` (pipeline stages, timing model). The
+short version: narration text carries `[cue:name]` markers; ElevenLabs returns
+character-level timestamps, so every browser action bound to a cue fires
+exactly when the voice reaches that word. Selectors prefer `data-demo-id`,
+then `role`+`name`, with CSS as the last resort. For live, unpredictably long
+stretches (an agent building, an analysis running) a `waitFor` with
+`timelapse: true` records in real time and renders compressed; a demo-level
+`setup:` block resets the environment before each full take without being
+filmed.
 
 Two recording constraints worth knowing before editing `demo.yaml`:
 
