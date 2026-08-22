@@ -5,6 +5,13 @@ description: Author and produce a Build.One product video with the demo factory 
 
 # Create a demo video
 
+> This is the **workspace variant** of the skill: it drives the factory from a
+> shell inside the repository. The Demo Creator agent's variant — no repo, no
+> file edits, data sources + server actions only — lives in the
+> DemoCreatorSkillDef blueprint clob and is the one a deployed environment
+> serves. Format rules (scenes, cues, timelapse, selectors) are shared; keep
+> those aligned when they change.
+
 One YAML file is one video. `demos/<demo-id>/demo.yaml` holds the storyboard —
 scenes, voice-over, cue markers, browser actions, assertions, branding — and the
 pipeline turns it into an MP4, an SRT and a reproducible run manifest:

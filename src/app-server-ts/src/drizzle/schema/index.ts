@@ -14,3 +14,4 @@ export * from './orderItems.table';
 export * from './payments.table';
 export * from './invoiceItemTaxes.table';
 export * from './markdownFiles.table';
+export * from './demoFactory.table';

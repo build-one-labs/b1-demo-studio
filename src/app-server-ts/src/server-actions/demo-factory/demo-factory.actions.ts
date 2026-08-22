@@ -7,19 +7,22 @@
  */
 import { spawn } from 'node:child_process';
 import { createWriteStream, WriteStream } from 'node:fs';
-import { mkdir, readdir, rm } from 'node:fs/promises';
+import { mkdir, readdir, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import { B1Action, B1ActionPayload, B1Service } from '@buildone/app-server-tslib';
+import { RequestContext } from '@buildone/app-server-tslib/modules';
 import { Logger } from '@nestjs/common';
 
 import { DemoFactoryHost } from './demo-factory.host';
-import { buildJobCommand, JobAction, stageBlockedReason } from './demo-factory.lib';
+import { assertOperator, buildJobCommand, JobAction, stageBlockedReason } from './demo-factory.lib';
 import { DemoFactoryMaterializer } from './demo-factory.materializer';
-import { DSO, JobRow } from './demo-factory.rows';
+import { DemoFactoryNarrationCache } from './demo-factory.narration-cache';
+import { DemoDocument, DSO, JobRow } from './demo-factory.rows';
 import { DemoFactoryRunIngest } from './demo-factory.run-ingest';
 import { DemoFactorySeedService } from './demo-factory.seed';
 import { DemoFactoryStore } from './demo-factory.store';
+import { DemoFactoryTransfer } from './demo-factory.transfer';
 
 /**
  * Server actions behind the Demo Factory Studio screen.
@@ -96,8 +99,21 @@ export class DemoFactoryStudio {
     private readonly store: DemoFactoryStore,
     private readonly materializer: DemoFactoryMaterializer,
     private readonly seed: DemoFactorySeedService,
-    private readonly runIngest: DemoFactoryRunIngest
+    private readonly runIngest: DemoFactoryRunIngest,
+    private readonly transfer: DemoFactoryTransfer,
+    private readonly narrationCache: DemoFactoryNarrationCache,
+    private readonly ctx: RequestContext
   ) {}
+
+  /**
+   * Refuse a mutating call from an account `DEMO_FACTORY_OPERATORS` does not
+   * list. Unset means open — the workspace behaviour — and on a deployed stack
+   * the variable is what separates watching videos from re-recording them,
+   * until platform-level Melange checks take that job over.
+   */
+  private assertOperator(): void {
+    assertOperator((this.ctx.user as { email?: string } | undefined)?.email);
+  }
 
   private job: JobState = idleJob();
 
@@ -208,6 +224,7 @@ export class DemoFactoryStudio {
   async startJob({
     body: { action = 'validate', demoId = '', scenes = [], voice } = {}
   }: B1ActionPayload<{ action?: JobAction; demoId?: string; scenes?: string[]; voice?: string }> = {}) {
+    this.assertOperator();
     if (this.job.status === 'running') throw new Error('Another job is already running');
     const command = buildJobCommand({ action, demoId, scenes, voice });
 
@@ -222,6 +239,10 @@ export class DemoFactoryStudio {
     // A demo that no longer validates throws out of this call rather than
     // failing three stages later inside a child process.
     await this.materializer.materializeIfPresent(demoId);
+
+    // A prepare on a freshly deployed container starts with an empty cache
+    // directory; the table remembers what was already paid for.
+    if (action === 'prepare' || action === 'all') await this.narrationCache.restore();
 
     const startedAt = new Date().toISOString();
     this.job = {
@@ -281,6 +302,8 @@ export class DemoFactoryStudio {
       // rows as the person who clicked.
       await this.ingestRun();
       await this.recordJob();
+      // Whatever narration the pipeline newly synthesized becomes durable.
+      if (this.job.action === 'prepare' || this.job.action === 'all') await this.narrationCache.ingest();
     }
   }
 
@@ -308,11 +331,89 @@ export class DemoFactoryStudio {
 
   @B1Action({ description: 'Stop the running pipeline job' })
   async cancelJob() {
+    this.assertOperator();
     if (this.job.status !== 'running') return this.job;
     this.job.status = 'cancelled';
     this.appendLog('Cancelled by the operator.', 'stderr');
     this.activeChild?.kill('SIGTERM');
     return this.job;
+  }
+
+  /**
+   * Replace a demo with the given document, validated exactly as a Studio edit
+   * would be. This is the one write path for callers that hold a whole
+   * document — the Studio's import dialog, and an agent working over MCP that
+   * must never edit files or raw clobs.
+   */
+  @B1Action({ description: 'Create or replace a demo from a full document (validated before anything lands)' })
+  async saveDemo({ body: { document } = {} }: B1ActionPayload<{ document?: DemoDocument }> = {}) {
+    this.assertOperator();
+    if (!document || typeof document !== 'object') throw new Error('Pass the demo as `document`');
+    return this.transfer.saveDocument(document);
+  }
+
+  @B1Action({ description: 'The demo as demo.yaml text — the backup and transfer format' })
+  async exportDemo({ body: { demoId = '' } = {} }: B1ActionPayload<{ demoId?: string }> = {}) {
+    return this.transfer.exportYaml(demoId);
+  }
+
+  @B1Action({
+    description: 'Import a demo given as demo.yaml text (mode: fail | overwrite | copy, optional newId for copy)'
+  })
+  async importDemo({
+    body: { yaml = '', mode, newId } = {}
+  }: B1ActionPayload<{ yaml?: string; mode?: 'fail' | 'overwrite' | 'copy'; newId?: string }> = {}) {
+    this.assertOperator();
+    if (!yaml.trim()) throw new Error('Pass the demo.yaml text as `yaml`');
+    return this.transfer.importYaml(yaml, { mode, newId });
+  }
+
+  /**
+   * Turn a pasted session token into the Playwright storage state the recorder
+   * signs in with — the deployed replacement for the shell-only
+   * `tools/auth-from-session.mjs`. The token is written into the state file
+   * (that is its whole purpose) and never logged or stored anywhere else; the
+   * file lands under the output root, which on a deployment is the persistent
+   * volume.
+   */
+  @B1Action({ description: 'Mint the Playwright auth state from a pasted b1.session_token cookie' })
+  async mintAuthState({
+    body: { sessionToken = '', baseUrl = '' } = {}
+  }: B1ActionPayload<{ sessionToken?: string; baseUrl?: string }> = {}) {
+    this.assertOperator();
+    const token = sessionToken.trim();
+    if (!token) throw new Error('Pass the b1.session_token cookie value as `sessionToken`');
+
+    const targetUrl = baseUrl.trim() || this.host.setting('B1_BASE_URL');
+    if (!targetUrl) throw new Error('No base URL — pass `baseUrl` or configure B1_BASE_URL in Settings');
+    const target = new URL(targetUrl);
+    const secure = target.protocol === 'https:';
+    // A year out, matching tools/auth-from-session.mjs: the recorder only ever
+    // reads this file, and a past expiry makes Playwright drop the cookie
+    // silently rather than fail loudly.
+    const expires = Math.floor(Date.now() / 1000) + 365 * 24 * 60 * 60;
+    const cookie = (name: string) => ({
+      name,
+      value: token,
+      domain: target.hostname,
+      path: '/',
+      expires,
+      httpOnly: true,
+      secure,
+      sameSite: 'Lax' as const
+    });
+    // The __Secure- prefix is only legal on a secure origin — same rule as the CLI tool.
+    const cookies = secure
+      ? [cookie('b1.session_token'), cookie('__Secure-b1.session_token')]
+      : [cookie('b1.session_token')];
+
+    const file = path.join(this.host.outputRoot(), 'auth', 'b1-demo-user.json');
+    await mkdir(path.dirname(file), { recursive: true });
+    await writeFile(file, `${JSON.stringify({ cookies, origins: [] }, null, 2)}\n`, 'utf8');
+    this.host.applySetting('B1_AUTH_STATE', file);
+
+    this.logger.log(`Auth state minted for ${target.hostname}`);
+    return { file, host: target.hostname, secure };
   }
 
   /**
@@ -324,6 +425,7 @@ export class DemoFactoryStudio {
    */
   @B1Action({ description: 'Reconcile the demo and run data sources with this host' })
   async reseed() {
+    this.assertOperator();
     return this.seed.reseed();
   }
 }

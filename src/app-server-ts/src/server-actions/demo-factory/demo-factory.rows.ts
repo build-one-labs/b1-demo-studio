@@ -37,6 +37,8 @@ export interface DemoRow {
   description: string;
   schemaVersion: number;
   settings: Record<string, unknown>;
+  /** The un-filmed pre-take reset block, when the demo has one. */
+  setup: Record<string, unknown> | null;
   sceneCount: number;
   invalid: boolean;
   invalidReason: string;
@@ -160,12 +162,13 @@ export interface JobRow {
 }
 
 /** A demo document, as `demo-factory/src/schema.mjs` defines it. */
-interface DemoDocument {
+export interface DemoDocument {
   schemaVersion: number;
   id: string;
   title: string;
   description?: string;
   settings: Record<string, unknown>;
+  setup?: Record<string, unknown>;
   scenes: {
     id: string;
     title: string;
@@ -197,6 +200,7 @@ export const demoToRows = (demo: DemoDocument, sourceHash = ''): { demo: DemoRow
     description: demo.description ?? '',
     schemaVersion: demo.schemaVersion,
     settings: demo.settings,
+    setup: demo.setup ?? null,
     sceneCount: demo.scenes?.length ?? 0,
     invalid: false,
     invalidReason: '',
@@ -235,6 +239,7 @@ export const rowsToDemo = (demo: DemoRow, scenes: SceneRow[]): DemoDocument => (
   title: demo.title,
   description: demo.description,
   settings: demo.settings,
+  ...(demo.setup ? { setup: demo.setup } : {}),
   scenes: [...scenes]
     .filter((scene) => scene.demoId === demo.id)
     .sort((left, right) => left.sequence - right.sequence)

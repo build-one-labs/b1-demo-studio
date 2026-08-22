@@ -10,8 +10,19 @@
     "app_server_ts": {
       "environment": {
         "B1_BASE_URL": "${B1_BASE_URL:-https://${STACK}.${DOMAIN}}",
-        "B1_USER_API_KEY": "${B1_USER_API_KEY:-}"
+        "B1_USER_API_KEY": "${B1_USER_API_KEY:-}",
+        "DEMO_OUTPUT_DIR": "/data/demo-factory/output",
+        "DEMO_CACHE_DIR": "/data/demo-factory/cache",
+        "ELEVENLABS_API_KEY": "${ELEVENLABS_API_KEY:-}",
+        "ELEVENLABS_VOICE_ID": "${ELEVENLABS_VOICE_ID:-}",
+        "DEMO_FACTORY_OPERATORS": "${DEMO_FACTORY_OPERATORS:-}"
+      },
+      "volumes": {
+        "/data/demo-factory": "demo_factory_data"
       }
     }
-  }
+  },
+  "volumes": [
+    "demo_factory_data"
+  ]
 }

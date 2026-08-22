@@ -12,7 +12,7 @@
   "status": "Active",
   "templateObject": false,
   "attributes": {
-    "agentEnvironment": "github:{{currentRepository}}",
+    "agentEnvironment": "",
     "avatar": "/resources/images/agents/b1_agent_swallow.png",
     "model": "AnthropicClaudeSonnet5",
     "systemPrompt": "DemoCreatorPrompt"

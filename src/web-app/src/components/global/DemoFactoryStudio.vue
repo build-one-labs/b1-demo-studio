@@ -60,6 +60,9 @@
           </select>
         </label>
         <button class="dfs-icon" title="Create demo" @click="newDemoOpen = true">＋</button>
+        <button class="dfs-icon" title="Export demo.yaml" :disabled="!demo" @click="exportDemoYaml">⤓</button>
+        <button class="dfs-icon" title="Import demo.yaml" @click="importOpen = true">⤒</button>
+        <button class="dfs-icon" title="Ask the Demo Creator agent" @click="agentOpen = true">🗨</button>
         <span class="dfs-spacer" />
         <span class="dfs-badge" :class="validation">{{ validationLabel }}</span>
         <button class="dfs-btn" :disabled="!dirty || busy" @click="saveDemo">
@@ -123,7 +126,8 @@
                     {{ run.runId.slice(0, 19) }} · {{ run.recordedScenes }}/{{ run.sceneCount }}
                   </option>
                 </select>
-                <a v-if="srtUrl" class="dfs-btn ghost" :href="srtUrl" download>Download SRT</a>
+                <a v-if="videoUrl" class="dfs-btn ghost" :href="toDownloadUrl(videoUrl)">Download MP4</a>
+                <a v-if="srtUrl" class="dfs-btn ghost" :href="toDownloadUrl(srtUrl)">Download SRT</a>
               </div>
             </div>
             <div class="dfs-stage">
@@ -346,7 +350,12 @@
                 </td>
                 <td>{{ run.recordedScenes }} / {{ run.sceneCount }}</td>
                 <td>{{ run.durationMs ? formatDuration(run.durationMs) : '—' }}</td>
-                <td>{{ run.hasVideo ? '✓' : '—' }}</td>
+                <td>
+                  <template v-if="run.hasVideo">
+                    <a :href="toDownloadUrl(run.videoUrl)">MP4</a> · <a :href="toDownloadUrl(run.srtUrl)">SRT</a>
+                  </template>
+                  <template v-else>—</template>
+                </td>
               </tr>
               <tr v-if="!runs.length">
                 <td colspan="4" class="dfs-help">No runs recorded for this demo.</td>
@@ -383,6 +392,31 @@
             Secrets stay in the server process. They are never written to a demo file or returned to this screen.
           </p>
           <button class="dfs-btn primary" @click="saveSettings">Save settings</button>
+
+          <div class="dfs-panel-head dfs-authmint-head">
+            <span class="dfs-eyebrow">Recording sign-in</span>
+            <h2>Mint auth state from a session</h2>
+          </div>
+          <p class="dfs-help">
+            When neither an API key nor a password login works against the recording target, paste the
+            <code>b1.session_token</code> cookie from a browser that is signed in there (DevTools → Application →
+            Cookies). The server writes the Playwright storage state and points B1_AUTH_STATE at it; the token itself is
+            never stored anywhere else.
+          </p>
+          <div class="dfs-fields dfs-settings">
+            <label>
+              Session token
+              <input
+                v-model="sessionToken"
+                type="password"
+                placeholder="value of b1.session_token"
+                autocomplete="off"
+              />
+            </label>
+          </div>
+          <button class="dfs-btn" :disabled="!sessionToken.trim() || busy" @click="mintAuthState">
+            Mint auth state
+          </button>
         </div>
       </main>
     </section>
@@ -405,6 +439,68 @@
         <div class="dfs-dialog-actions">
           <button type="button" class="dfs-btn ghost" @click="newDemoOpen = false">Cancel</button>
           <button type="submit" class="dfs-btn primary">Create demo</button>
+        </div>
+      </form>
+    </div>
+
+    <div v-if="importOpen" class="dfs-modal" @click.self="importOpen = false">
+      <form class="dfs-dialog dfs-import" @submit.prevent="importDemoYaml">
+        <h2>Import demo</h2>
+        <label
+          >demo.yaml<textarea
+            v-model="importYaml"
+            rows="14"
+            required
+            spellcheck="false"
+            placeholder="Paste the demo.yaml text — the export of this or another environment"
+          />
+        </label>
+        <label
+          >On collision
+          <select v-model="importMode">
+            <option value="fail">refuse the import</option>
+            <option value="overwrite">overwrite the existing demo</option>
+            <option value="copy">import as a copy</option>
+          </select>
+        </label>
+        <label v-if="importMode === 'copy'"
+          >New id<input v-model="importNewId" pattern="[a-z0-9][a-z0-9-]*" placeholder="defaults to <id>-copy"
+        /></label>
+        <p class="dfs-help">
+          The import is validated exactly like a Studio edit; nothing lands if the schema refuses it.
+        </p>
+        <div class="dfs-dialog-actions">
+          <button type="button" class="dfs-btn ghost" @click="importOpen = false">Cancel</button>
+          <button type="submit" class="dfs-btn primary">Import</button>
+        </div>
+      </form>
+    </div>
+
+    <div v-if="agentOpen" class="dfs-modal" @click.self="agentOpen = false">
+      <form class="dfs-dialog dfs-import" @submit.prevent="startAgentConversation">
+        <h2>Ask the Demo Creator</h2>
+        <p class="dfs-help">
+          Starts a conversation with the Demo Creator agent against this environment. It reads and writes demos through
+          the same data sources and actions as this screen — describe the video you want, or the change to an existing
+          one.
+        </p>
+        <label
+          >What should it do?<textarea
+            v-model="agentPrompt"
+            rows="6"
+            required
+            :placeholder="
+              demo
+                ? `e.g. Tighten the narration of “${demo.title}” to under eight minutes`
+                : 'e.g. Create a two-minute video showing the opportunities map'
+            "
+          />
+        </label>
+        <div class="dfs-dialog-actions">
+          <button type="button" class="dfs-btn ghost" @click="agentOpen = false">Cancel</button>
+          <button type="submit" class="dfs-btn primary" :disabled="agentStarting">
+            {{ agentStarting ? 'Starting…' : 'Start conversation' }}
+          </button>
         </div>
       </form>
     </div>
@@ -441,6 +537,7 @@ type DemoRow = {
   description: string;
   schemaVersion: number;
   settings: Record<string, any>;
+  setup: Record<string, any> | null;
   sceneCount: number;
   invalid: boolean;
   invalidReason: string;
@@ -515,6 +612,8 @@ type Demo = {
   schemaVersion: number;
   scenes: Scene[];
   settings: Record<string, any>;
+  /** The un-filmed pre-take reset block — carried, not edited, by this screen. */
+  setup?: Record<string, any> | null;
 };
 type Job = {
   status: string;
@@ -630,6 +729,20 @@ const toastBad = ref(false);
 const logCollapsed = ref(false);
 const newDemoOpen = ref(false);
 const newDemo = reactive({ id: '', title: '' });
+const importOpen = ref(false);
+const importYaml = ref('');
+const importMode = ref<'fail' | 'overwrite' | 'copy'>('fail');
+const importNewId = ref('');
+const sessionToken = ref('');
+const agentOpen = ref(false);
+const agentPrompt = ref('');
+const agentStarting = ref(false);
+
+/** The Demo Creator's b1_agent objectMasterGuid — see DemoCreatorAgent.json. */
+const DEMO_CREATOR_AGENT_GUID = '34e589aa-fd11-4aa9-b2cf-ed6ec90fe6a4';
+
+/** The media route's attachment twin: …/<file> → …/download/<file>. */
+const toDownloadUrl = (url: string) => url.replace(/\/([^/]+)$/, '/download/$1');
 const logRef = ref<HTMLElement | null>(null);
 
 let poll: ReturnType<typeof setInterval> | undefined;
@@ -775,6 +888,7 @@ function assembleDemo(row: DemoRow, scenes: SceneRow[]): Demo {
     description: row.description,
     schemaVersion: row.schemaVersion,
     settings: JSON.parse(JSON.stringify(row.settings ?? {})),
+    setup: row.setup ? JSON.parse(JSON.stringify(row.setup)) : null,
     scenes: scenes.map((item) => ({
       id: item.sceneId,
       title: item.title,
@@ -881,11 +995,20 @@ async function saveDemo() {
   }
 
   const demoChanged =
-    row.title !== document.title || row.description !== document.description || !same(row.settings, document.settings);
+    row.title !== document.title ||
+    row.description !== document.description ||
+    !same(row.settings, document.settings) ||
+    !same(row.setup ?? null, document.setup ?? null);
   if (demoChanged) {
     const saved = await demoDso.value.commitChanges({
       updatedRecords: [
-        { ...row, title: document.title, description: document.description, settings: document.settings }
+        {
+          ...row,
+          title: document.title,
+          description: document.description,
+          settings: document.settings,
+          setup: document.setup ?? null
+        }
       ]
     });
     if (!saved) {
@@ -1102,6 +1225,7 @@ async function createDemo() {
         description,
         schemaVersion: source.schemaVersion,
         settings: JSON.parse(JSON.stringify(source.settings)),
+        setup: source.setup ? JSON.parse(JSON.stringify(source.setup)) : null,
         sceneCount: source.scenes.length,
         invalid: false,
         invalidReason: '',
@@ -1126,6 +1250,109 @@ async function createDemo() {
   await demoDso.value.fetchRecords();
   demoDso.value.repositionTo(id);
   notify('Demo created.');
+}
+
+/** Export the open demo as demo.yaml — the backup and transfer format. */
+async function exportDemoYaml() {
+  if (!demo.value) return;
+  try {
+    const { yaml, filename } = await call<{ yaml: string; filename: string }>('export-demo', {
+      demoId: demo.value.id
+    });
+    const anchor = document.createElement('a');
+    anchor.href = URL.createObjectURL(new Blob([yaml], { type: 'text/yaml' }));
+    anchor.download = filename;
+    anchor.click();
+    URL.revokeObjectURL(anchor.href);
+  } catch (error) {
+    notify((error as Error).message, true);
+  }
+}
+
+/** Import pasted demo.yaml text — validated server-side like any Studio edit. */
+async function importDemoYaml() {
+  try {
+    const result = await call<{ demoId: string; scenes: number; replaced: boolean }>('import-demo', {
+      yaml: importYaml.value,
+      mode: importMode.value,
+      ...(importMode.value === 'copy' && importNewId.value.trim() ? { newId: importNewId.value.trim() } : {})
+    });
+    importOpen.value = false;
+    importYaml.value = '';
+    importNewId.value = '';
+    await Promise.all([demoDso.value?.fetchRecords(), sceneDso.value?.fetchRecords()]);
+    demoDso.value?.repositionTo(result.demoId);
+    notify(
+      `Imported ${result.demoId} (${result.scenes} scene${result.scenes === 1 ? '' : 's'}${result.replaced ? ', replaced' : ''}).`
+    );
+  } catch (error) {
+    notify((error as Error).message, true);
+  }
+}
+
+/**
+ * Start a Demo Creator conversation against this environment and open it.
+ *
+ * The proxy resolves the agent's model, prompt, skills and MCP servers from
+ * its objectMasterGuid; `environmentUrl` makes the conversation connect to
+ * the environment this screen runs in (the agent's environment attribute is
+ * deliberately empty). The open demo travels as trailing system-prompt
+ * context so "this demo" means something on the other side.
+ */
+async function startAgentConversation() {
+  agentStarting.value = true;
+  try {
+    const response = await fetch(
+      '/service/swat/server-actions/agent-proxy/agent-server-proxy-actions/create-conversation',
+      {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          environmentUrl: window.location.origin,
+          agentObjectMasterGuid: DEMO_CREATOR_AGENT_GUID,
+          prompt: agentPrompt.value,
+          ...(demo.value
+            ? { systemPromptSuffix: `The user has the demo "${demo.value.id}" open in the Demo Factory Studio.` }
+            : {})
+        })
+      }
+    );
+    const value: unknown = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      const detail = value as { message?: string; error?: string };
+      throw new Error(detail?.message || detail?.error || `${response.status} ${response.statusText}`);
+    }
+    const record = value as Record<string, unknown>;
+    const conversationId = String(record.conversationId ?? record.conversation_id ?? record.id ?? '').replaceAll(
+      '-',
+      ''
+    );
+    if (!conversationId) throw new Error('The conversation was created but its id was not returned');
+    window.location.assign(`/screens/agentChatScreen?repositionTo=${conversationId}`);
+  } catch (error) {
+    notify((error as Error).message, true);
+  } finally {
+    agentStarting.value = false;
+  }
+}
+
+/** Turn a pasted session token into the recorder's auth state, server-side. */
+async function mintAuthState() {
+  try {
+    const result = await call<{ file: string; host: string }>('mint-auth-state', {
+      sessionToken: sessionToken.value
+    });
+    sessionToken.value = '';
+    // The auth state changes what this host can run, so the verdicts refresh.
+    await Promise.all([
+      settingDso.value?.fetchRecords(),
+      stageDso.value?.fetchRecords(),
+      hostDso.value?.fetchRecords()
+    ]);
+    notify(`Auth state minted for ${result.host}.`);
+  } catch (error) {
+    notify((error as Error).message, true);
+  }
 }
 
 async function saveSettings() {
@@ -1769,6 +1996,23 @@ onBeforeUnmount(stopPolling);
   flex-direction: column;
   gap: 0.2rem;
   font-size: 0.78rem;
+}
+.dfs-dialog.dfs-import {
+  width: min(44rem, 94vw);
+}
+.dfs-dialog textarea {
+  padding: 0.4rem 0.5rem;
+  border: 1px solid var(--line);
+  border-radius: 0.4rem;
+  background: transparent;
+  color: inherit;
+  font:
+    0.72rem/1.5 ui-monospace,
+    monospace;
+  resize: vertical;
+}
+.dfs-authmint-head {
+  margin-top: 1.4rem;
 }
 .dfs-dialog input,
 .dfs-dialog select {

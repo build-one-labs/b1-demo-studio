@@ -27,6 +27,10 @@ export const ALLOWED_ENV_KEYS = [
   'ELEVENLABS_MODEL_ID',
   'ELEVENLABS_LANGUAGE_CODE',
   'DEMO_OUTPUT_DIR',
+  // Where the content-addressed narration cache lives. On a deployment both
+  // this and DEMO_OUTPUT_DIR point into a persistent volume, so redeploys
+  // neither lose the runs nor re-buy every line of voice-over.
+  'DEMO_CACHE_DIR',
   'FFMPEG_PATH',
   'FFPROBE_PATH',
   'PLAYWRIGHT_BROWSERS_PATH',
@@ -148,6 +152,28 @@ export const serviceApiKey = async (projectRoot: string): Promise<string> =>
   resolveApiKey(process.env, process.env.AUTH_URL)?.key ||
   (await readProvisionedEnv(projectRoot)).B1_USER_API_KEY ||
   '';
+
+/**
+ * Who may mutate the factory (start jobs, save or import demos, mint auth
+ * state), as a comma-separated list of account e-mails in the environment.
+ *
+ * Unset means open — the behaviour every existing workspace has, where the
+ * Studio is reachable only by people who can reach the workspace anyway. On a
+ * deployed stack the variable is what separates "may watch videos" from "may
+ * re-record them", until the platform's Melange checks take over that job.
+ */
+export const OPERATORS_ENV = 'DEMO_FACTORY_OPERATORS';
+
+export const assertOperator = (userEmail: string | undefined, env = process.env): void => {
+  const allowed = (env[OPERATORS_ENV] || '')
+    .split(',')
+    .map((entry) => entry.trim().toLowerCase())
+    .filter(Boolean);
+  if (allowed.length === 0) return;
+  if (!userEmail || !allowed.includes(userEmail.toLowerCase())) {
+    throw new Error(`Not allowed — ${OPERATORS_ENV} does not list this account`);
+  }
+};
 
 const ID_PATTERN = /^[\da-z][\da-z-]*$/;
 

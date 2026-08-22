@@ -98,6 +98,12 @@ export class DemoFactoryHost {
     return configured ? path.resolve(this.projectRoot, configured) : path.join(this.projectRoot, 'output');
   }
 
+  /** Where the narration cache lives — same resolution rule as the output root. */
+  cacheRoot(): string {
+    const configured = this.setting('DEMO_CACHE_DIR') || process.env.DEMO_CACHE_DIR;
+    return configured ? path.resolve(this.projectRoot, configured) : path.join(this.projectRoot, '.cache');
+  }
+
   /** Discovered paths first, so anything configured still wins over a probe. */
   definedEnv(): Record<string, string> {
     return {

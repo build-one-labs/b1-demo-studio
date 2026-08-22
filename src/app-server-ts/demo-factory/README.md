@@ -172,6 +172,40 @@ run id identifies a run; the prefix in front of it does not.
   now tries that path first and falls back to the identical file shipped inside
   `@buildone/swat-cli`.
 
+## Deployed operation — no Codespace, no git
+
+A deployed stack of this repository is a complete video workbench. The pieces
+that make that true:
+
+- **Demos live in data sources.** The clob-backed Studio data sources are the
+  source of truth; `demos/<id>/demo.yaml` is materialized from them before
+  every run. New demos created in a deployed Studio persist in the blueprint
+  database and survive redeploys.
+- **Runs and the narration cache live on a volume.** The standalone deployment
+  config mounts `demo_factory_data` at `/data/demo-factory` and points
+  `DEMO_OUTPUT_DIR` and `DEMO_CACHE_DIR` into it. On top of that, the
+  content-addressed narration cache and every run's manifest are mirrored into
+  Postgres (`demo_narration_cache`, `demo_run_manifests`) — a redeploy neither
+  re-buys voice-over nor forgets what a take contained.
+- **Upload and download.** The Studio exports any demo as `demo.yaml` (the
+  backup and transfer format) and imports one back — validated exactly like a
+  Studio edit — with overwrite/copy collision handling. Rendered MP4s and SRTs
+  download from `demo-factory/media/<demo>/<run>/download/<file>`.
+- **Auth without a shell.** The Settings tab mints the Playwright auth state
+  from a pasted `b1.session_token` cookie (the `mint-auth-state` action) — the
+  deployed replacement for `tools/auth-from-session.mjs`.
+- **Secrets and access from the stack environment.** `ELEVENLABS_API_KEY`,
+  `ELEVENLABS_VOICE_ID`, `B1_USER_API_KEY` come from the stack; setting
+  `DEMO_FACTORY_OPERATORS` (comma-separated e-mails) restricts every mutating
+  action — jobs, saves, imports, minting — to the listed accounts. Unset means
+  open, the workspace behaviour.
+- **The Demo Creator works against the environment.** The agent's environment
+  attribute is empty (it connects to the running environment like the vibe-code
+  agent), its skill drives the factory through `query_data_source` and the
+  `demo-factory` actions (`save-demo` is the only write path), and the Studio's
+  🗨 button starts a conversation with it directly. One replica of the app
+  server, please: the job model is deliberately single-process.
+
 ## Demos
 
 - **`b1-vibecode-governance`** — the ten-minute product video (vibe coding +

@@ -2,7 +2,7 @@ import {copyFile, readFile, writeFile} from 'node:fs/promises';
 import path from 'node:path';
 import {alignmentToCaptions, captionsToSrt} from './captions.mjs';
 import {alignmentDurationMs, mapCuesToAlignment, parseNarrationCues, syntheticAlignment} from './cues.mjs';
-import {ensureDir, projectRoot, readJson, sha256, writeJson} from './files.mjs';
+import {ensureDir, readJson, resolveCacheRoot, sha256, writeJson} from './files.mjs';
 import {seconds, step} from './log.mjs';
 import {writeSilentWav} from './wav.mjs';
 
@@ -90,7 +90,7 @@ export const prepareNarration = async ({demo, runDir, providerOverride}) => {
   const provider = selectProvider(demo, providerOverride);
   const narrationDir = await ensureDir(path.join(runDir, 'narration'));
   const captionsDir = await ensureDir(path.join(runDir, 'captions'));
-  const cacheDirectory = await ensureDir(path.join(projectRoot, '.cache', 'narration'));
+  const cacheDirectory = await ensureDir(path.join(resolveCacheRoot(), 'narration'));
   const scenes = [];
 
   step(`Preparing narration for ${demo.id} with provider ${provider}`);

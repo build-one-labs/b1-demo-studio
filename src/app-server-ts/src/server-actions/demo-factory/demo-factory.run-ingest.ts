@@ -6,12 +6,17 @@
 import { access, readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 
-import { Injectable, Logger } from '@nestjs/common';
+import { DRIZZLE } from '@buildone/app-server-tslib/drizzle';
+import { Inject, Injectable, Logger } from '@nestjs/common';
+import { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import { demoRunManifests } from 'src/drizzle/schema';
 
 import { DemoFactoryHost } from './demo-factory.host';
 import { safeChildPath } from './demo-factory.lib';
 import { CaptionRow, DSO, manifestToRows, NarrationRow, RunManifest, RunRow, RunSceneRow } from './demo-factory.rows';
 import { DemoFactoryStore, diffRows } from './demo-factory.store';
+
+import type * as schema from 'src/drizzle/schema';
 
 /**
  * Brings the run data sources in line with what is actually on disk.
@@ -37,7 +42,8 @@ export class DemoFactoryRunIngest {
 
   constructor(
     private readonly store: DemoFactoryStore,
-    private readonly host: DemoFactoryHost
+    private readonly host: DemoFactoryHost,
+    @Inject(DRIZZLE) private readonly db: NodePgDatabase<typeof schema>
   ) {}
 
   /**
@@ -152,6 +158,7 @@ export class DemoFactoryRunIngest {
       if (!manifest) continue;
 
       const result = await this.readJson<{ totalDurationMs?: number }>(path.join(runDir, 'render-result.json'));
+      await this.persistManifest(demoId, runId, manifest);
       rows.push(
         manifestToRows(manifest, {
           demoId,
@@ -162,5 +169,26 @@ export class DemoFactoryRunIngest {
       );
     }
     return rows;
+  }
+
+  /**
+   * Keep the manifest in Postgres, beside the derived rows.
+   *
+   * The rows above exist exactly as long as the run directory does — that is
+   * their contract. The manifest row is the part worth keeping longer: a run
+   * whose media is gone still has its narration text, cue timing and cut data,
+   * which is everything about the take that is reconstructible at all.
+   * Best-effort, like the narration cache: a manifest that cannot be persisted
+   * costs history, not the run.
+   */
+  private async persistManifest(demoId: string, runId: string, manifest: RunManifest): Promise<void> {
+    try {
+      await this.db
+        .insert(demoRunManifests)
+        .values({ runId, demoId, manifest })
+        .onConflictDoUpdate({ target: demoRunManifests.runId, set: { manifest } });
+    } catch (error) {
+      this.logger.warn(`Could not persist the manifest of ${runId}: ${(error as Error).message}`);
+    }
   }
 }

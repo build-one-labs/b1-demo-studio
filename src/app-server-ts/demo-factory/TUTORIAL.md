@@ -320,7 +320,38 @@ Web-App; im Studio erscheint er in der Vorschau.
 
 ---
 
-## 5. Troubleshooting
+## 5. Ohne Codespace: die Demo Factory im deployten Stack
+
+Ein deployter Stack dieses Repos ist eine vollständige Video-Werkbank — ohne
+Git, ohne Shell. Die Unterschiede zum Workspace-Betrieb:
+
+- **Demos liegen in Datenquellen** (persistent in der Blueprint-DB); die
+  YAML-Datei ist nur die Arbeitskopie der Pipeline. Runs und der
+  Narration-Cache liegen auf dem Volume `demo_factory_data`; Cache und
+  Run-Manifeste sind zusätzlich in Postgres gespiegelt
+  (`demo_narration_cache`, `demo_run_manifests`) — ein Redeploy kauft kein
+  Voice-over neu.
+- **Export/Import**: ⤓ exportiert die offene Demo als `demo.yaml`
+  (Backup- und Transferformat, Kommentare bleiben erhalten, solange Zeilen und
+  Datei übereinstimmen); ⤒ importiert eine YAML per Paste — validiert wie
+  jede Studio-Änderung, mit Kollisionswahl (ablehnen / überschreiben / als
+  Kopie).
+- **Download**: MP4/SRT-Buttons neben der Vorschau und in der Runs-Tabelle
+  (`…/media/<demo>/<run>/download/<datei>`).
+- **Auth ohne Shell**: Im Settings-Tab das `b1.session_token`-Cookie einer
+  eingeloggten Browser-Session einfügen → „Mint auth state" schreibt den
+  Playwright-Auth-State serverseitig und setzt `B1_AUTH_STATE`.
+- **Zugriffsschutz**: `DEMO_FACTORY_OPERATORS` (Komma-Liste von E-Mails) im
+  Stack-Environment beschränkt alle verändernden Actions auf die gelisteten
+  Konten; ungesetzt = offen (Workspace-Verhalten).
+- **Demo Creator direkt aus dem Studio**: Der 🗨-Button startet eine
+  Konversation mit dem Agenten gegen diese Umgebung — er liest über
+  `query_data_source`, schreibt ausschließlich über `save-demo` und fährt die
+  Pipeline über `start-job`/`job-status`.
+
+---
+
+## 6. Troubleshooting
 
 | Symptom | Ursache | Fix |
 |---|---|---|
@@ -341,7 +372,7 @@ Logs: aus der Shell ist stdout das Log; aus dem Studio landet es im Log-Panel
 
 ---
 
-## 6. Die Demo-Projekte in diesem Repo
+## 7. Die Demo-Projekte in diesem Repo
 
 - **`b1-vibecode-governance`** — das 10-Minuten-Produktvideo (Vibe Coding +
   Governance), live gegen `vanguard-develop.test.build.one` aufgenommen. Nutzt
