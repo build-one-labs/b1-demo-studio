@@ -211,21 +211,31 @@ that make that true:
 Rendering is by far the heaviest stage (~100 minutes for a ten-minute 1080p
 video on a codespace) and the only one that needs nothing from the recording
 environment beyond the run's files. `tools/remote-render.mjs` runs it on any
-machine with this repository checked out:
+machine — and the render path has **zero @buildone dependencies**, so this
+directory carries its own `package.json` (remotion, react, yaml, zod — all
+public npm) and works without the monorepo, without CodeArtifact, and without
+the workspace's `.yarnrc.yml` architecture pins.
 
 ```bash
-# once: clone the repo, run `yarn install` at the root, have ffmpeg+ffprobe on PATH
-# reach a codespace:            gh codespace ports forward 8080:8080
-cd src/app-server-ts
-yarn demo:render:remote --studio=http://localhost:8080 --demo=b1-vibecode-governance \
-  --api-key=<key>              # or --session=<b1.session_token cookie>
+# once — only this directory, not the whole repo (needs: Node >= 20, git, ffmpeg+ffprobe):
+git clone --filter=blob:none --sparse https://github.com/build-one-labs/b1-demo-studio.git
+cd b1-demo-studio && git sparse-checkout set src/app-server-ts/demo-factory
+cd src/app-server-ts/demo-factory && npm install
+
+# reach a codespace:  gh codespace ports forward 8080:8080   (a deployed stack: its https URL)
+node tools/remote-render.mjs --studio=http://localhost:8080 --demo=b1-vibecode-governance \
+  --session=<b1.session_token cookie>     # or --api-key=<key>
 ```
 
 The tool asks the studio host for the newest run (or takes `--run=`), pulls the
 demo definition, the clips and the narration through the media routes, and runs
 the exact same render locally — with `REMOTION_CONCURRENCY` defaulting to half
-the machine's cores. The MP4 and SRT land in this checkout's `output/`
-directory. Remotion downloads its own headless Chrome on first use.
+the machine's cores. The MP4 and SRT land in `output/` next to the tool.
+Remotion downloads its own headless Chrome on first use. `git pull` updates the
+checkout; keep the `package.json` versions in step with the app server's when
+Remotion is upgraded. Inside the workspace this `package.json` is inert — the
+pipeline keeps resolving from the app server's `node_modules`, and
+`demo-factory/node_modules` is gitignored.
 
 ## Demos
 
