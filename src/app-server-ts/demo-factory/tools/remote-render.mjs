@@ -9,9 +9,12 @@
  * through the media routes, then runs the exact same render the studio host
  * would — the output MP4 and SRT land in this checkout's `output/` directory.
  *
- * Prerequisites on this machine: Node >= 20, this repository with a root
- * `yarn install` done, and ffmpeg + ffprobe on the PATH (or FFMPEG_PATH /
- * FFPROBE_PATH set). Remotion downloads its own headless Chrome on first use.
+ * Prerequisites on this machine: Node >= 20, ffmpeg + ffprobe on the PATH (or
+ * FFMPEG_PATH / FFPROBE_PATH set), and this demo-factory directory with its
+ * own `npm install` done — the directory's package.json carries everything the
+ * render needs from the public npm registry, so a sparse checkout of just
+ * `src/app-server-ts/demo-factory` is enough (see README, "Remote rendering").
+ * Remotion downloads its own headless Chrome on first use.
  *
  * Usage:
  *   node tools/remote-render.mjs --studio=<url> --demo=<id> [--run=<runId>]

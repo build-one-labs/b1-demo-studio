@@ -67,3 +67,7 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 # One workspace's view of the pipeline, written by demo-factory/tools/provision-workspace.mjs.
 /demo-factory/.env
 /demo-factory/.env.app-server
+# The standalone renderer's own install (remote machines only; the workspace
+# resolves the pipeline's dependencies from the app server's node_modules).
+/demo-factory/node_modules
+/demo-factory/package-lock.json

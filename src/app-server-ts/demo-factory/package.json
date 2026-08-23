@@ -1,0 +1,17 @@
+{
+  "name": "b1-demo-factory-standalone",
+  "private": true,
+  "description": "Standalone dependency set for running the demo factory's RENDER stage outside the monorepo (tools/remote-render.mjs). Inside the workspace this file is inert: it is not a yarn workspace, and the pipeline keeps resolving its dependencies from the app server's node_modules. On a remote machine, `npm install` in this directory pulls everything the render needs — all public packages, no CodeArtifact. Versions must track the app server's package.json; see the render section of README.md.",
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@remotion/bundler": "4.0.507",
+    "@remotion/renderer": "4.0.507",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "remotion": "4.0.507",
+    "yaml": "^2.8.0",
+    "zod": "^3.24.3"
+  }
+}
