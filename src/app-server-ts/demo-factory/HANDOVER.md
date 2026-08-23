@@ -27,13 +27,17 @@ Lints grün. Migration 0014 ist gegen die Workspace-DB angewendet.
 
 ## Was offen ist — konkrete nächste Schritte
 
-1. **`execute_action` (Plattform, nicht dieses Repo).** Entscheidung von Mike:
-   generisches MCP-Tool `execute_action(service, action, payload)` + Discovery
-   `list_actions` — Spezifikation steht im Plan-Artefakt (Routing auf
-   `/service/app/{service}/{action}`, Nutzer-Identität, Fehler-Body
-   durchreichen). Bis es existiert, kann der Agent die Actions nur über das
-   Terminal seiner Umgebung erreichen; der Skill-Clob formuliert das bereits so.
-   → Ticket an das Plattform-Team; dieses Repo ist der erste Abnehmer.
+1. **`execute_action` (Plattform — wird im vanguard-Repo gebaut, nicht hier).**
+   Entscheidung von Mike: generisches MCP-Tool `execute_action` + Discovery
+   `list_actions`. Die vollständige, übergabefähige Anforderungsspezifikation
+   (Tool-Verträge nach `invokeServerTask`-Semantik, Identität, zweistufige
+   Autorisierung, Fehler-Durchreichung, Akzeptanzkriterien, offene
+   Implementierungsfragen) ist ein eigenes Dokument fürs Plattform-Team:
+   https://claude.ai/code/artifact/8f497cb5-1a85-41a0-a348-46757821c8ac
+   Bis das Tool existiert, kann der Agent die Actions nur über das Terminal
+   seiner Umgebung erreichen; der Skill-Clob formuliert das bereits so.
+   → Spezifikation an das Plattform-Team übergeben; dieses Repo ist der
+   erste Abnehmer.
 2. **Agent-E2E-Test.** `agentEnvironment: ""` + `create-conversation` mit
    `environmentUrl` ist dokumentationskonform, aber nie gegen eine echte
    Umgebung gefahren. Prüfen: (a) landet die Konversation im Environment-Modus,
