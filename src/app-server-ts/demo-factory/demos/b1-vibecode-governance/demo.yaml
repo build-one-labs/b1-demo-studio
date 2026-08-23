@@ -81,13 +81,13 @@ settings:
     # form — the dot in "Build.One" otherwise becomes a sentence break.
     pronunciations:
       Build.One: Build One
-    # A cloned voice drifts over long single-call narrations (heard as the
-    # voice "switching" mid-scene). High stability and zero style keep a
-    # two-minute scene sounding like one person, at the cost of some
-    # expressiveness.
+    # A cloned voice drifts over long generations and across chunk seams
+    # (heard as the voice "switching"). Chunked stitched synthesis plus
+    # near-maximum stability locks the timbre down; the price is a flatter,
+    # more announcer-like delivery, which suits a product video.
     voiceSettings:
-      stability: 0.78
-      similarityBoost: 0.85
+      stability: 0.95
+      similarityBoost: 0.9
       style: 0
       speakerBoost: true
   branding:

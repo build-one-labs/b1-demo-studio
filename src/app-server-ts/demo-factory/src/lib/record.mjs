@@ -120,9 +120,20 @@ export const recordScenes = async ({demo, manifest, sceneFilter = null}) => {
         const narrationStartTime = Date.now();
         const {timelapses} = await executeSceneActions({page, scene, baseUrl, narrationStartTime, cursor: demo.settings.cursor});
         await executeAssertions({page, assertions: sourceScene.assertions});
-        // A live wait can outrun the narration; the scene still deserves its
-        // stillness after the last action, not a cut mid-motion.
-        const desiredEndAt = Math.max(narrationStartTime + preparedScene.narrationDurationMs, Date.now()) + demo.settings.holdAfterMs;
+        // Keep recording until the narration fits the COMPOSED timeline, not
+        // the wall clock. Every compressed wait removes footage from the final
+        // scene while the audio keeps playing over it, so the wall deadline
+        // must be pushed out by exactly what the compression will take away —
+        // otherwise the scene ends with the last spoken sentences cut off
+        // (take 10: 8.4 seconds of scene 1 lost to two long waits).
+        const compressionSavingsMs = timelapses.reduce(
+          (sum, segment) => sum + (segment.toMs - segment.fromMs) - segment.targetMs,
+          0,
+        );
+        const desiredEndAt = Math.max(
+          narrationStartTime + compressionSavingsMs + preparedScene.narrationDurationMs,
+          Date.now(),
+        ) + demo.settings.holdAfterMs;
         if (Date.now() < desiredEndAt) await sleep(desiredEndAt - Date.now());
 
         const clipFile = path.join(clipsDir, `${sourceScene.id}.webm`);
