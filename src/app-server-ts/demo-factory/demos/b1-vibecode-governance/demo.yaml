@@ -205,10 +205,12 @@ scenes:
       know Salesforce carries another amount field. I don't remember its
       technical name — and I don't need to. I just ask for it.
       [cue:field-wait] The agent searches the connected Salesforce schema on
-      its own. [cue:field-added] And there is the new Amount column, found
+      its own — no field names, no documentation lookup needed from me.
+      [cue:field-added] And there is the new Amount column, found
       and wired in seconds. But look closely: some of the values are blank.
       Let's ask why. [cue:ask-why] [cue:why-wait] The agent checks the
-      platform's own access rules for an answer. [cue:why-answered] And this
+      platform's own access rules, looking for whatever governs those blank
+      values. [cue:why-answered] And this
       answer is the whole point. Those figures are protected by access rules
       the platform enforces on the server: it checks what I am cleared to see
       and blanks the rest before the data ever reaches the app. No prompt, no
@@ -245,7 +247,7 @@ scenes:
       # +4s this only matches completion — held stable against step pauses.
       - action: waitFor
         atCue: field-wait
-        offsetMs: 4000
+        offsetMs: 2500
         target: { css: '.agent-chat-status.status-awaiting_input' }
         stableMs: 15000
         timeoutMs: 600000
@@ -263,7 +265,7 @@ scenes:
         target: { css: 'button[aria-label="Send"]:visible' }
       - action: waitFor
         atCue: why-wait
-        offsetMs: 4000
+        offsetMs: 2500
         target: { css: '.agent-chat-status.status-awaiting_input' }
         stableMs: 15000
         timeoutMs: 600000
@@ -463,11 +465,14 @@ scenes:
       - action: click
         atCue: open-assistant
         target: { css: '[role="toolbar"] button[aria-label="Governance Assistant"]' }
+      # "record the policy" is spelled out because the assistant sometimes
+      # only answers in chat without persisting — and scene 8 needs the
+      # records on the Policies screen (takes 9 and 11 failed on that).
       - action: type
         atCue: type-policy
         target: { css: '.p-dialog textarea' }
-        value: 'We have a new policy: we no longer use Google Maps. Instead we use OpenStreetMap.'
-        delayMs: 24
+        value: 'We have a new policy: we no longer use Google Maps. Instead we use OpenStreetMap. Analyze the impact, record the policy and the impact analysis in the IT Control Center, but do not apply any migrations yet.'
+        delayMs: 18
       - action: click
         atCue: send
         target: { css: '.p-dialog button[aria-label="Send"]' }
