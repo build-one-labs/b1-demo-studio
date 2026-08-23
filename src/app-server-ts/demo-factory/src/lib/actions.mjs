@@ -9,8 +9,8 @@ const locatorFor = (page, target) => {
 };
 
 const CURSOR_ID = '__b1-demo-synthetic-cursor';
-const POINTER_ACTIONS = new Set(['click', 'fill', 'press', 'hover', 'highlight']);
-const CLICK_ACTIONS = new Set(['click', 'fill']);
+const POINTER_ACTIONS = new Set(['click', 'dblclick', 'fill', 'type', 'press', 'hover', 'highlight']);
+const CLICK_ACTIONS = new Set(['click', 'dblclick', 'fill', 'type']);
 
 export const resolveDemoUrl = (route, baseUrl) => {
   const base = new URL(baseUrl);
@@ -163,9 +163,28 @@ const highlight = async (locator, durationMs) => {
   });
 };
 
+/**
+ * How long the narration budgets for a timelapse wait: the gap between the
+ * wait's own cue and the next explicitly-timed action after it. That is the
+ * length the recorded wait is compressed to, so the footage that follows the
+ * wait lands back on its cue. An author's `targetMs` overrides; with neither,
+ * a wait becomes a brisk six seconds.
+ */
+const TIMELAPSE_DEFAULT_MS = 6000;
+export const timelapseBudgetMs = (actions, index, cues) => {
+  const explicit = actions[index].timelapse;
+  if (explicit && typeof explicit === 'object' && explicit.targetMs) return explicit.targetMs;
+  let plannedMs = 0;
+  const planned = actions.map((action) => (plannedMs = Math.max(0, actionTimeMs(action, cues, plannedMs))));
+  const next = actions.findIndex((action, i) => i > index && (action.atCue || action.atMs != null));
+  if (next === -1) return TIMELAPSE_DEFAULT_MS;
+  return Math.max(1000, planned[next] - planned[index]);
+};
+
 export const executeSceneActions = async ({page, scene, baseUrl, narrationStartTime, cursor}) => {
   let lastScheduledMs = 0;
-  for (const action of scene.actions) {
+  const timelapses = [];
+  for (const [actionIndex, action] of scene.actions.entries()) {
     const scheduledMs = Math.max(0, actionTimeMs(action, scene.cues, lastScheduledMs));
     const timeout = action.timeoutMs || 10_000;
     const locator = action.target ? locatorFor(page, action.target) : null;
@@ -191,8 +210,17 @@ export const executeSceneActions = async ({page, scene, baseUrl, narrationStartT
       case 'click':
         await locator.click({timeout});
         break;
+      case 'dblclick':
+        await locator.dblclick({timeout});
+        break;
       case 'fill':
         await locator.fill(action.value || '', {timeout});
+        break;
+      case 'type':
+        // Character by character, so a prompt visibly being written reads as a
+        // person writing it — fill is instant and looks like a paste.
+        await locator.click({timeout});
+        await locator.pressSequentially(action.value || '', {delay: action.delayMs ?? 35, timeout: Math.max(timeout, (action.value || '').length * (action.delayMs ?? 35) + 10_000)});
         break;
       case 'press':
         await locator.press(action.key || 'Enter', {timeout});
@@ -203,9 +231,49 @@ export const executeSceneActions = async ({page, scene, baseUrl, narrationStartT
       case 'highlight':
         await highlight(locator, action.durationMs || 1200);
         break;
-      case 'waitFor':
-        await locator.waitFor({state: 'visible', timeout});
+      case 'waitFor': {
+        const waitStartedMs = Date.now() - narrationStartTime;
+        const waitDeadline = Date.now() + timeout;
+        if (action.retry) {
+          // A rescue click for live environments that fail transiently and
+          // say so with a Retry button: keep polling for the real target, and
+          // press Retry whenever it shows up — at most every everyMs.
+          const retryLocator = locatorFor(page, action.retry.target).first();
+          const everyMs = action.retry.everyMs || 45_000;
+          let lastRetryAt = 0;
+          for (;;) {
+            if (await locator.first().isVisible().catch(() => false)) break;
+            if (Date.now() > waitDeadline) throw new Error(`waitFor timed out after ${timeout}ms (${JSON.stringify(action.target)}, retry enabled)`);
+            if (Date.now() - lastRetryAt >= everyMs && (await retryLocator.isVisible().catch(() => false))) {
+              await retryLocator.click({timeout: 5000}).catch(() => {});
+              lastRetryAt = Date.now();
+            }
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+          }
+        } else {
+          // A visibility wait means "at least one match is visible" — a
+          // selector that legitimately matches several elements (two cards
+          // flipping to "Migrated" plus a toast) must not fail strict mode.
+          await locator.first().waitFor({state: 'visible', timeout});
+        }
+        // A state that flickers — an agent's chip reading "Ready" between
+        // steps — satisfies a plain visibility wait mid-flicker. stableMs
+        // requires the target to still be there after riding out the flicker
+        // window, and goes back to waiting when it is not.
+        while (action.stableMs) {
+          await new Promise((resolve) => setTimeout(resolve, action.stableMs));
+          if (await locator.first().isVisible().catch(() => false)) break;
+          await locator.first().waitFor({state: 'visible', timeout: Math.max(1000, waitDeadline - Date.now())});
+        }
+        if (action.timelapse) {
+          const waitEndedMs = Date.now() - narrationStartTime;
+          const targetMs = timelapseBudgetMs(scene.actions, actionIndex, scene.cues);
+          // Only worth compressing when it saves something; a wait that
+          // resolved inside its own budget plays back in real time.
+          if (waitEndedMs - waitStartedMs > targetMs) timelapses.push({fromMs: waitStartedMs, toMs: waitEndedMs, targetMs});
+        }
         break;
+      }
       case 'screenshot':
         await page.screenshot({path: action.name || `screenshot-${Date.now()}.png`, fullPage: false});
         break;
@@ -214,12 +282,14 @@ export const executeSceneActions = async ({page, scene, baseUrl, narrationStartT
     }
     lastScheduledMs = Math.max(scheduledMs, Date.now() - narrationStartTime);
   }
+  return {timelapses};
 };
 
 export const executeAssertions = async ({page, assertions}) => {
   for (const assertion of assertions) {
     if (assertion.visible) {
-      await locatorFor(page, assertion.visible).waitFor({state: 'visible', timeout: 10_000});
+      // Same rule as waitFor: proof that at least one match rendered.
+      await locatorFor(page, assertion.visible).first().waitFor({state: 'visible', timeout: 10_000});
       continue;
     }
     if (assertion.textContains) {

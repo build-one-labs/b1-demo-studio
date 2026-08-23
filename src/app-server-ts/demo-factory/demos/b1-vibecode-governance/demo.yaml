@@ -1,0 +1,544 @@
+schemaVersion: 1
+id: b1-vibecode-governance
+title: Everyone builds. IT governs.
+description: >
+  The Build.One story in ten minutes, recorded live against vanguard-develop:
+  a salesperson describes an app and an agent builds it inside an IT-governed
+  sandbox (vibe coding), then the governance view shows the knowledge graph,
+  the app as a governed object, and a plain-English policy — Google Maps to
+  OpenStreetMap — analyzed, planned and migrated on the fly.
+
+# ============================================================================
+# HOW THIS DEMO RUNS — read before recording
+#
+# LIVE, NOT STAGED. The agent really builds the app and the governance
+# assistant really analyzes the policy on every take. Two consequences:
+#   - Waits are unpredictable, so every long wait below is a `timelapse:`
+#     waitFor — recorded in real time, compressed to the narration's budget
+#     in the render, with a fast-forward badge.
+#   - Every take mutates the environment. The `setup` block resets it first:
+#     changesSearch → "Reset Repository" → confirm → success toast (verified
+#     2026-08-22: removes the generated app, the policy and the migration;
+#     salesPlanningMapDemo shows its Google-Maps error again). `--scenes=`
+#     partial re-records skip setup — but scenes 2-4 consume the app scene 1
+#     creates, so partial re-records only work for scenes 5-8.
+#
+# TARGET. vanguard-develop.test.build.one. The base URL env is deliberately
+# NOT B1_BASE_URL: the workspace provisioner writes B1_BASE_URL=http://caddy:8080/
+# for the local demos, and that override must not hijack this one.
+#
+# AUTH. Session cookie only (password login and API-key handoff do not work
+# against this deployment):
+#   cd src/app-server-ts
+#   B1_BASE_URL=https://vanguard-develop.test.build.one/ \
+#     node demo-factory/tools/auth-from-session.mjs <b1.session_token cookie>
+# Record stage by stage (yarn demo:prepare / demo:record / demo:render) rather
+# than `yarn demo`: the all-in-one runner re-mints the auth state from the
+# workspace API key, and a successful mint would overwrite the session state
+# with one for the wrong host. Record as the user whose name should appear as
+# the app's OWNER on camera.
+#
+# TABS. The original hand-made video switched between two browser tabs. A
+# recording shows only the viewport — no tab bar — so the switch between the
+# vibe-coding app (default) and the governance app (?app=b1) is a scene cut.
+#
+# SELECTORS. Verified against the live DOM on 2026-08-22 (see the probe tools
+# and run notes in the repo). The two marked DRY-RUN are states that only
+# exist while the agent is generating and can only be confirmed in a take:
+#   - the "Working" status text on the chat status chip
+#   - My Apps / Recent apps listing the just-created app first
+# ============================================================================
+
+settings:
+  language: en
+  viewport:
+    width: 1920
+    height: 1080
+  fps: 30
+  baseUrl:
+    env: B1_VIBECODE_BASE_URL
+    fallback: https://vanguard-develop.test.build.one/
+  authStateEnv: B1_AUTH_STATE
+  headlessEnv: DEMO_HEADLESS
+  holdBeforeMs: 900
+  holdAfterMs: 1600
+  cursor:
+    enabled: true
+    moveDurationMs: 700
+    clickLeadMs: 120
+    clickEffectDurationMs: 560
+    sizePx: 30
+  narration:
+    provider: auto
+    voiceIdEnv: ELEVENLABS_VOICE_ID
+    apiKeyEnv: ELEVENLABS_API_KEY
+    modelIdEnv: ELEVENLABS_MODEL_ID
+    defaultModelId: eleven_multilingual_v2
+    languageCodeEnv: ELEVENLABS_LANGUAGE_CODE
+    defaultLanguageCode: en
+    wordsPerMinute: 132
+  branding:
+    productName: Build.One
+    accentColor: "#1266f1"
+    backgroundColor: "#0b1020"
+    textColor: "#f7f8ff"
+    showCaptions: true
+    showSceneTitles: true
+
+# Reset the environment to the pre-demo state before a full take. Verified:
+# the accept button is the confirm dialog's danger button, and completion is
+# announced by a success toast after ~10 seconds.
+setup:
+  route: /screens/changesSearch?app=b1
+  actions:
+    - action: click
+      target: { role: button, name: Reset Repository }
+      timeoutMs: 30000
+    - action: click
+      target: { css: '.p-confirmdialog-accept-button' }
+      timeoutMs: 15000
+    - action: waitFor
+      target: { css: '.p-toast-message:has-text("Repository reset completed")' }
+      timeoutMs: 300000
+
+scenes:
+  # --------------------------------------------------------------------------
+  # PART 1 — VIBE CODING
+  # --------------------------------------------------------------------------
+  - id: prompt-to-app
+    title: From a sentence to a working app
+    route: /
+    narration: >
+      This is Build.One — one platform where the people who need software
+      build it themselves, and IT stays in control. Let me show you both
+      sides, starting with what we call vibe coding. I work in sales, and I
+      am planning a tour to visit my top customers. Instead of filing a
+      ticket, I describe what I need. [cue:type-prompt] An app that lists my
+      active high-value opportunities, shows them on a map, tells me what
+      each customer actually bought from us recently — and lets me maintain
+      the data right here, without opening Salesforce.
+      [cue:create-draft] One click: create private draft.
+      [cue:sandbox] What happens now matters. Build.One spins up an isolated
+      sandbox, and an AI agent starts working inside it — an environment IT
+      configured, deciding exactly what the agent can see and reach: which
+      data sources, which building blocks, whether production data or the
+      internet are available at all. [cue:agent-works] Watch it work, at
+      several times real speed. The agent explores what this company's
+      platform offers — connected data sources, rules, certified UI building
+      blocks — and composes the app from those governed parts. The live
+      Salesforce list appears first. Then the filter on active deals over
+      fifty thousand. The map. The revenue chart. [cue:agent-done] Done. A
+      couple of minutes, start to finish. [cue:first-look] On the right is
+      the finished app in preview: real opportunities, read live from
+      Salesforce — the stage each deal is in, and the revenue it is worth.
+      From a sentence to a working, connected app — in minutes, not weeks.
+    actions:
+      - action: type
+        atCue: type-prompt
+        target: { role: textbox, name: What would you like to do? }
+        value: >-
+          I am planning a sales tour and want to visit my top customers.
+          Create an app that lists my active high-value opportunities and
+          shows their locations on a map. I only need the opportunity name,
+          stage, and expected revenue. I also want to see what they actually
+          bought from us recently — add that as a chart. And I want to
+          maintain the opportunity data directly in the list, without opening
+          Salesforce. Implement this completely end-to-end, without asking
+          questions.
+        delayMs: 22
+      - action: click
+        atCue: create-draft
+        target: { role: button, name: Create private draft }
+      # Sandbox spin-up: "Starting…", a brief Ready while the prompt is
+      # posted, then the chip reads "Working…" once the agent begins.
+      # Fifteen minutes, not five: a cold sandbox after a repository reset
+      # took >5.5 minutes to start on 2026-08-22 — the timelapse absorbs it.
+      - action: waitFor
+        atCue: sandbox
+        target: { css: '.agent-chat-status:has-text("Working")' }
+        timeoutMs: 900000
+        timelapse: true
+        # A transient "failed to start" offers a Retry button — press it.
+        retry:
+          target: { css: ':text("Retry")' }
+          everyMs: 45000
+      # The build itself (2–5 minutes). The chip flips back to awaiting_input
+      # briefly BETWEEN agent steps (dry run 2026-08-22: the first take ended
+      # after 90s on such a pause, mid-build), so completion is the chip
+      # staying ready for fifteen seconds straight — a pause between steps
+      # does not survive that, the finished state does.
+      - action: waitFor
+        atCue: agent-works
+        offsetMs: 1500
+        target: { css: '.agent-chat-status.status-awaiting_input' }
+        stableMs: 15000
+        timeoutMs: 900000
+        timelapse: true
+      - action: highlight
+        atCue: first-look
+        target: { css: '.p-datatable:visible >> nth=0' }
+        durationMs: 4000
+    assertions:
+      - visible: { css: '.p-datatable-tbody > tr >> nth=0' }
+
+  - id: iterate-with-governance
+    title: Keep talking — the platform keeps its rules
+    route: /
+    narration: >
+      A first version is rarely the final one — and this is where vibe coding
+      differs from a code generator: I simply keep talking.
+      [cue:open-conversation] My new draft sits right on my start page, and
+      so does the conversation that built it. [cue:ask-field] I happen to
+      know Salesforce carries another amount field. I don't remember its
+      technical name — and I don't need to. I just ask for it.
+      [cue:field-wait] The agent searches the connected Salesforce schema on
+      its own. [cue:field-added] And there is the new Amount column, found
+      and wired in seconds. But look closely: some of the values are blank.
+      Let's ask why. [cue:ask-why] [cue:why-wait] The agent checks the
+      platform's own access rules for an answer. [cue:why-answered] And this
+      answer is the whole point. Those figures are protected by access rules
+      the platform enforces on the server: it checks what I am cleared to see
+      and blanks the rest before the data ever reaches the app. No prompt, no
+      filter, no clever question gets around it — the agent works under the
+      same governance as every user. Vibe coding without guardrails is a
+      risk. Vibe coding inside a governed platform is a superpower.
+      [cue:pin-it] I'm happy with this one — so I pin it, and the draft
+      becomes a permanent app of mine.
+    actions:
+      # The newest draft is the first card under Recent private drafts on the
+      # start page; its conversation button reopens the scene-1 chat.
+      - action: click
+        atCue: open-conversation
+        target: { css: 'button[aria-label^="Open the last conversation"]:visible >> nth=0' }
+      - action: waitFor
+        target: { css: 'textarea[placeholder="Ask the agent..."]' }
+        timeoutMs: 60000
+      # Self-healing: if scene 1's take ended while the agent was still
+      # finishing, this waits (compressed) until it is truly done — the chip
+      # must hold "Ready" for fifteen seconds before we type into the chat.
+      - action: waitFor
+        target: { css: '.agent-chat-status.status-awaiting_input' }
+        stableMs: 15000
+        timeoutMs: 900000
+        timelapse: true
+      - action: type
+        atCue: ask-field
+        target: { css: 'textarea[placeholder="Ask the agent..."]' }
+        value: 'There should be another amount field in Salesforce — can you add it as well?'
+        delayMs: 24
+      - action: click
+        target: { css: 'button[aria-label="Send"]:visible' }
+      # The chip leaves awaiting_input the moment the message is sent, so by
+      # +4s this only matches completion — held stable against step pauses.
+      - action: waitFor
+        atCue: field-wait
+        offsetMs: 4000
+        target: { css: '.agent-chat-status.status-awaiting_input' }
+        stableMs: 15000
+        timeoutMs: 600000
+        timelapse: true
+      - action: highlight
+        atCue: field-added
+        target: { css: 'th:has-text("Amount"):visible >> nth=0' }
+        durationMs: 3000
+      - action: type
+        atCue: ask-why
+        target: { css: 'textarea[placeholder="Ask the agent..."]' }
+        value: 'I see the new column, but for some records the value is missing. Why is that?'
+        delayMs: 24
+      - action: click
+        target: { css: 'button[aria-label="Send"]:visible' }
+      - action: waitFor
+        atCue: why-wait
+        offsetMs: 4000
+        target: { css: '.agent-chat-status.status-awaiting_input' }
+        stableMs: 15000
+        timeoutMs: 600000
+        timelapse: true
+      - action: highlight
+        atCue: why-answered
+        target: { css: '.agent-chat-bubble >> nth=-1' }
+        durationMs: 4500
+      # Pinning is what publishes the draft into My Apps — scene 3 depends on
+      # this click. The pin button sits on the draft's card on the start page.
+      - action: goto
+        atCue: pin-it
+        route: /
+      - action: click
+        offsetMs: 2500
+        target: { css: 'button[aria-label^="Pin"]:visible >> nth=0' }
+    assertions:
+      - visible: { css: 'button.vibe-app-card:visible >> nth=0' }
+
+  - id: my-app-next-morning
+    title: Tomorrow morning, it is simply there
+    route: /
+    narration: >
+      The next morning, I don't go near the chat. [cue:open-my-apps] My app
+      is simply there, under My Apps, published and ready. [cue:open-app] And
+      it behaves like any professionally built application — because
+      structurally, that is exactly what it is. [cue:click-row] I select an
+      opportunity. [cue:show-map] And the map answers the only question that
+      matters for planning a tour: where do I go first? Fully interactive,
+      live data — built yesterday, by describing it.
+    actions:
+      - action: click
+        atCue: open-my-apps
+        target: { role: tab, name: My Apps }
+      # This deployment ships three pre-existing apps; the fourth visible
+      # card proves the pinned app arrived. My Apps ordering is NOT stable,
+      # so the new app is picked by excluding the known three, not by
+      # position. Card click navigates to the published screen in-tab.
+      - action: waitFor
+        target: { css: 'button.vibe-app-card:visible >> nth=3' }
+        timeoutMs: 120000
+      - action: click
+        atCue: open-app
+        target: { css: 'button.vibe-app-card:visible:not(:has-text("MaintenanceScreen")):not(:has-text("sales territory planning")):not(:has-text("Tour planning")) >> nth=0' }
+      - action: waitFor
+        target: { css: '.p-datatable-tbody > tr >> nth=0' }
+        timeoutMs: 60000
+      - action: click
+        atCue: click-row
+        target: { css: '.p-datatable-tbody > tr >> nth=1' }
+      - action: click
+        atCue: show-map
+        target: { role: tab, name: Map }
+      - action: waitFor
+        target: { css: '.leaflet-marker-icon >> nth=0' }
+        timeoutMs: 30000
+      - action: highlight
+        target: { css: '.leaflet-container:visible >> nth=0' }
+        durationMs: 3200
+    assertions:
+      - visible: { css: '.leaflet-marker-icon >> nth=0' }
+
+  # --------------------------------------------------------------------------
+  # PART 2 — GOVERNANCE
+  # --------------------------------------------------------------------------
+  - id: behind-the-scenes
+    title: The same app, seen by IT
+    route: /?app=b1
+    narration: >
+      Now the other side of the story. [cue:switch] This is the same
+      platform, seen by IT — the governance view. [cue:graph] Build.One
+      maintains a living knowledge graph of everything that exists here:
+      applications, screens, data sources, logic, rules — thousands of
+      objects, and every relationship between them. Nothing is a black box.
+      [cue:open-app] And right here, created minutes ago, is my sales app.
+      Let's open it. [cue:overview] This is what governance sees instead of
+      source code: the app's name, its owner, the module it belongs to — and
+      documentation the agent wrote itself: what the app is for, who it is
+      for, what it does. [cue:structure] And on the right, how it is actually
+      built. One Salesforce data source feeds the grid and the map; a revenue
+      source feeds the chart. Every node can be opened, inspected and
+      authorized in detail. You govern applications the way the business
+      thinks about them — not by reading five thousand lines of generated
+      code.
+    actions:
+      - action: highlight
+        atCue: graph
+        target: { text: Blueprint Knowledge-Graph }
+        durationMs: 3500
+      # Double-click: a single click only selects the card. Recent-apps
+      # ordering is not reliable either, so the new app is the card that is
+      # none of the deployment's pre-existing ones (matched on their stable
+      # descriptions; the generated app's own name varies per take).
+      - action: waitFor
+        target: { css: '.sample-card:visible:not(:has-text("template MaintenanceScreen")):not(:has-text("Tour planning:")):not(:has-text("map view for sales tour")):not(:has-text("customer search")):not(:has-text("cloud ERP")):not(:has-text("product search")):not(:has-text("territory planning")) >> nth=0' }
+        timeoutMs: 120000
+      - action: dblclick
+        atCue: open-app
+        target: { css: '.sample-card:visible:not(:has-text("template MaintenanceScreen")):not(:has-text("Tour planning:")):not(:has-text("map view for sales tour")):not(:has-text("customer search")):not(:has-text("cloud ERP")):not(:has-text("product search")):not(:has-text("territory planning")) >> nth=0' }
+      - action: waitFor
+        target: { text: Structure }
+        timeoutMs: 60000
+      - action: highlight
+        atCue: overview
+        target: { css: '.app-overview' }
+        durationMs: 3200
+      - action: highlight
+        atCue: structure
+        target: { css: '.vue-flow >> nth=0' }
+        durationMs: 4000
+    assertions:
+      - visible: { text: Structure }
+
+  - id: platform-suggests
+    title: Governance with an assistant, not a checklist
+    route: /?app=b1
+    narration: >
+      Governance in Build.One is active, not passive. [cue:notes] On the home
+      screen, the platform itself keeps track of the governance decisions
+      still open from onboarding. [cue:sso] Single sign-on is not configured
+      yet — jump straight to it, or ask an agent to walk you through it.
+      [cue:object-types] All eighty-eight shipped object types are enabled —
+      forms, grids, charts, maps. The platform suggests reviewing which of
+      them this organization actually wants to allow. And if something is
+      missing, an agent helps you build your own object types and your own
+      data connectors. [cue:agents] Every one of these decisions can be taken
+      in a conversation. That is governance with an assistant — not a
+      checklist.
+    actions:
+      - action: highlight
+        atCue: notes
+        target: { text: Outstanding Notes from the Onboarding Process }
+        durationMs: 3000
+      - action: highlight
+        atCue: sso
+        target: { css: 'h3:has-text("OAuth is not set up")' }
+        durationMs: 3000
+      - action: highlight
+        atCue: object-types
+        target: { css: 'h3:has-text("Object types use the B1 standard")' }
+        durationMs: 3000
+      - action: highlight
+        atCue: agents
+        target: { css: 'button:has-text("Ask the agent") >> nth=0' }
+        durationMs: 2600
+    assertions:
+      - visible: { text: Outstanding Notes from the Onboarding Process }
+
+  - id: legacy-app-breaks
+    title: A policy change, about to happen
+    route: /screens/salesPlanningMapDemo
+    narration: >
+      Governance also means change — handled safely. [cue:open-legacy] Here
+      is an older app in my workspace: a customer list with a sales territory
+      map. [cue:show-error] Its map still runs on Google Maps — and we have
+      just decided, company wide, to drop Google Maps. So this screen is now
+      broken. In most companies, that starts a project: find every affected
+      app, patch, retest, redeploy. Watch how it works here instead.
+    actions:
+      - action: waitFor
+        atCue: open-legacy
+        target: { css: '.p-datatable-tbody > tr >> nth=0' }
+        timeoutMs: 60000
+      - action: highlight
+        atCue: show-error
+        target: { text: Google Maps could not be loaded }
+        durationMs: 4000
+    assertions:
+      - visible: { text: Google Maps could not be loaded }
+
+  - id: policy-in-plain-english
+    title: One sentence of policy, a real impact analysis
+    route: /?app=b1
+    narration: >
+      Back in the governance view, under Policies, there is a governance
+      assistant. [cue:open-assistant] And I state our decision — in plain
+      English. [cue:type-policy] We have a new policy: we no longer use
+      Google Maps. We use OpenStreetMap instead. [cue:send] That single
+      sentence sets off a real analysis. [cue:analysis] The assistant — again
+      in its own isolated, IT-controlled environment — walks the knowledge
+      graph we just saw: every object type, every building block, every
+      screen. It identifies what is affected, checks technical compatibility,
+      weighs the risk, and drafts a migration plan. [cue:plan] Here is its
+      verdict. Three screens are affected. Two are demo screens, fully
+      compatible — safe to migrate automatically. And one is a core
+      production screen: technically compatible, but the assistant refuses to
+      touch it without sign-off from its owner. The policy, the impact
+      analysis and the plan are recorded in the platform as governance
+      objects — not just chat output. An impact analysis that used to take a
+      task force now takes a sentence.
+    actions:
+      - action: click
+        target: { role: button, name: Governance }
+      - action: click
+        offsetMs: 1000
+        target: { role: button, name: Policies }
+      - action: click
+        atCue: open-assistant
+        target: { css: '[role="toolbar"] button[aria-label="Governance Assistant"]' }
+      - action: type
+        atCue: type-policy
+        target: { css: '.p-dialog textarea' }
+        value: 'We have a new policy: we no longer use Google Maps. Instead we use OpenStreetMap.'
+        delayMs: 24
+      - action: click
+        atCue: send
+        target: { css: '.p-dialog button[aria-label="Send"]' }
+      # Sandbox start until the agent visibly works — compressed to
+      # send→analysis. Generous, and self-healing: sandbox capacity is
+      # limited, so "The conversation failed to start" happens when another
+      # sandbox still holds the slot — its Retry button is pressed until one
+      # is free (take 5, 2026-08-22).
+      - action: waitFor
+        atCue: analysis
+        target: { css: '.p-dialog .agent-chat-status:has-text("Working")' }
+        timeoutMs: 900000
+        timelapse: true
+        retry:
+          target: { css: '.p-dialog :text("Retry")' }
+          everyMs: 45000
+      # The analysis itself — compressed to analysis→plan.
+      - action: waitFor
+        offsetMs: 1500
+        target: { css: '.p-dialog .agent-chat-status.status-awaiting_input' }
+        timeoutMs: 900000
+        timelapse: true
+      - action: highlight
+        atCue: plan
+        target: { css: '.p-dialog .agent-chat-bubble >> nth=-1' }
+        durationMs: 5000
+    assertions:
+      - textContains: { target: { css: '.p-dialog' }, value: 'OpenStreetMap' }
+
+  - id: apply-and-proof
+    title: Migrated live — with guardrails
+    route: /?app=b1
+    narration: >
+      Here is that policy as the platform now carries it: a governance record
+      with a type — deprecate Google Maps, replace with OpenStreetMap.
+      [cue:impact] And beneath it, the concrete impact: every affected
+      screen, its compatibility, and what the platform proposes to do. The
+      production screen stays on hold until its owner approves — that
+      guardrail is part of the plan itself. [cue:apply] Now — apply the safe
+      migrations. [cue:migrating] The platform creates OpenStreetMap twins of
+      the affected building blocks and repoints the running screens — live,
+      in place. [cue:proof] And the proof: the broken app from a minute ago.
+      Nobody opened an editor, nothing was redeployed — the same screen now
+      runs on OpenStreetMap. [cue:click-record] Click a customer, and the map
+      follows. Fully functional, because the change happened in the
+      blueprint, not in fragile code. [cue:outro] That is Build.One. Everyone
+      in the company can build. IT keeps every guardrail. And the platform
+      holds both sides together — governed data, governed building blocks,
+      governed change. Thank you for watching.
+    actions:
+      - action: click
+        target: { role: button, name: Governance }
+      - action: click
+        offsetMs: 1000
+        target: { role: button, name: Policies }
+      # The policy the assistant recorded in the previous scene.
+      - action: waitFor
+        target: { css: 'h3:has-text("OpenStreetMap")' }
+        timeoutMs: 60000
+      - action: highlight
+        atCue: impact
+        target: { css: 'code:has-text("salesPlanningMapDemo") >> nth=0' }
+        durationMs: 3500
+      - action: click
+        atCue: apply
+        target: { role: button, name: Apply safe migrations }
+      # Either the completion toast or an impact card flipping to exactly
+      # "Migrated" — whichever renders first.
+      - action: waitFor
+        atCue: migrating
+        target: { css: '.p-toast-message, :text-is("Migrated")' }
+        timeoutMs: 300000
+        timelapse: true
+      - action: goto
+        atCue: proof
+        route: /screens/salesPlanningMapDemo
+      - action: waitFor
+        target: { css: '.leaflet-container' }
+        timeoutMs: 60000
+      - action: click
+        atCue: click-record
+        target: { css: '.p-datatable-tbody > tr >> nth=1' }
+      - action: highlight
+        target: { css: '.leaflet-container:visible >> nth=0' }
+        durationMs: 3200
+    assertions:
+      - visible: { css: '.leaflet-container' }

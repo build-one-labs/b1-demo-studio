@@ -31,6 +31,11 @@ export const renderDemo = async ({demo, manifest}) => {
     const narrationTarget = path.join(publicRunDir, `${scene.id}${narrationExtension}`);
     await copyFile(normalized.file, clipTarget);
     await copyFile(scene.narrationFile, narrationTarget);
+    // A recorded wait plays back at targetMs, so the scene occupies less of
+    // the final video than of the clip. Segments are clip-relative and only
+    // count while they fit the normalized clip.
+    const timelapses = (scene.timelapses || []).filter((segment) => segment.toMs <= normalized.durationMs + 1000);
+    const compressedMs = timelapses.reduce((sum, segment) => sum + (segment.toMs - segment.fromMs) - segment.targetMs, 0);
     scenes.push({
       id: scene.id,
       title: scene.title,
@@ -38,12 +43,14 @@ export const renderDemo = async ({demo, manifest}) => {
       narrationAsset: toPublicAsset(narrationTarget, publicRunDir),
       narrationOffsetMs: scene.narrationOffsetMs,
       recordedDurationMs: normalized.durationMs,
+      effectiveDurationMs: Math.max(1000, normalized.durationMs - compressedMs),
+      timelapses,
       captions: scene.captions,
     });
     for (const caption of scene.captions) {
       combinedCaptions.push({...caption, startMs: caption.startMs + videoOffsetMs + scene.narrationOffsetMs, endMs: caption.endMs + videoOffsetMs + scene.narrationOffsetMs});
     }
-    videoOffsetMs += normalized.durationMs;
+    videoOffsetMs += Math.max(1000, normalized.durationMs - compressedMs);
   }
 
   const inputProps = {title: demo.title, fps: demo.settings.fps, branding: demo.settings.branding, scenes};

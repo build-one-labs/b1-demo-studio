@@ -48,6 +48,38 @@ export const recordScenes = async ({demo, manifest, sceneFilter = null}) => {
   step(`Recording ${demo.id} against ${baseUrl} (${authState ? `storage state ${authState}` : apiKey ? 'x-api-key header' : 'no credentials'})`);
 
   try {
+    // The setup block: same actions as a scene, no camera. It runs before a
+    // full take so the environment starts from a known state (a repository
+    // reset, seed data, a dismissed dialog). A partial re-record skips it —
+    // whoever re-records one scene wants the state the other scenes left.
+    if (demo.setup && !sceneFilter) {
+      const context = await browser.newContext({
+        viewport: demo.settings.viewport,
+        storageState: authState,
+        ...(apiKey && !authState ? {extraHTTPHeaders: {'x-api-key': apiKey}} : {}),
+      });
+      const page = await context.newPage();
+      try {
+        const url = resolveDemoUrl(demo.setup.route, baseUrl);
+        step(`Setup: opening ${url}`);
+        await page.goto(url, {waitUntil: 'networkidle', timeout: 30_000});
+        await page.locator('[data-demo-id="app-ready"]').waitFor({state: 'visible', timeout: 15_000}).catch(() => {});
+        await executeSceneActions({
+          page,
+          scene: {actions: demo.setup.actions, cues: {}},
+          baseUrl,
+          narrationStartTime: Date.now(),
+          cursor: {enabled: false},
+        });
+        await executeAssertions({page, assertions: demo.setup.assertions});
+        step('Setup: done');
+      } catch (error) {
+        throw new Error(`Setup failed: ${error.message}`, {cause: error});
+      } finally {
+        await context.close().catch(() => {});
+      }
+    }
+
     for (const [index, preparedScene] of manifest.scenes.entries()) {
       const position = `${index + 1}/${manifest.scenes.length}`;
       if (sceneFilter && !sceneFilter.has(preparedScene.id)) {
@@ -75,15 +107,21 @@ export const recordScenes = async ({demo, manifest, sceneFilter = null}) => {
         const url = resolveDemoUrl(sourceScene.route, baseUrl);
         step(`Scene ${position}: ${sourceScene.id} — opening ${url}`);
         await page.goto(url, {waitUntil: 'networkidle', timeout: 30_000});
-        await page.locator('[data-demo-id="app-ready"]').waitFor({state: 'visible', timeout: 15_000}).catch(() => {});
+        // The framework's shell row is the fallback ready signal: a deployed
+        // app without the demo-ready plugin has no app-ready marker, and
+        // waiting the full timeout for it put 15 silent seconds of title card
+        // at the head of every scene.
+        await page.locator('[data-demo-id="app-ready"], .b1-shell-row').first().waitFor({state: 'visible', timeout: 15_000}).catch(() => {});
         const scene = {...sourceScene, cues: preparedScene.cues};
         await installDemoCursor(page, demo.settings.cursor);
         await primeDemoCursor({page, scene, cursor: demo.settings.cursor});
         await sleep(demo.settings.holdBeforeMs);
         const narrationStartTime = Date.now();
-        await executeSceneActions({page, scene, baseUrl, narrationStartTime, cursor: demo.settings.cursor});
+        const {timelapses} = await executeSceneActions({page, scene, baseUrl, narrationStartTime, cursor: demo.settings.cursor});
         await executeAssertions({page, assertions: sourceScene.assertions});
-        const desiredEndAt = narrationStartTime + preparedScene.narrationDurationMs + demo.settings.holdAfterMs;
+        // A live wait can outrun the narration; the scene still deserves its
+        // stillness after the last action, not a cut mid-motion.
+        const desiredEndAt = Math.max(narrationStartTime + preparedScene.narrationDurationMs, Date.now()) + demo.settings.holdAfterMs;
         if (Date.now() < desiredEndAt) await sleep(desiredEndAt - Date.now());
 
         const clipFile = path.join(clipsDir, `${sourceScene.id}.webm`);
@@ -93,8 +131,12 @@ export const recordScenes = async ({demo, manifest, sceneFilter = null}) => {
         await video.saveAs(clipFile);
         const originalVideoFile = await video.path();
         if (path.resolve(originalVideoFile) !== path.resolve(clipFile)) await rm(originalVideoFile, {force: true});
+        // Timelapses leave executeSceneActions relative to the narration start;
+        // the composition seeks the clip, so they are stored clip-relative.
+        const clipTimelapses = timelapses.map((segment) => ({...segment, fromMs: segment.fromMs + narrationOffsetMs, toMs: segment.toMs + narrationOffsetMs}));
+        if (clipTimelapses.length) step(`Scene ${position}: ${sourceScene.id} — ${clipTimelapses.map((s) => `${seconds(s.toMs - s.fromMs)} wait compressed to ${seconds(s.targetMs)}`).join(', ')}`);
         step(`Scene ${position}: ${sourceScene.id} — recorded ${seconds(recordedDurationMs)} to ${clipFile}`);
-        recordedScenes.push({...preparedScene, clipFile, narrationOffsetMs, recordedDurationMs});
+        recordedScenes.push({...preparedScene, clipFile, narrationOffsetMs, recordedDurationMs, timelapses: clipTimelapses});
       } catch (error) {
         const failureShot = path.join(clipsDir, `${sourceScene.id}.failure.png`);
         warn(`Scene ${position}: ${sourceScene.id} failed after ${seconds(Date.now() - recordingStartedAt)} — screenshot at ${failureShot}`);
