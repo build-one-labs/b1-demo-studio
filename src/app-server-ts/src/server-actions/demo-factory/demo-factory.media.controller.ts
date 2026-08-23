@@ -34,9 +34,53 @@ const CONTENT_TYPES: Record<string, string> = {
  * not optional — without it the browser can only play from the start and
  * seeking in the preview does nothing.
  */
+/** The run subdirectories whose files may be streamed. Nothing else is reachable. */
+const RUN_SUBDIRS = new Set(['narration', 'captions', 'clips', 'normalized']);
+
 @Controller('demo-factory/media')
 export class DemoFactoryMedia {
   constructor(private readonly host: DemoFactoryHost) {}
+
+  /**
+   * The same file as the streaming route, as a download.
+   *
+   * Declared before the subdirectory route: both have four segments, and
+   * routes match in declaration order — `download` is a reserved literal, so
+   * a run subdirectory of that name (which RUN_SUBDIRS does not list) cannot
+   * shadow it.
+   */
+  @Get(':demoId/:runId/download/:file')
+  async download(
+    @Param('demoId') demoId: string,
+    @Param('runId') runId: string,
+    @Param('file') file: string,
+    @Res() response: Response
+  ): Promise<void> {
+    const resolved = this.resolve(demoId, runId, file);
+    const info = await stat(resolved).catch(() => null);
+    if (!info?.isFile()) throw new NotFoundException();
+
+    response.writeHead(200, {
+      'content-type': CONTENT_TYPES[path.extname(resolved).toLowerCase()] || 'application/octet-stream',
+      'content-length': info.size,
+      'content-disposition': `attachment; filename="${file}"`
+    });
+    createReadStream(resolved).pipe(response);
+  }
+
+  /** A file inside a run subdirectory — narration audio, captions, raw clips. */
+  @Get(':demoId/:runId/:sub/:file')
+  async mediaInSubdir(
+    @Param('demoId') demoId: string,
+    @Param('runId') runId: string,
+    @Param('sub') sub: string,
+    @Param('file') file: string,
+    @Headers('range') range: string | undefined,
+    @Res() response: Response
+  ): Promise<void> {
+    if (!RUN_SUBDIRS.has(sub)) throw new NotFoundException();
+    await this.stream(this.resolve(demoId, runId, sub, file), range, response);
+  }
 
   @Get(':demoId/:runId/:file')
   async media(
@@ -46,12 +90,20 @@ export class DemoFactoryMedia {
     @Headers('range') range: string | undefined,
     @Res() response: Response
   ): Promise<void> {
+    await this.stream(this.resolve(demoId, runId, file), range, response);
+  }
+
+  private resolve(demoId: string, runId: string, ...segments: string[]): string {
     assertSafeId(demoId, 'demo id');
     // A run id is a timestamp plus a hash, so it carries dots and colons that
     // assertSafeId would reject; safeChildPath is what actually contains it.
-    if (!/^[\w.:-]+$/.test(runId) || !/^[\w.-]+$/.test(file)) throw new NotFoundException();
+    if (!/^[\w.:-]+$/.test(runId) || segments.some((segment) => !/^[\w.-]+$/.test(segment))) {
+      throw new NotFoundException();
+    }
+    return safeChildPath(this.host.outputRoot(), demoId, runId, ...segments);
+  }
 
-    const resolved = safeChildPath(this.host.outputRoot(), demoId, runId, file);
+  private async stream(resolved: string, range: string | undefined, response: Response): Promise<void> {
     const info = await stat(resolved).catch(() => null);
     if (!info?.isFile()) throw new NotFoundException();
 

@@ -12,9 +12,11 @@ import {
 import { DemoFactoryHost } from './demo-factory/demo-factory.host';
 import { DemoFactoryMaterializer } from './demo-factory/demo-factory.materializer';
 import { DemoFactoryMedia } from './demo-factory/demo-factory.media.controller';
+import { DemoFactoryNarrationCache } from './demo-factory/demo-factory.narration-cache';
 import { DemoFactoryRunIngest } from './demo-factory/demo-factory.run-ingest';
 import { DemoFactorySeedService } from './demo-factory/demo-factory.seed';
 import { DemoFactoryStore } from './demo-factory/demo-factory.store';
+import { DemoFactoryTransfer } from './demo-factory/demo-factory.transfer';
 import { PriceCalculation } from './samples/price-calculation';
 import { Weather } from './samples/weather';
 
@@ -46,6 +48,8 @@ const HANDLERS = [
     DemoFactoryMaterializer,
     DemoFactoryRunIngest,
     DemoFactorySeedService,
+    DemoFactoryTransfer,
+    DemoFactoryNarrationCache,
     DemoFactorySettingEvents,
     DemoFactoryStageEvents,
     DemoFactoryHostEvents,

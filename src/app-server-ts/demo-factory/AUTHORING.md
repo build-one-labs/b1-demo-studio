@@ -1,48 +1,49 @@
-# Demo-Autorierung
+# Demo authoring
 
-## Gute Szenen
+## Good scenes
 
-- 15 bis 45 Sekunden lang
-- eine Aussage und ein sichtbarer Beleg
-- höchstens drei wesentliche Interaktionen
-- eindeutiger Anfangs- und Endzustand
-- keine Abhängigkeit vom Zustand einer vorherigen Szene
+- 15 to 45 seconds long
+- one statement and one visible piece of evidence
+- at most three meaningful interactions
+- an unambiguous start and end state
+- no dependence on the state a previous scene left behind
 
-## Unterstützte Actions
+## Supported actions
 
 - `goto`
 - `click`
-- `dblclick` — Doppelklick, z. B. zum Öffnen einer Karte, die ein Einzelklick nur selektiert
+- `dblclick` — a double click, e.g. to open a card that a single click only selects
 - `fill`
-- `type` — wie `fill`, aber Zeichen für Zeichen (`delayMs` pro Tastenanschlag, Default 35). Für Prompts, die sichtbar geschrieben werden sollen.
+- `type` — like `fill`, but character by character (`delayMs` per keystroke, default 35). For prompts the viewer should watch being written.
 - `press`
 - `hover`
 - `highlight`
-- `waitFor` — optional mit `timelapse` (siehe unten), `stableMs` und/oder
-  `retry`. `stableMs`: das Ziel muss so viele Millisekunden ununterbrochen
-  sichtbar bleiben, bevor der Wait als erfüllt gilt — für Zustände, die
-  zwischendurch flackern (z. B. ein Status-Chip, der zwischen Agent-Schritten
-  kurz „Ready" zeigt). `retry: { target, everyMs }`: ein Rettungsklick —
-  solange das eigentliche Ziel fehlt, wird das Retry-Ziel geklickt, wann immer
-  es sichtbar ist (höchstens alle `everyMs`, Default 45 s) — für
-  Live-Umgebungen, die transient scheitern und einen Retry-Button anbieten
+- `waitFor` — optionally with `timelapse` (see below), `stableMs` and/or
+  `retry`. `stableMs`: the target must stay visible for that many milliseconds
+  without interruption before the wait counts as met — for states that flicker
+  (e.g. a status chip that briefly reads "Ready" between agent steps).
+  `retry: { target, everyMs }`: a rescue click — while the actual target is
+  missing, the retry target is clicked whenever it is visible (at most every
+  `everyMs`, default 45 s) — for live environments that fail transiently and
+  offer a Retry button.
 - `screenshot`
 
-Targets werden bevorzugt so angegeben:
+Targets are preferably given as:
 
 ```yaml
 target:
   demoId: object-type-service
 ```
 
-Alternativ sind `role` plus `name`, `label`, `text` oder CSS für Legacy-UIs möglich. CSS ist nur der letzte Fallback.
+Alternatively `role` plus `name`, `label`, `text` or CSS for legacy UIs. CSS is
+the last resort only.
 
-## Cue-Marker
+## Cue markers
 
 ```yaml
 narration: >
-  Aus dem Golden Path entsteht ein konkreter Graph.
-  [cue:show-graph] Hier sehen wir den Payment Service.
+  The golden path turns into a concrete graph.
+  [cue:show-graph] Here we see the payment service.
 
 actions:
   - action: click
@@ -51,19 +52,42 @@ actions:
       demoId: navigation-object-graph
 ```
 
-Cue-Marker werden nicht gesprochen. Jede referenzierte Cue-ID muss im Narration-Text derselben Szene vorkommen.
+Cue markers are not spoken. Every referenced cue id must appear in the same
+scene's narration text.
 
-## Timelapse: live warten, komprimiert abspielen
+## Voice: pronunciations and voice settings
 
-Ein `waitFor` mit `timelapse` nimmt eine echte, unvorhersehbar lange Wartezeit
-(ein Agent baut eine App, eine Analyse läuft) in Echtzeit auf — und der Render
-spielt genau dieses Stück beschleunigt ab, mit einem ▶▶-Badge im Bild:
+Two knobs under `settings.narration`:
+
+```yaml
+narration:
+  pronunciations:
+    Build.One: Build One      # written form → spoken form
+  voiceSettings:
+    stability: 0.78           # 0..1 — higher = more consistent, less expressive
+    similarityBoost: 0.85
+    style: 0
+    speakerBoost: true
+```
+
+`pronunciations` replaces written forms with spoken ones before cue parsing
+and synthesis — the YAML keeps the brand spelling, the voice loses the
+sentence break a dot would cause. `voiceSettings` are passed to ElevenLabs and
+are part of the narration cache key; the defaults match the factory's previous
+hard-coded values. For long scenes with a cloned voice, raise `stability` and
+drop `style` — a drifting clone is heard as the voice "switching" mid-scene.
+
+## Timelapse: wait live, play back compressed
+
+A `waitFor` with `timelapse` records a real, unpredictably long wait (an agent
+building an app, an analysis running) in real time — and the render plays back
+exactly that stretch accelerated, with a ▶▶ badge on screen:
 
 ```yaml
 narration: >
-  Der Agent beginnt zu arbeiten. [cue:agent-works] Er analysiert Datenquellen
-  und Bausteine und setzt die App zusammen. [cue:agent-done] Und hier ist das
-  Ergebnis.
+  The agent starts working. [cue:agent-works] It analyzes data sources and
+  building blocks and assembles the app. [cue:agent-done] And here is the
+  result.
 
 actions:
   - action: waitFor
@@ -76,21 +100,21 @@ actions:
     target: { demoId: preview-panel }
 ```
 
-Die komprimierte Länge ist das Budget der Narration: der Abstand vom Cue des
-Waits bis zum nächsten Cue-gebundenen Action (`agent-works` → `agent-done`).
-So landet das Bildmaterial nach dem Wait wieder exakt auf seinem Cue. Ein
-explizites `timelapse: { targetMs: 8000 }` überschreibt das Budget; ohne
-nachfolgende Action sind es 6 Sekunden. Dauert die echte Wartezeit weniger als
-das Budget, wird nichts komprimiert.
+The compressed length is the narration's own budget: the distance from the
+wait's cue to the next cue-bound action (`agent-works` → `agent-done`). That is
+what makes the footage after the wait land back exactly on its cue. An explicit
+`timelapse: { targetMs: 8000 }` overrides the budget; with no following action
+it is six seconds. If the real wait takes less than the budget, nothing is
+compressed.
 
-Die Narration zwischen den beiden Cues läuft normal weiter — sie beschreibt,
-was im Zeitraffer zu sehen ist.
+The narration between the two cues keeps playing normally — it describes what
+the time-lapse shows.
 
-## Setup: Zustand herstellen, ohne zu filmen
+## Setup: establish state without filming it
 
-Ein optionaler `setup`-Block auf Demo-Ebene läuft vor der ersten Szene in
-einem eigenen, nie aufgenommenen Browser-Kontext — für Repository-Resets,
-Seed-Daten oder das Wegklicken von Erst-Dialogen:
+An optional demo-level `setup` block runs before the first scene in its own,
+never-recorded browser context — for repository resets, seed data, or
+dismissing first-run dialogs:
 
 ```yaml
 setup:
@@ -103,16 +127,18 @@ setup:
       timeoutMs: 120000
 ```
 
-Ohne Narration gibt es keine Cues: Actions laufen der Reihe nach, jede sobald
-die vorherige fertig ist. Bei `--scenes=`-Teilaufnahmen wird `setup`
-übersprungen — wer eine einzelne Szene nachdreht, will den Zustand behalten,
-den die übrigen Szenen hinterlassen haben.
+Without narration there are no cues: actions run in order, each as soon as the
+previous one finished. `--scenes=` partial re-records skip `setup` — whoever
+re-records a single scene wants to keep the state the other scenes left behind.
 
-## Synthetischer Cursor
+## Synthetic cursor
 
-Der Cursor wird für `click`, `fill`, `type`, `press`, `hover` und `highlight` automatisch zum Ziel-Element bewegt. Die Bewegung beginnt vor dem Cue, sodass die eigentliche Action weiterhin exakt zum Cue ausgeführt wird. Klicks erhalten einen sichtbaren Ripple.
+The cursor moves to the target element automatically for `click`, `dblclick`,
+`fill`, `type`, `press`, `hover` and `highlight`. The movement starts before
+the cue, so the action itself still fires exactly on the cue. Clicks get a
+visible ripple.
 
-Globale Einstellungen liegen in `settings.cursor`:
+Global settings live in `settings.cursor`:
 
 ```yaml
 cursor:
@@ -123,15 +149,16 @@ cursor:
   sizePx: 30
 ```
 
-Da die Zielposition aus dem `data-demo-id`-Element berechnet wird, sind keine Bildschirmkoordinaten in der Demo-Definition erforderlich.
+Because the target position is computed from the `data-demo-id` element, no
+screen coordinates are needed in the demo definition.
 
-## UI-Automatisierungsvertrag
+## UI automation contract
 
-B1 sollte für demo-relevante Interaktionen stabile IDs bereitstellen:
+B1 should provide stable ids for demo-relevant interactions:
 
 ```html
 <button data-demo-id="navigation-object-types">Object Types</button>
 <section data-demo-id="object-graph">...</section>
 ```
 
-Layout und CSS dürfen sich ändern, solange diese semantischen IDs bestehen bleiben.
+Layout and CSS may change as long as these semantic ids remain.

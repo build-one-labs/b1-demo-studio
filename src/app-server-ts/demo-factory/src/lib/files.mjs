@@ -46,6 +46,13 @@ export const validateDemoSemantics = (demo) => {
 
 export const resolveOutputRoot = () => path.resolve(projectRoot, process.env.DEMO_OUTPUT_DIR || 'output');
 
+/**
+ * Where the narration cache lives. Configurable for the same reason as the
+ * output root: on a deployment both point into a persistent volume, so a
+ * redeploy neither loses the runs nor re-buys every line of voice-over.
+ */
+export const resolveCacheRoot = () => path.resolve(projectRoot, process.env.DEMO_CACHE_DIR || '.cache');
+
 export const createRun = async (demo) => {
   const runId = `${new Date().toISOString().replace(/[:.]/g, '-')}--${sha256(JSON.stringify(demo)).slice(0, 8)}`;
   const demoOutput = await ensureDir(path.join(resolveOutputRoot(), demo.id));

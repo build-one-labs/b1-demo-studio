@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict';
+import path from 'node:path';
 import test from 'node:test';
 import {timelapseBudgetMs} from '../src/lib/actions.mjs';
+import {projectRoot, resolveCacheRoot} from '../src/lib/files.mjs';
+import {applyPronunciations} from '../src/lib/narration.mjs';
 import {demoSchema} from '../src/schema.mjs';
 
 const minimalDemo = (actions) => ({
@@ -107,6 +110,39 @@ test('a setup block validates and stays optional', () => {
   };
   assert.ok(demoSchema.safeParse(withSetup).success);
   assert.ok(demoSchema.safeParse(minimalDemo([])).success);
+});
+
+test('pronunciations rewrite the spoken form everywhere, cues untouched', () => {
+  const spoken = applyPronunciations(
+    'This is Build.One. [cue:beat] Build.One again — governance in Build.One.',
+    {'Build.One': 'Build One'},
+  );
+  assert.equal(spoken, 'This is Build One. [cue:beat] Build One again — governance in Build One.');
+  assert.equal(applyPronunciations('unchanged text', {}), 'unchanged text');
+});
+
+test('narration settings default pronunciations and voice settings', () => {
+  const parsed = demoSchema.parse(minimalDemo([]));
+  assert.deepEqual(parsed.settings.narration.pronunciations, {});
+  assert.deepEqual(parsed.settings.narration.voiceSettings, {
+    stability: 0.62,
+    similarityBoost: 0.82,
+    style: 0.18,
+    speakerBoost: true,
+  });
+});
+
+test('the narration cache root honours DEMO_CACHE_DIR', () => {
+  const previous = process.env.DEMO_CACHE_DIR;
+  try {
+    delete process.env.DEMO_CACHE_DIR;
+    assert.equal(resolveCacheRoot(), path.join(projectRoot, '.cache'));
+    process.env.DEMO_CACHE_DIR = '/data/demo-factory/cache';
+    assert.equal(resolveCacheRoot(), '/data/demo-factory/cache');
+  } finally {
+    if (previous === undefined) delete process.env.DEMO_CACHE_DIR;
+    else process.env.DEMO_CACHE_DIR = previous;
+  }
 });
 
 test('a timelapse with nothing after it falls back to the default budget', () => {

@@ -2,7 +2,7 @@ import {copyFile, readFile, writeFile} from 'node:fs/promises';
 import path from 'node:path';
 import {alignmentToCaptions, captionsToSrt} from './captions.mjs';
 import {alignmentDurationMs, mapCuesToAlignment, parseNarrationCues, syntheticAlignment} from './cues.mjs';
-import {ensureDir, projectRoot, readJson, sha256, writeJson} from './files.mjs';
+import {ensureDir, readJson, resolveCacheRoot, sha256, writeJson} from './files.mjs';
 import {seconds, step} from './log.mjs';
 import {writeSilentWav} from './wav.mjs';
 
@@ -15,7 +15,7 @@ const selectProvider = (demo, override) => {
   return apiKey && voiceId ? 'elevenlabs' : 'silent';
 };
 
-const callElevenLabs = async ({text, apiKey, voiceId, modelId, languageCode}) => {
+const callElevenLabs = async ({text, apiKey, voiceId, modelId, languageCode, voiceSettings}) => {
   const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${encodeURIComponent(voiceId)}/with-timestamps?output_format=mp3_44100_128`, {
     method: 'POST',
     headers: {'content-type': 'application/json', 'xi-api-key': apiKey},
@@ -25,7 +25,12 @@ const callElevenLabs = async ({text, apiKey, voiceId, modelId, languageCode}) =>
       language_code: languageCode,
       seed: 424242,
       apply_text_normalization: 'auto',
-      voice_settings: {stability: 0.62, similarity_boost: 0.82, style: 0.18, use_speaker_boost: true},
+      voice_settings: {
+        stability: voiceSettings.stability,
+        similarity_boost: voiceSettings.similarityBoost,
+        style: voiceSettings.style,
+        use_speaker_boost: voiceSettings.speakerBoost,
+      },
     }),
   });
   if (!response.ok) {
@@ -35,13 +40,25 @@ const callElevenLabs = async ({text, apiKey, voiceId, modelId, languageCode}) =>
   return response.json();
 };
 
+/**
+ * The narration in its spoken form.
+ *
+ * Replacements happen before cue parsing, so cue character offsets are
+ * computed on the text the voice actually reads — "Build.One" written stays
+ * the brand, "Build One" spoken loses the sentence break the dot caused.
+ */
+export const applyPronunciations = (narrationText, pronunciations = {}) =>
+  Object.entries(pronunciations).reduce((text, [written, spoken]) => text.split(written).join(spoken), narrationText);
+
 const buildNarration = async ({demo, scene, provider, cacheDirectory}) => {
-  const {text, cues: cueOffsets} = parseNarrationCues(scene.narration);
   const narration = demo.settings.narration;
+  const {text, cues: cueOffsets} = parseNarrationCues(applyPronunciations(scene.narration, narration.pronunciations));
   const modelId = process.env[narration.modelIdEnv] || narration.defaultModelId;
   const languageCode = process.env[narration.languageCodeEnv] || narration.defaultLanguageCode;
   const voiceId = process.env[narration.voiceIdEnv] || 'silent-preview';
-  const cacheKey = sha256(JSON.stringify({provider, text, modelId, languageCode, voiceId, wordsPerMinute: narration.wordsPerMinute}));
+  // voiceSettings are part of the key: changing stability or style changes the
+  // audio, and a cache that ignored that would keep serving the old take.
+  const cacheKey = sha256(JSON.stringify({provider, text, modelId, languageCode, voiceId, wordsPerMinute: narration.wordsPerMinute, voiceSettings: narration.voiceSettings}));
   const metadataFile = path.join(cacheDirectory, `${cacheKey}.json`);
 
   try {
@@ -61,7 +78,7 @@ const buildNarration = async ({demo, scene, provider, cacheDirectory}) => {
       throw new Error(`ElevenLabs mode requires ${narration.apiKeyEnv} and ${narration.voiceIdEnv}`);
     }
     step(`Narration for ${scene.id}: calling ElevenLabs (${modelId}, voice ${voiceId})`);
-    const result = await callElevenLabs({text, apiKey, voiceId, modelId, languageCode});
+    const result = await callElevenLabs({text, apiKey, voiceId, modelId, languageCode, voiceSettings: narration.voiceSettings});
     alignment = result.normalized_alignment || result.alignment;
     if (!alignment) throw new Error('ElevenLabs response did not include alignment timestamps');
     audioFile = path.join(cacheDirectory, `${cacheKey}.mp3`);
@@ -90,7 +107,7 @@ export const prepareNarration = async ({demo, runDir, providerOverride}) => {
   const provider = selectProvider(demo, providerOverride);
   const narrationDir = await ensureDir(path.join(runDir, 'narration'));
   const captionsDir = await ensureDir(path.join(runDir, 'captions'));
-  const cacheDirectory = await ensureDir(path.join(projectRoot, '.cache', 'narration'));
+  const cacheDirectory = await ensureDir(path.join(resolveCacheRoot(), 'narration'));
   const scenes = [];
 
   step(`Preparing narration for ${demo.id} with provider ${provider}`);

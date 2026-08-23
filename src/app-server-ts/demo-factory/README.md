@@ -172,6 +172,61 @@ run id identifies a run; the prefix in front of it does not.
   now tries that path first and falls back to the identical file shipped inside
   `@buildone/swat-cli`.
 
+## Deployed operation — no Codespace, no git
+
+A deployed stack of this repository is a complete video workbench. The pieces
+that make that true:
+
+- **Demos live in data sources.** The clob-backed Studio data sources are the
+  source of truth; `demos/<id>/demo.yaml` is materialized from them before
+  every run. New demos created in a deployed Studio persist in the blueprint
+  database and survive redeploys.
+- **Runs and the narration cache live on a volume.** The standalone deployment
+  config mounts `demo_factory_data` at `/data/demo-factory` and points
+  `DEMO_OUTPUT_DIR` and `DEMO_CACHE_DIR` into it. On top of that, the
+  content-addressed narration cache and every run's manifest are mirrored into
+  Postgres (`demo_narration_cache`, `demo_run_manifests`) — a redeploy neither
+  re-buys voice-over nor forgets what a take contained.
+- **Upload and download.** The Studio exports any demo as `demo.yaml` (the
+  backup and transfer format) and imports one back — validated exactly like a
+  Studio edit — with overwrite/copy collision handling. Rendered MP4s and SRTs
+  download from `demo-factory/media/<demo>/<run>/download/<file>`.
+- **Auth without a shell.** The Settings tab mints the Playwright auth state
+  from a pasted `b1.session_token` cookie (the `mint-auth-state` action) — the
+  deployed replacement for `tools/auth-from-session.mjs`.
+- **Secrets and access from the stack environment.** `ELEVENLABS_API_KEY`,
+  `ELEVENLABS_VOICE_ID`, `B1_USER_API_KEY` come from the stack; setting
+  `DEMO_FACTORY_OPERATORS` (comma-separated e-mails) restricts every mutating
+  action — jobs, saves, imports, minting — to the listed accounts. Unset means
+  open, the workspace behaviour.
+- **The Demo Creator works against the environment.** The agent's environment
+  attribute is empty (it connects to the running environment like the vibe-code
+  agent), its skill drives the factory through `query_data_source` and the
+  `demo-factory` actions (`save-demo` is the only write path), and the Studio's
+  🗨 button starts a conversation with it directly. One replica of the app
+  server, please: the job model is deliberately single-process.
+
+## Remote rendering — the heavy stage on a strong machine
+
+Rendering is by far the heaviest stage (~100 minutes for a ten-minute 1080p
+video on a codespace) and the only one that needs nothing from the recording
+environment beyond the run's files. `tools/remote-render.mjs` runs it on any
+machine with this repository checked out:
+
+```bash
+# once: clone the repo, run `yarn install` at the root, have ffmpeg+ffprobe on PATH
+# reach a codespace:            gh codespace ports forward 8080:8080
+cd src/app-server-ts
+yarn demo:render:remote --studio=http://localhost:8080 --demo=b1-vibecode-governance \
+  --api-key=<key>              # or --session=<b1.session_token cookie>
+```
+
+The tool asks the studio host for the newest run (or takes `--run=`), pulls the
+demo definition, the clips and the narration through the media routes, and runs
+the exact same render locally — with `REMOTION_CONCURRENCY` defaulting to half
+the machine's cores. The MP4 and SRT land in this checkout's `output/`
+directory. Remotion downloads its own headless Chrome on first use.
+
 ## Demos
 
 - **`b1-vibecode-governance`** — the ten-minute product video (vibe coding +

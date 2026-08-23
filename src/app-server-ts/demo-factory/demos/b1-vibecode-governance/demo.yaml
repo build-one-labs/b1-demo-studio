@@ -77,12 +77,25 @@ settings:
     languageCodeEnv: ELEVENLABS_LANGUAGE_CODE
     defaultLanguageCode: en
     wordsPerMinute: 132
+    # The written text keeps the brand spelling; the voice reads the spoken
+    # form — the dot in "Build.One" otherwise becomes a sentence break.
+    pronunciations:
+      Build.One: Build One
+    # A cloned voice drifts over long single-call narrations (heard as the
+    # voice "switching" mid-scene). High stability and zero style keep a
+    # two-minute scene sounding like one person, at the cost of some
+    # expressiveness.
+    voiceSettings:
+      stability: 0.78
+      similarityBoost: 0.85
+      style: 0
+      speakerBoost: true
   branding:
     productName: Build.One
     accentColor: "#1266f1"
     backgroundColor: "#0b1020"
     textColor: "#f7f8ff"
-    showCaptions: true
+    showCaptions: false
     showSceneTitles: true
 
 # Reset the environment to the pre-demo state before a full take. Verified:

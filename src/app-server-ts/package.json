@@ -25,6 +25,7 @@
     "demo:auth:b1": "node demo-factory/tools/capture-auth.mjs",
     "demo:auth:workspace": "node demo-factory/tools/b1-auth-state.mjs",
     "demo:publish:web": "node demo-factory/tools/publish-web.mjs",
+    "demo:render:remote": "node demo-factory/tools/remote-render.mjs",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
