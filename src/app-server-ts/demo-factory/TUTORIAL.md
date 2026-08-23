@@ -1,71 +1,71 @@
-# Tutorial: Ein Demo-Video mit der B1 Demo Factory erstellen
+# Tutorial: Creating a demo video with the B1 Demo Factory
 
-Dieses Tutorial führt einmal komplett durch die Demo Factory: was sie ist, wie
-sie funktioniert, und wie du damit Schritt für Schritt ein fertiges Produktvideo
-erzeugst — vom leeren Projekt bis zum MP4 mit Voice-over und Untertiteln.
+This tutorial walks through the Demo Factory once, end to end: what it is, how
+it works, and how to produce a finished product video step by step — from an
+empty project to an MP4 with voice-over and captions.
 
-Referenz-Dokumente daneben:
+Reference documents alongside:
 
-| Dokument | Inhalt |
+| Document | Content |
 |---|---|
-| `README.md` | Setup, Auth, Provisionierung, Troubleshooting im Detail |
-| `AUTHORING.md` | Szenenregeln, alle Actions, Cue-Marker, Timelapse, Setup-Block, Cursor |
-| `ARCHITECTURE.md` | Pipeline-Stufen und Timing-Modell |
-| `src/schema.mjs` | Der verbindliche Vertrag für `demo.yaml` (Zod-Schema) |
-| `demos/b1-vibecode-governance/demo.yaml` | Großes Live-Beispiel (Timelapse, Setup, zwei Apps) |
-| `demos/opportunities-map/demo.yaml` | Kleines, verifiziertes Beispiel |
+| `README.md` | Setup, auth, provisioning, troubleshooting in detail |
+| `AUTHORING.md` | Scene rules, all actions, cue markers, timelapse, setup block, cursor |
+| `ARCHITECTURE.md` | Pipeline stages and the timing model |
+| `src/schema.mjs` | The binding contract for `demo.yaml` (zod schema) |
+| `demos/b1-vibecode-governance/demo.yaml` | Large live example (timelapse, setup, two apps) |
+| `demos/opportunities-map/demo.yaml` | Small, verified example |
 
 ---
 
-## 1. Das Konzept: Demo-as-Code
+## 1. The concept: demo as code
 
-Ein Demo-Video wird hier nicht aufgenommen, sondern **beschrieben**. Eine
-einzige YAML-Datei pro Video — `demos/<demo-id>/demo.yaml` — enthält alles:
+A demo video is not recorded here — it is **described**. A single YAML file per
+video — `demos/<demo-id>/demo.yaml` — holds everything:
 
-- die **Szenen** (welcher Screen, welche Klicks, welche Hervorhebungen),
-- das **Voice-over** (der gesprochene Text, Satz für Satz),
-- die **Cue-Marker**, die Browser-Aktionen exakt an Wörter im Voice-over binden,
-- **Assertions**, die beweisen, dass jede Szene wirklich das gefilmt hat, was
-  sie behauptet,
-- Branding, Auflösung, Sprache, Stimme.
+- the **scenes** (which screen, which clicks, which highlights),
+- the **voice-over** (the spoken text, sentence by sentence),
+- the **cue markers** that bind browser actions to exact words in the
+  voice-over,
+- **assertions** that prove each scene really filmed what it claims,
+- branding, resolution, language, voice.
 
-Daraus erzeugt die Pipeline deterministisch das Video:
+From that, the pipeline produces the video deterministically:
 
 ```text
-demo.yaml → Voice-over + Cue-Timestamps (ElevenLabs)
-          → Playwright fährt die Szenen im echten Browser
-          → Remotion schneidet Clips, Ton, Titel und Untertitel zusammen
+demo.yaml → voice-over + cue timestamps (ElevenLabs)
+          → Playwright drives the scenes in a real browser
+          → Remotion cuts clips, audio, titles and captions together
           → MP4 + SRT + run-manifest.json
 ```
 
-Der Gewinn: Versprecher gibt es nicht, jede Aufnahme ist identisch, und wenn
-sich die UI oder der Text ändert, änderst du eine Zeile YAML und renderst neu —
-statt 16 Minuten neu einzusprechen.
+The payoff: there are no slips of the tongue, every take is identical, and when
+the UI or the text changes you edit one line of YAML and render again — instead
+of re-recording sixteen minutes of narration.
 
-### Die vier Stufen
+### The four stages
 
-1. **Validate** — prüft die YAML gegen das Schema: IDs, Cue-Referenzen, Actions.
-2. **Prepare** — erzeugt das Voice-over. Mit ElevenLabs-Key echte Sprache samt
-   zeichengenauen Timestamps; ohne Key ein stilles Video mit geschätztem Timing
-   und Untertiteln. Narration wird über Content-Hash gecacht — unveränderter
-   Text ruft ElevenLabs nie zweimal.
-3. **Record** — Playwright öffnet jede Szene in einem **frischen
-   Browser-Kontext**, führt die Actions exakt zu ihren Cue-Zeitpunkten aus und
-   nimmt den Viewport als WebM auf. Ein synthetischer Cursor fährt sichtbar zu
-   jedem Ziel.
-4. **Render** — Remotion setzt Clips, Ton, Szenentitel, Untertitel und
-   Zeitraffer-Segmente zum finalen MP4 zusammen.
+1. **Validate** — checks the YAML against the schema: ids, cue references,
+   actions.
+2. **Prepare** — produces the voice-over. With an ElevenLabs key: real speech
+   with character-precise timestamps; without one: a silent video with
+   estimated timing and captions. Narration is cached by content hash —
+   unchanged text never calls ElevenLabs twice.
+3. **Record** — Playwright opens each scene in a **fresh browser context**,
+   executes the actions exactly at their cue times, and records the viewport as
+   WebM. A synthetic cursor visibly travels to every target.
+4. **Render** — Remotion composes clips, audio, scene titles, captions and
+   time-lapse segments into the final MP4.
 
-Jede Stufe kann einzeln laufen; `record` kann mit `--scenes=` einzelne Szenen
-nachdrehen, ohne den Rest anzufassen.
+Every stage can run individually; `record` can re-shoot single scenes with
+`--scenes=` without touching the rest.
 
-### Das Timing-Modell (der Kern der Sache)
+### The timing model (the heart of it)
 
-Im Narration-Text stehen Marker, die nicht gesprochen werden:
+The narration text carries markers that are never spoken:
 
 ```yaml
 narration: >
-  Hier ist die Pipeline. [cue:show-list] Diese Zeilen kommen live aus
+  Here is the pipeline. [cue:show-list] These rows come live from
   Salesforce.
 actions:
   - action: highlight
@@ -73,160 +73,159 @@ actions:
     target: { css: '.p-datatable' }
 ```
 
-ElevenLabs liefert zu jedem Zeichen des gesprochenen Texts einen Timestamp.
-Daraus weiß die Pipeline auf die Millisekunde, **wann** die Stimme das Wort
-hinter `[cue:show-list]` erreicht — und genau dann feuert die Action. Der
-Cursor startet seine Bewegung schon vorher, damit der Klick auf dem Cue landet.
+ElevenLabs returns a timestamp for every character of the spoken text. From
+that, the pipeline knows to the millisecond **when** the voice reaches the word
+behind `[cue:show-list]` — and exactly then the action fires. The cursor starts
+moving beforehand, so the click lands on the cue.
 
 ---
 
-## 2. Die zwei Bedienoberflächen
+## 2. The two front ends
 
-**CLI** (aus `src/app-server-ts`):
+**CLI** (from `src/app-server-ts`):
 
 ```bash
-yarn demo:validate <demo-id>     # Schema prüfen
-yarn demo:prepare  <demo-id>     # Voice-over erzeugen (--voice=silent erzwingt stumm)
-yarn demo:record   <demo-id>     # Browser-Aufnahme (--scenes=a,b für Teilaufnahme)
-yarn demo:render   <demo-id>     # Finales MP4
-yarn demo          <demo-id>     # Alles in einem: validate → auth → prepare → record → render
-yarn demo:publish:web <demo-id>  # Fertigen Run in den public-Ordner der Web-App kopieren
+yarn demo:validate <demo-id>     # check the schema
+yarn demo:prepare  <demo-id>     # produce the voice-over (--voice=silent forces silent)
+yarn demo:record   <demo-id>     # the browser recording (--scenes=a,b for a partial take)
+yarn demo:render   <demo-id>     # the final MP4
+yarn demo          <demo-id>     # all in one: validate → auth → prepare → record → render
+yarn demo:publish:web <demo-id>  # copy a finished run into the web app's public folder
 ```
 
-**Demo Factory Studio** — die App `b1-demo-factory` im Browser
-(`http://localhost:8080/?app=b1-demo-factory`): Storyboard-Editor,
-Szenen-Inspektor mit Voice-over- und Actions-Tab, die vier Pipeline-Stufen als
-Buttons, Pipeline-Log und Video-Vorschau je Run. Studio und CLI treiben
-denselben Code; das Studio zeigt zusätzlich an, was der Host kann (Browser?
-ffmpeg? API-Key?) und deaktiviert Stufen, die nicht laufen können — mit Grund.
+**Demo Factory Studio** — the `b1-demo-factory` app in the browser
+(`http://localhost:8080/?app=b1-demo-factory`): storyboard editor, scene
+inspector with voice-over and actions tabs, the four pipeline stages as
+buttons, pipeline log and a video preview per run. Studio and CLI drive the
+same code; the Studio additionally shows what the host can do (browser? ffmpeg?
+API key?) and disables stages that cannot run — with the reason attached.
 
-Im Studio legt **＋** (neben der Demo-Auswahl) ein neues Projekt an — als Kopie
-der geöffneten Demo, oder ohne Auswahl von einem leeren Starter-Template.
-Der Settings-Tab nimmt Laufzeit-Einstellungen entgegen (`B1_BASE_URL`,
-ElevenLabs-Keys, …); Secrets bleiben im Server-Prozess und landen nie im
-Blueprint oder in Git.
+In the Studio, **＋** (next to the demo picker) creates a new project — as a
+copy of the open demo, or from a blank starter template when nothing is
+selected. The Settings tab takes runtime settings (`B1_BASE_URL`, ElevenLabs
+keys, …); secrets stay in the server process and never land in the blueprint or
+in git.
 
 ---
 
-## 3. Voraussetzungen
+## 3. Prerequisites
 
-### Werkzeuge (einmalig pro Workspace)
+### Tools (once per workspace)
 
-In einem Codespace richtet `provision-demo-factory.sh` beim Start alles ein.
-Nach einem Stack-Neustart einmal nachziehen:
+In a Codespace, `provision-demo-factory.sh` sets everything up on start. After
+a stack restart, run it once more:
 
 ```bash
 cd src/app-server-ts && yarn demo:provision
 ```
 
-Das installiert Chromium + ffmpeg in den App-Server-Container, legt Playwrights
-ffmpeg in `.cache/ms-playwright` ab und schreibt `demo-factory/.env.app-server`.
+That installs Chromium + ffmpeg into the app-server container, places
+Playwright's ffmpeg in `.cache/ms-playwright`, and writes
+`demo-factory/.env.app-server`.
 
 ### Voice-over: ElevenLabs
 
-Zwei Werte, ohne die das Video stumm (aber untertitelt) bleibt:
+Two values, without which the video stays silent (but captioned):
 
-- `ELEVENLABS_API_KEY` — der API-Key
-- `ELEVENLABS_VOICE_ID` — die Stimme
+- `ELEVENLABS_API_KEY` — the API key
+- `ELEVENLABS_VOICE_ID` — the voice
 
-Als **Codespace-Secrets** anlegen (Repo → Settings → Codespaces); das Skript
-`.devcontainer/scripts/app-server-secrets.mjs` reicht sie beim Start in den
-App-Server-Container weiter (nach dem Anlegen einmal von Hand ausführen).
-Alternativ im Studio-Settings-Tab eintragen — gilt dann bis zum nächsten
-Server-Neustart. Optional: `ELEVENLABS_MODEL_ID` (Default
+Create them as **Codespace secrets** (repo → Settings → Codespaces); the script
+`.devcontainer/scripts/app-server-secrets.mjs` forwards them into the
+app-server container on start (run it once by hand after creating them).
+Alternatively, enter them in the Studio's Settings tab — valid until the next
+server restart. Optional: `ELEVENLABS_MODEL_ID` (default
 `eleven_multilingual_v2`).
 
-### Authentifizierung der Aufnahme
+### Authenticating the recording
 
-Der Aufnahme-Browser muss eingeloggt sein. Drei Wege, in dieser Reihenfolge
-probieren:
+The recording browser must be signed in. Three ways, try them in this order:
 
-1. **Session-Cookie** (funktioniert immer, auch gegen fremde Deployments): Im
-   eingeloggten Browser DevTools → Application → Cookies → `b1.session_token`
-   kopieren, dann:
+1. **Session cookie** (always works, including against foreign deployments):
+   in a signed-in browser, DevTools → Application → Cookies →
+   `b1.session_token`, then:
    ```bash
    cd src/app-server-ts
-   B1_BASE_URL=https://<zielhost>/ node demo-factory/tools/auth-from-session.mjs <token>
+   B1_BASE_URL=https://<target-host>/ node demo-factory/tools/auth-from-session.mjs <token>
    export B1_AUTH_STATE=demo-factory/playwright/.auth/b1-demo-user.json
    ```
-2. **API-Key-Header**: `B1_USER_API_KEY` gesetzt → `record` schickt ihn als
-   `x-api-key` an jede Anfrage. Funktioniert nur, wenn der Ziel-App-Server
-   Header-Auth akzeptiert.
-3. **Handoff-Mint** (`yarn demo:auth:workspace`): braucht einen Auth-Server mit
-   `x-api-key`-Handoff — bei älteren Deployments 401.
+2. **API-key header**: with `B1_USER_API_KEY` set, `record` sends it as
+   `x-api-key` on every request. Only works when the target app server accepts
+   header auth.
+3. **Handoff mint** (`yarn demo:auth:workspace`): needs an auth server with the
+   `x-api-key` handoff — older deployments answer 401.
 
-Schnelltest, was ankommt: `node demo-factory/tools/probe-auth.mjs <url>` sagt,
-ob der Browser die App-Shell oder die Sign-in-Seite sieht.
+Quick check of what actually arrives: `node demo-factory/tools/probe-auth.mjs
+<url>` reports whether the browser sees the app shell or the sign-in page.
 
-### Die Ziel-URL
+### The target URL
 
-`B1_BASE_URL` **muss den App-Query tragen** — `http://localhost:8080` allein
-filmt die Default-App. Richtig: `http://localhost:8080/?app=sample-app`. Eine
-Demo kann in `settings.baseUrl.env` auch einen eigenen Variablennamen
-deklarieren (z. B. `B1_VIBECODE_BASE_URL`), damit der Workspace-Default sie
-nicht übersteuert.
+`B1_BASE_URL` **must carry the app query** — `http://localhost:8080` alone
+films the default app. Correct: `http://localhost:8080/?app=sample-app`. A demo
+can also declare its own variable name in `settings.baseUrl.env` (e.g.
+`B1_VIBECODE_BASE_URL`) so the workspace default cannot override it.
 
 ---
 
-## 4. Schritt für Schritt zum Video
+## 4. Step by step to the video
 
-### Schritt 1 — Die Geschichte festlegen
+### Step 1 — Decide the story
 
-Vor der ersten Zeile YAML: Was ist die Aussage, und was ist der sichtbare
-Beweis? Eine gute Szene (aus `AUTHORING.md`):
+Before the first line of YAML: what is the statement, and what is the visible
+proof? A good scene (from `AUTHORING.md`):
 
-- 15–45 Sekunden (Live-Szenen mit Timelapse dürfen länger sein)
-- eine Aussage, ein sichtbarer Beleg
-- höchstens drei wesentliche Interaktionen
-- eindeutiger Anfangs- und Endzustand
-- **keine Abhängigkeit vom UI-Zustand einer anderen Szene** — jede Szene startet
-  in einem frischen Browser-Kontext
+- 15–45 seconds (live scenes with timelapse may run longer)
+- one statement, one visible piece of evidence
+- at most three meaningful interactions
+- an unambiguous start and end state
+- **no dependence on another scene's UI state** — every scene starts in a
+  fresh browser context
 
-3–5 Szenen sind ein Produktvideo. Ein 10-Minuten-Video wie
-`b1-vibecode-governance` kommt mit 8 aus.
+Three to five scenes make a product video. A ten-minute video like
+`b1-vibecode-governance` gets by with eight.
 
-### Schritt 2 — Prüfen, dass Screens und Daten existieren
+### Step 2 — Verify that screens and data exist
 
-Der am häufigsten übersprungene Schritt, und der teuerste: **jeden Screen im
-laufenden Ziel-System öffnen**, bevor du ihn beschreibst. Liefert die
-Datenquelle Zeilen? Rendert das Feld, über das du sprichst, echte Werte (oder
-`$NaN`, `***********`, eine leere Achse)? Was leer oder kaputt rendert, wird
-umschifft oder vorher gefixt — nie gefilmt.
+The most-skipped step, and the most expensive one: **open every screen in the
+running target system** before you describe it. Does the data source return
+rows? Does the field you narrate render real values (or `$NaN`, `***********`,
+an empty axis)? Whatever renders empty or broken gets narrated around or fixed
+first — never filmed.
 
-### Schritt 3 — Das Projekt anlegen
+### Step 3 — Create the project
 
-Im Studio: **＋** → ID (`kleinbuchstaben-mit-strichen`) und Titel vergeben.
-Oder von Hand: `demos/<id>/demo.yaml` anlegen — am schnellsten als Kopie eines
-Beispiels; der `settings`-Block von `opportunities-map` ist gegen diesen
-Workspace verifiziert. Die ID muss dem Verzeichnisnamen entsprechen.
+In the Studio: **＋** → assign an id (`lowercase-with-dashes`) and a title. Or
+by hand: create `demos/<id>/demo.yaml` — fastest as a copy of an example; the
+`settings` block of `opportunities-map` is verified against this workspace. The
+id must equal the directory name.
 
-### Schritt 4 — Szenen schreiben
+### Step 4 — Write the scenes
 
-Pro Szene: `id`, `title` (wird als Zwischentitel eingeblendet), `route`
-(beginnt mit `/`, darf `?app=…` tragen), `narration` mit Cue-Markern,
-`actions`, `assertions`.
+Per scene: `id`, `title` (shown as an interstitial title card), `route` (starts
+with `/`, may carry `?app=…`), `narration` with cue markers, `actions`,
+`assertions`.
 
-**Actions**: `goto`, `click`, `dblclick`, `fill`, `type` (tippt sichtbar,
-`delayMs` pro Zeichen), `press`, `hover`, `highlight`, `waitFor` (optional mit
-`timelapse` und/oder `stableMs` — das Ziel muss so lange ununterbrochen
-sichtbar bleiben, gegen flackernde Zustände wie einen Status-Chip, der
-zwischen Agent-Schritten kurz „Ready" zeigt), `screenshot`. Jede Action bindet
-an `atCue` (oder `atMs`), optional verschoben um `offsetMs` — `offsetMs` wirkt
-nur zusammen mit `atCue`/`atMs`.
+**Actions**: `goto`, `click`, `dblclick`, `fill`, `type` (types visibly,
+`delayMs` per character), `press`, `hover`, `highlight`, `waitFor` (optionally
+with `timelapse` and/or `stableMs` — the target must stay visible that long
+without interruption, against flickering states like a status chip that briefly
+reads "Ready" between agent steps), `screenshot`. Every action binds to
+`atCue` (or `atMs`), optionally shifted by `offsetMs` — `offsetMs` only takes
+effect together with `atCue`/`atMs`.
 
-**Selektoren**, in dieser Reihenfolge:
+**Selectors**, in this order:
 
-1. `demoId:` — ein `data-demo-id`-Attribut. Der stabile Vertrag mit der App.
-2. `role:` + `name:` — z. B. `{ role: button, name: Create private draft }`
+1. `demoId:` — a `data-demo-id` attribute. The stable contract with the app.
+2. `role:` + `name:` — e.g. `{ role: button, name: Create private draft }`
 3. `label:` / `text:`
-4. `css:` — letzter Ausweg, bricht zuerst
+4. `css:` — the last resort, and the first thing to break
 
-**Jeden Selektor vor der Aufnahme gegen die laufende App prüfen.** Ein aus dem
-Quellcode geratener Selektor ist die häufigste Ursache für eine Szene, die eine
-leere Seite filmt.
+**Verify every selector against the running app before recording.** A selector
+guessed from reading source code is the most common cause of a scene that films
+a blank page.
 
-**Assertions** ans Szenenende — der Beweis, dass gefilmt wurde, was behauptet
-wird:
+**Assertions** at the end of the scene — the proof that what was claimed got
+filmed:
 
 ```yaml
 assertions:
@@ -234,15 +233,15 @@ assertions:
   - textContains: { target: { css: '.p-datatable' }, value: 'Negotiation' }
 ```
 
-### Schritt 5 — Live-Abschnitte mit Timelapse
+### Step 5 — Live sections with timelapse
 
-Wenn im Video echte, unvorhersehbar lange Arbeit passiert (ein Agent baut eine
-App, eine Analyse läuft), nimm sie live auf und lass den Render sie raffen:
+When real, unpredictably long work happens in the video (an agent builds an
+app, an analysis runs), record it live and let the render compress it:
 
 ```yaml
 narration: >
-  Der Agent legt los. [cue:working] Er analysiert Datenquellen und Bausteine
-  und setzt die App zusammen. [cue:done] Fertig — hier ist das Ergebnis.
+  The agent gets going. [cue:working] It analyzes data sources and building
+  blocks and assembles the app. [cue:done] Finished — here is the result.
 actions:
   - action: waitFor
     atCue: working
@@ -254,14 +253,14 @@ actions:
     target: { css: '.preview' }
 ```
 
-Die Aufnahme wartet echt (bis `timeoutMs`); der Render komprimiert genau dieses
-Stück auf das Narrations-Budget zwischen `working` und `done` — mit
-▶▶-Badge im Bild. Details in `AUTHORING.md`.
+The recording really waits (up to `timeoutMs`); the render compresses exactly
+that stretch to the narration budget between `working` and `done` — with a
+▶▶ badge on screen. Details in `AUTHORING.md`.
 
-### Schritt 6 — Ausgangszustand automatisieren (Setup-Block)
+### Step 6 — Automate the starting state (setup block)
 
-Wenn eine Aufnahme das System verändert (Live-Demos!), stellt ein `setup`-Block
-vor jeder Vollaufnahme den bekannten Ausgangszustand her — ungefilmt:
+When a take mutates the system (live demos!), a `setup` block re-establishes
+the known starting state before every full take — unfilmed:
 
 ```yaml
 setup:
@@ -274,111 +273,110 @@ setup:
       timeoutMs: 180000
 ```
 
-### Schritt 7 — Validieren und Voice-over prüfen
+### Step 7 — Validate and check the voice-over
 
 ```bash
-yarn demo:validate <id>                 # nach jeder Änderung, kostet nichts
-yarn demo:prepare <id> --voice=silent   # zeigt die Länge jeder Szene in Sekunden
+yarn demo:validate <id>                 # after every edit, costs nothing
+yarn demo:prepare <id> --voice=silent   # prints each scene's length in seconds
 ```
 
-Die Prepare-Ausgabe ist dein Längen-Budget: Szenenlängen addieren, Holds
-(~2,5 s je Szene) dazurechnen — das ist die Videolänge. Text kürzen ist hier
-eine YAML-Zeile; nach der Aufnahme ist es ein Neudreh.
+The prepare output is your length budget: add up the scene lengths, add the
+holds (~2.5 s per scene) — that is the video length. Trimming text here is one
+YAML line; after recording it is a re-shoot.
 
-### Schritt 8 — Aufnehmen
+### Step 8 — Record
 
 ```bash
-yarn demo <id>          # alles in einem, ODER:
-yarn demo:prepare <id>  # echtes Voice-over (Cache greift bei unverändertem Text)
-yarn demo:record <id>   # die Aufnahme
+yarn demo <id>          # all in one, OR:
+yarn demo:prepare <id>  # real voice-over (cache hits for unchanged text)
+yarn demo:record <id>   # the take
 ```
 
-`record` schreibt in den **neuesten** Run — `prepare` muss also vorher gelaufen
-sein. Schlägt eine Szene fehl, liegt ein Screenshot des Fehlmoments neben den
-Clips (`clips/<szene>.failure.png`). Einzelne Szenen nachdrehen:
+`record` writes into the **latest** run — so `prepare` first, always. If a
+scene fails, a screenshot of the failing moment sits next to the clips
+(`clips/<scene>.failure.png`). Re-shooting individual scenes:
 
 ```bash
-yarn demo:record <id> --scenes=szene-a,szene-b
+yarn demo:record <id> --scenes=scene-a,scene-b
 ```
 
-— aber nur auf Basis eines Runs, dessen Aufnahme **vollständig** war, und
-wohlwissend, dass der `setup`-Block bei Teilaufnahmen übersprungen wird.
+— but only on top of a run whose recording **completed**, and knowing that the
+`setup` block is skipped on partial takes.
 
-### Schritt 9 — Rendern und veröffentlichen
+### Step 9 — Render and publish
 
 ```bash
 yarn demo:render <id>
 ```
 
-(In kleinen Workspaces sind `REMOTION_OFFTHREADVIDEO_CACHE_MB=512` und
-`REMOTION_CONCURRENCY=1|2` bereits die Defaults der Provisionierung; ohne Cap
-stirbt ein 1080p-Render mit `Compositor exited with signal SIGTERM`.)
+(On small workspaces, `REMOTION_OFFTHREADVIDEO_CACHE_MB=512` and
+`REMOTION_CONCURRENCY=1|2` are already the provisioning defaults; without the
+cap, a 1080p render dies with `Compositor exited with signal SIGTERM`.)
 
-Ergebnis in `output/<id>/<run-id>/`: `<id>.mp4`, `<id>.srt`,
-`run-manifest.json`. `yarn demo:publish:web <id>` kopiert den Run in die
-Web-App; im Studio erscheint er in der Vorschau.
+The result lands in `output/<id>/<run-id>/`: `<id>.mp4`, `<id>.srt`,
+`run-manifest.json`. `yarn demo:publish:web <id>` copies the run into the web
+app; it appears in the Studio's preview.
 
 ---
 
-## 5. Ohne Codespace: die Demo Factory im deployten Stack
+## 5. Without a Codespace: the Demo Factory in a deployed stack
 
-Ein deployter Stack dieses Repos ist eine vollständige Video-Werkbank — ohne
-Git, ohne Shell. Die Unterschiede zum Workspace-Betrieb:
+A deployed stack of this repository is a complete video workbench — no git, no
+shell. The differences from workspace operation:
 
-- **Demos liegen in Datenquellen** (persistent in der Blueprint-DB); die
-  YAML-Datei ist nur die Arbeitskopie der Pipeline. Runs und der
-  Narration-Cache liegen auf dem Volume `demo_factory_data`; Cache und
-  Run-Manifeste sind zusätzlich in Postgres gespiegelt
-  (`demo_narration_cache`, `demo_run_manifests`) — ein Redeploy kauft kein
-  Voice-over neu.
-- **Export/Import**: ⤓ exportiert die offene Demo als `demo.yaml`
-  (Backup- und Transferformat, Kommentare bleiben erhalten, solange Zeilen und
-  Datei übereinstimmen); ⤒ importiert eine YAML per Paste — validiert wie
-  jede Studio-Änderung, mit Kollisionswahl (ablehnen / überschreiben / als
-  Kopie).
-- **Download**: MP4/SRT-Buttons neben der Vorschau und in der Runs-Tabelle
-  (`…/media/<demo>/<run>/download/<datei>`).
-- **Auth ohne Shell**: Im Settings-Tab das `b1.session_token`-Cookie einer
-  eingeloggten Browser-Session einfügen → „Mint auth state" schreibt den
-  Playwright-Auth-State serverseitig und setzt `B1_AUTH_STATE`.
-- **Zugriffsschutz**: `DEMO_FACTORY_OPERATORS` (Komma-Liste von E-Mails) im
-  Stack-Environment beschränkt alle verändernden Actions auf die gelisteten
-  Konten; ungesetzt = offen (Workspace-Verhalten).
-- **Demo Creator direkt aus dem Studio**: Der 🗨-Button startet eine
-  Konversation mit dem Agenten gegen diese Umgebung — er liest über
-  `query_data_source`, schreibt ausschließlich über `save-demo` und fährt die
-  Pipeline über `start-job`/`job-status`.
+- **Demos live in data sources** (persistent in the blueprint database); the
+  YAML file is only the pipeline's working copy. Runs and the narration cache
+  live on the `demo_factory_data` volume; the cache and the run manifests are
+  additionally mirrored into Postgres (`demo_narration_cache`,
+  `demo_run_manifests`) — a redeploy does not re-buy any voice-over.
+- **Export/import**: ⤓ exports the open demo as `demo.yaml` (the backup and
+  transfer format; comments survive as long as rows and file agree);
+  ⤒ imports YAML by paste — validated like any Studio edit, with collision
+  handling (refuse / overwrite / import as copy).
+- **Download**: MP4/SRT buttons next to the preview and in the runs table
+  (`…/media/<demo>/<run>/download/<file>`).
+- **Auth without a shell**: paste the `b1.session_token` cookie of a signed-in
+  browser session into the Settings tab → "Mint auth state" writes the
+  Playwright auth state server-side and sets `B1_AUTH_STATE`.
+- **Access control**: `DEMO_FACTORY_OPERATORS` (a comma-separated list of
+  e-mails) in the stack environment restricts all mutating actions to the
+  listed accounts; unset = open (the workspace behaviour).
+- **The Demo Creator straight from the Studio**: the 🗨 button starts a
+  conversation with the agent against this environment — it reads through
+  `query_data_source`, writes exclusively through `save-demo`, and drives the
+  pipeline through `start-job`/`job-status`.
 
 ---
 
 ## 6. Troubleshooting
 
-| Symptom | Ursache | Fix |
+| Symptom | Cause | Fix |
 |---|---|---|
-| `Invalid demo id` | Großbuchstaben/Unterstriche | `^[a-z0-9][a-z0-9-]*$`, gleich dem Verzeichnis |
-| Validate meckert Cue an | `atCue` ohne Marker in der Szene | Marker sind pro Szene, nicht pro Demo |
-| Falsche App gefilmt | `B1_BASE_URL` ohne `?app=` | App-Query anhängen |
-| Sign-in-Seite gefilmt | keine Auth | Session-Cookie / `B1_USER_API_KEY` (Abschnitt 3) |
-| Szene ist leer | Selektor traf nie | im laufenden System prüfen; `data-demo-id` bevorzugen |
-| Szene klappt allein, nicht in Folge | Abhängigkeit von anderer Szene | jede Szene startet frisch |
-| Render stirbt (`SIGTERM`) | Frame-Cache ohne Cap | `REMOTION_OFFTHREADVIDEO_CACHE_MB=512`, `REMOTION_CONCURRENCY=2` |
-| Render stoppt still nach `Selecting composition` | `nest --watch` killte den Render | `watchOptions.excludeDirectories` in `tsconfig.json` prüfen |
-| `record` findet keinen Run | `prepare` fehlt oder letzter Run abgebrochen | `prepare` erneut |
-| Tote Luft im Video | echte Wartezeit ungerafft | `timelapse: true` auf das `waitFor` |
+| `Invalid demo id` | uppercase/underscores | `^[a-z0-9][a-z0-9-]*$`, equal to the directory |
+| Validate complains about a cue | `atCue` without a marker in the scene | markers are per scene, not per demo |
+| Wrong app filmed | `B1_BASE_URL` without `?app=` | append the app query |
+| Sign-in page filmed | no auth | session cookie / `B1_USER_API_KEY` (section 3) |
+| Scene is blank | selector never matched | verify in the running system; prefer `data-demo-id` |
+| Scene works alone, fails in sequence | depends on another scene | every scene starts fresh |
+| Render dies (`SIGTERM`) | frame cache without a cap | `REMOTION_OFFTHREADVIDEO_CACHE_MB=512`, `REMOTION_CONCURRENCY=2` |
+| Render stalls after `Selecting composition` | `nest --watch` killed the render | check `watchOptions.excludeDirectories` in `tsconfig.json` |
+| `record` finds no run | `prepare` missing, or the last run aborted | run `prepare` again |
+| Dead air in the video | a real wait recorded uncompressed | `timelapse: true` on the `waitFor` |
 
-Logs: aus der Shell ist stdout das Log; aus dem Studio landet es im Log-Panel
-**und** in `output/logs/<zeit>--<demo>--<stufe>.log` (übersteht Server-Neustarts,
-`tail -f` funktioniert).
+Logs: from a shell, stdout is the log; from the Studio it lands in the log
+panel **and** in `output/logs/<time>--<demo>--<stage>.log` (survives server
+restarts, `tail -f` works).
 
 ---
 
-## 7. Die Demo-Projekte in diesem Repo
+## 7. The demo projects in this repo
 
-- **`b1-vibecode-governance`** — das 10-Minuten-Produktvideo (Vibe Coding +
-  Governance), live gegen `vanguard-develop.test.build.one` aufgenommen. Nutzt
-  alles aus diesem Tutorial: `type`, Timelapse, Setup-Reset, App-Wechsel per
-  Szenenschnitt und per `goto`.
-- **`opportunities-map`** — klein, lokal verifiziert, guter Startpunkt zum
-  Kopieren.
-- **`sales-tour-planning`** — Authoring-Referenz (der Ziel-Screen existiert in
-  diesem Blueprint nicht; validiert und rendert, nimmt hier aber nicht auf).
+- **`b1-vibecode-governance`** — the ten-minute product video (vibe coding +
+  governance), recorded live against `vanguard-develop.test.build.one`. Uses
+  everything in this tutorial: `type`, timelapse, the setup reset, app
+  switching by scene cut and by `goto`.
+- **`opportunities-map`** — small, verified locally, a good starting point to
+  copy.
+- **`sales-tour-planning`** — an authoring reference (its target screen does
+  not exist in this blueprint; it validates and renders but does not record
+  here).
