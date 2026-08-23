@@ -55,6 +55,28 @@ actions:
 Cue markers are not spoken. Every referenced cue id must appear in the same
 scene's narration text.
 
+## Voice: pronunciations and voice settings
+
+Two knobs under `settings.narration`:
+
+```yaml
+narration:
+  pronunciations:
+    Build.One: Build One      # written form → spoken form
+  voiceSettings:
+    stability: 0.78           # 0..1 — higher = more consistent, less expressive
+    similarityBoost: 0.85
+    style: 0
+    speakerBoost: true
+```
+
+`pronunciations` replaces written forms with spoken ones before cue parsing
+and synthesis — the YAML keeps the brand spelling, the voice loses the
+sentence break a dot would cause. `voiceSettings` are passed to ElevenLabs and
+are part of the narration cache key; the defaults match the factory's previous
+hard-coded values. For long scenes with a cloned voice, raise `stability` and
+drop `style` — a drifting clone is heard as the voice "switching" mid-scene.
+
 ## Timelapse: wait live, play back compressed
 
 A `waitFor` with `timelapse` records a real, unpredictably long wait (an agent

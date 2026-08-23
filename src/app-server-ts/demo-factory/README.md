@@ -206,6 +206,27 @@ that make that true:
   🗨 button starts a conversation with it directly. One replica of the app
   server, please: the job model is deliberately single-process.
 
+## Remote rendering — the heavy stage on a strong machine
+
+Rendering is by far the heaviest stage (~100 minutes for a ten-minute 1080p
+video on a codespace) and the only one that needs nothing from the recording
+environment beyond the run's files. `tools/remote-render.mjs` runs it on any
+machine with this repository checked out:
+
+```bash
+# once: clone the repo, run `yarn install` at the root, have ffmpeg+ffprobe on PATH
+# reach a codespace:            gh codespace ports forward 8080:8080
+cd src/app-server-ts
+yarn demo:render:remote --studio=http://localhost:8080 --demo=b1-vibecode-governance \
+  --api-key=<key>              # or --session=<b1.session_token cookie>
+```
+
+The tool asks the studio host for the newest run (or takes `--run=`), pulls the
+demo definition, the clips and the narration through the media routes, and runs
+the exact same render locally — with `REMOTION_CONCURRENCY` defaulting to half
+the machine's cores. The MP4 and SRT land in this checkout's `output/`
+directory. Remotion downloads its own headless Chrome on first use.
+
 ## Demos
 
 - **`b1-vibecode-governance`** — the ten-minute product video (vibe coding +

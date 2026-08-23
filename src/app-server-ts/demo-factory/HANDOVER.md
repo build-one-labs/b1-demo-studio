@@ -21,6 +21,8 @@ https://claude.ai/code/artifact/8feb05e4-560c-48ef-b67a-fd1da94ff4dc
 | Studio → agent conversation | `startAgentConversation()` via `agent-proxy/create-conversation` with `agentObjectMasterGuid` `34e589aa-…` | ✅ code; **E2E untested** |
 | Deployment layer | `.build/deploy/standalone.deployment.config.json`: volume `demo_factory_data` → `/data/demo-factory`, `DEMO_OUTPUT_DIR`/`DEMO_CACHE_DIR`, ELEVENLABS/OPERATORS env | ✅ (careful: `.deploy/` is generated and gitignored — the source is `.build/deploy/`) |
 | `setup:` block round-trip fix | `rows.ts`, `transfer.ts`, `DemoFactoryStudio.vue` | ✅ the rows spec had caught that `setup` was lost in the document↔rows split |
+| Remote rendering | `tools/remote-render.mjs` + `latest-run` action (`yarn demo:render:remote`) | ✅ pulls demo + run inputs via media routes, renders locally with the same code path; README documents the `gh codespace ports forward` recipe |
+| Voice consistency & pronunciation | `narration.mjs` (`applyPronunciations`, configurable `voiceSettings` in the cache key), schema | ✅ demo uses stability 0.78 / style 0 and speaks "Build.One" as "Build One"; if a cloned voice still drifts on long scenes, the next lever is chunked synthesis with ElevenLabs request stitching (`previous_request_ids`) |
 
 Tests: `yarn test` in `src/app-server-ts` (24 jest + 19 node), build and both
 lints green. Migration 0014 is applied against the workspace database.

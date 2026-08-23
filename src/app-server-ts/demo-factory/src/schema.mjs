@@ -111,6 +111,24 @@ export const demoSchema = z.object({
       languageCodeEnv: z.string(),
       defaultLanguageCode: z.string(),
       wordsPerMinute: z.number().positive().default(130),
+      /**
+       * Spoken-form replacements applied to the narration before cue parsing
+       * and synthesis. The written text keeps the brand spelling; the voice
+       * gets the pronounceable one — "Build.One" spoken as "Build One"
+       * instead of a sentence break after "Build".
+       */
+      pronunciations: z.record(z.string()).default({}),
+      /**
+       * ElevenLabs voice settings. Long single-call narrations drift with
+       * cloned voices; raising stability (and dropping style) is the lever
+       * that keeps a two-minute scene sounding like one person throughout.
+       */
+      voiceSettings: z.object({
+        stability: z.number().min(0).max(1).default(0.62),
+        similarityBoost: z.number().min(0).max(1).default(0.82),
+        style: z.number().min(0).max(1).default(0.18),
+        speakerBoost: z.boolean().default(true),
+      }).default({stability: 0.62, similarityBoost: 0.82, style: 0.18, speakerBoost: true}),
     }),
     branding: z.object({
       productName: z.string(),

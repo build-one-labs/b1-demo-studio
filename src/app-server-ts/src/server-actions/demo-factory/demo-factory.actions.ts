@@ -7,7 +7,7 @@
  */
 import { spawn } from 'node:child_process';
 import { createWriteStream, WriteStream } from 'node:fs';
-import { mkdir, readdir, rm, writeFile } from 'node:fs/promises';
+import { mkdir, readdir, readFile, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import { B1Action, B1ActionPayload, B1Service } from '@buildone/app-server-tslib';
@@ -15,7 +15,7 @@ import { RequestContext } from '@buildone/app-server-tslib/modules';
 import { Logger } from '@nestjs/common';
 
 import { DemoFactoryHost } from './demo-factory.host';
-import { assertOperator, buildJobCommand, JobAction, stageBlockedReason } from './demo-factory.lib';
+import { assertOperator, assertSafeId, buildJobCommand, JobAction, stageBlockedReason } from './demo-factory.lib';
 import { DemoFactoryMaterializer } from './demo-factory.materializer';
 import { DemoFactoryNarrationCache } from './demo-factory.narration-cache';
 import { DemoDocument, DSO, JobRow } from './demo-factory.rows';
@@ -355,6 +355,20 @@ export class DemoFactoryStudio {
   @B1Action({ description: 'The demo as demo.yaml text — the backup and transfer format' })
   async exportDemo({ body: { demoId = '' } = {} }: B1ActionPayload<{ demoId?: string }> = {}) {
     return this.transfer.exportYaml(demoId);
+  }
+
+  /**
+   * The newest run of a demo, so a remote renderer can find what to fetch.
+   * Read-only; the run's files themselves come through the media routes.
+   */
+  @B1Action({ description: 'The id of the newest run of a demo' })
+  async latestRun({ body: { demoId = '' } = {} }: B1ActionPayload<{ demoId?: string }> = {}) {
+    assertSafeId(demoId, 'demo id');
+    const pointer = JSON.parse(
+      await readFile(path.join(this.host.outputRoot(), demoId, 'latest-run.json'), 'utf8')
+    ) as { runId?: string };
+    if (!pointer.runId) throw new Error(`No completed prepare/record run for ${demoId}`);
+    return { demoId, runId: pointer.runId };
   }
 
   @B1Action({
