@@ -7,11 +7,11 @@ const execFileAsync = promisify(execFile);
 const ffmpeg = process.env.FFMPEG_PATH || 'ffmpeg';
 const ffprobe = process.env.FFPROBE_PATH || 'ffprobe';
 
-export const mediaDurationMs = async (file) => {
+export const mediaDurationMs = async (file, {trimMs = 40} = {}) => {
   const {stdout} = await execFileAsync(ffprobe, ['-v', 'error', '-show_entries', 'format=duration', '-of', 'default=noprint_wrappers=1:nokey=1', file]);
   const duration = Number(stdout.trim());
   if (!Number.isFinite(duration) || duration <= 0) throw new Error(`Could not determine media duration for ${file}`);
-  return Math.max(1, Math.floor(duration * 1000) - 40);
+  return Math.max(1, Math.floor(duration * 1000) - trimMs);
 };
 
 export const normalizeVideo = async (source, target) => {

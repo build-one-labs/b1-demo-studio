@@ -119,6 +119,14 @@ export const demoSchema = z.object({
        */
       pronunciations: z.record(z.string()).default({}),
       /**
+       * Split a scene's narration into chunks of at most this many characters
+       * (at sentence boundaries) and synthesize them as stitched requests —
+       * each conditioned on its neighbours' text and the previous requests'
+       * ids. A cloned voice drifts over long single calls; short anchored
+       * calls are ElevenLabs' own remedy. 0 disables chunking.
+       */
+      chunkChars: z.number().int().nonnegative().default(550),
+      /**
        * ElevenLabs voice settings. Long single-call narrations drift with
        * cloned voices; raising stability (and dropping style) is the lever
        * that keeps a two-minute scene sounding like one person throughout.
