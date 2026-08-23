@@ -484,10 +484,14 @@ scenes:
         retry:
           target: { css: '.p-dialog :text("Retry")' }
           everyMs: 45000
-      # The analysis itself — compressed to analysis→plan.
+      # The analysis itself — compressed to analysis→plan. Same stability rule
+      # as the build scenes: the chip flickers to Ready between assistant
+      # steps, and take 9 proved an early exit here leaves the Policies screen
+      # empty for the next scene — the records were not written yet.
       - action: waitFor
         offsetMs: 1500
         target: { css: '.p-dialog .agent-chat-status.status-awaiting_input' }
+        stableMs: 15000
         timeoutMs: 900000
         timelapse: true
       - action: highlight
@@ -523,10 +527,13 @@ scenes:
       - action: click
         offsetMs: 1000
         target: { role: button, name: Policies }
-      # The policy the assistant recorded in the previous scene.
+      # The policy the assistant recorded in the previous scene. Self-healing
+      # like scene 2's app wait: if the assistant is still writing its records
+      # when this scene starts, the wait absorbs (and compresses) the rest.
       - action: waitFor
         target: { css: 'h3:has-text("OpenStreetMap")' }
-        timeoutMs: 60000
+        timeoutMs: 300000
+        timelapse: true
       - action: highlight
         atCue: impact
         target: { css: 'code:has-text("salesPlanningMapDemo") >> nth=0' }
