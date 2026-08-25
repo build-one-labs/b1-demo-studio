@@ -31,8 +31,63 @@ jobs:
           aws-access-key-id: ${{ env.B1_ACCESS_KEY_ID || secrets.B1_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ env.B1_SECRET_ACCESS_KEY || secrets.B1_SECRET_ACCESS_KEY }}
 
-      - name: Run audit
-        run: yarn audit:ws --severity critical
+      # Collect, then report, then gate. Collecting never fails the run:
+      # the single `yarn audit:ws --severity critical` this replaces exited
+      # on the first critical advisory, which hid every other advisory and
+      # skipped the update check below it.
+      - name: Collect vulnerability advisories
+        id: collect-audit
+        run: |
+          mkdir -p audit-reports
+          yarn npm audit --all --json > audit-reports/audit.ndjson || true
 
-      - name: Run npm check updates
-        run: yarn ncu:ws
+      - name: Report vulnerabilities
+        id: audit
+        if: always() && steps.collect-audit.outcome == 'success'
+        run: |
+          node node_modules/@buildone/swat-cli/scripts/reports/audit-report.mjs \
+            --input audit-reports/audit.ndjson \
+            --out-dir audit-reports \
+            --fail-on critical \
+            --no-fail
+
+      # `--workspaces`, not `-ws`. ncu reads `-ws` as the combined short
+      # flags `-w -s`, prints nothing at all and exits 0 — which is how this
+      # check spent its life green without ever having looked at anything.
+      - name: Collect available dependency updates
+        id: collect-ncu
+        if: always() && steps.collect-audit.outcome == 'success'
+        run: yarn dlx npm-check-updates --workspaces --jsonUpgraded > audit-reports/ncu.json || true
+
+      - name: Report outdated dependencies
+        if: always() && steps.collect-ncu.outcome == 'success'
+        run: |
+          node node_modules/@buildone/swat-cli/scripts/reports/outdated-report.mjs \
+            --input audit-reports/ncu.json \
+            --out-dir audit-reports \
+            --root .
+
+      # audit.json and outdated.json are the full data; the job summary
+      # tabulates the first rows of each.
+      - name: Upload audit reports
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: audit-reports-${{ github.run_id }}-${{ github.run_attempt }}
+          path: audit-reports
+          if-no-files-found: warn
+          retention-days: 30
+
+      # Last, so that by the time anything fails both reports are written,
+      # uploaded and on the run page.
+      - name: Enforce the vulnerability gate
+        if: always() && steps.audit.outputs.failing == 'true'
+        env:
+          BLOCKING: ${{ steps.audit.outputs.blocking }}
+          CRITICAL: ${{ steps.audit.outputs.critical }}
+          HIGH: ${{ steps.audit.outputs.high }}
+          MODERATE: ${{ steps.audit.outputs.moderate }}
+          LOW: ${{ steps.audit.outputs.low }}
+        run: |
+          echo "::error::${BLOCKING} advisories at or above 'critical' — ${CRITICAL} critical, ${HIGH} high, ${MODERATE} moderate, ${LOW} low. See the job summary, or audit.json in the run artifacts."
+          exit 1

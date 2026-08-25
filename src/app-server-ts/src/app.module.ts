@@ -4,7 +4,8 @@ import {
   ApplicationSettingsModule,
   ConnectorModule,
   RepositoryModule,
-  RequestContextModule
+  RequestContextModule,
+  NotificationModule
 } from '@buildone/app-server-tslib/modules';
 import { HttpModule } from '@nestjs/axios';
 import { Module } from '@nestjs/common';
@@ -22,6 +23,7 @@ import { ServerActionsModule } from './server-actions/server-actions.module';
 
 @Module({
   imports: [
+    NotificationModule,
     ConfigModule.forRoot({ isGlobal: true }),
     ApplicationSettingsModule.forRoot({
       configs: [appSettingsConfig]

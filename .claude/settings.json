@@ -1,19 +1,5 @@
 {
   "permissions": {
     "defaultMode": "bypassPermissions"
-  },
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "P=\"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/guard-web-app-build.sh\"; [ -x \"$P\" ] || exit 0; exec bash \"$P\"",
-            "statusMessage": "Checking for a web-app build against a live dev server"
-          }
-        ]
-      }
-    ]
   }
 }

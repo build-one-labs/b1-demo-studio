@@ -1,0 +1,218 @@
+name: E2E
+
+# Runs the Playwright suite in `src/e2e` against a disposable full stack: a
+# Neon database branch of its own, the application containers on the runner, and
+# fresh data imported before the first spec. Nothing here touches a deployed
+# environment.
+#
+# Nightly, and on demand. Not on pull requests: a run boots the whole stack and
+# resets the CI database branch, which is minutes and a shared resource — worth
+# it once a night and when somebody asks for it, not on every push.
+
+on:
+  schedule:
+    # 03:00 UTC — after the day's merges, before the next morning.
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+    inputs:
+      workers:
+        description: 'Number of parallel Playwright workers'
+        type: number
+        required: false
+        default: 2
+
+permissions:
+  contents: read
+
+# Every run imports with --clear into the same CI database branch. Queue manual
+# and nightly runs so they can never reset each other's fixtures mid-suite.
+concurrency:
+  group: e2e-${{ github.repository }}
+  cancel-in-progress: false
+
+jobs:
+  # The whole run hangs off two Actions secrets, and a nightly schedule in a
+  # repository that has not been provisioned yet would fail every night for a
+  # reason nobody is acting on. So the pair is checked first, in a job of its
+  # own: a scheduled run without them ends here with a notice, while a run
+  # somebody asked for fails and says which one is missing. A step `if:` cannot
+  # read the `secrets` context, which is why this is a job with an output
+  # rather than a condition on each step below.
+  preflight:
+    runs-on: ubuntu-latest
+    outputs:
+      ready: ${{ steps.check.outputs.ready }}
+    env:
+      AUTH_URL: ${{ secrets.AUTH_URL }}
+      B1_ORG_API_KEY: ${{ secrets.B1_ORG_API_KEY }}
+    steps:
+      - name: Check the credentials this run needs
+        id: check
+        run: |
+          missing=()
+          [[ -z "${AUTH_URL}" ]] && missing+=("AUTH_URL")
+          [[ -z "${B1_ORG_API_KEY}" ]] && missing+=("B1_ORG_API_KEY")
+
+          if [[ ${#missing[@]} -eq 0 ]]; then
+            echo "ready=true" >> "${GITHUB_OUTPUT}"
+            exit 0
+          fi
+
+          echo "ready=false" >> "${GITHUB_OUTPUT}"
+          names="${missing[*]}"
+          if [[ "${GITHUB_EVENT_NAME}" == "schedule" ]]; then
+            echo "::notice title=E2E skipped::Not run: ${names} not set for this repository. Everything else the suite needs is fetched with them."
+            exit 0
+          fi
+          echo "::error title=E2E::${names} not set for this repository. An organization secret must have this repository in its selected-repositories list to be visible here."
+          exit 1
+
+  test-e2e:
+    needs: preflight
+    if: needs.preflight.outputs.ready == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      WORKSPACE_ROOT: ${{ github.workspace }}
+      # Names the Neon branch this run works in, so CI never lands on a
+      # developer's.
+      GITHUB_USER: github-actions
+      DATABASE_SERVER_TYPE: neon
+      AUTHENTICATION_SERVER_TYPE: remote
+      # With no auth_server container to fall back on, the stack needs this by
+      # name: root.deployment.config.json resolves `authenticationUrl` from
+      # `${AUTH_URL:-http://auth_server:3000}`, and the guard calls getSession()
+      # before it checks whether a route is public — so an unset AUTH_URL is not
+      # a degraded run, it is HTTP 500 on every request including
+      # /api/healthcheck, and a stack that never reports healthy.
+      #
+      # The b1-secrets step below also fetches it, and `preflight` names it too,
+      # but a job environment does not carry across jobs and the secret store is
+      # not this job's to depend on. Pinned here, the run works whichever way
+      # the value arrives.
+      AUTH_URL: ${{ secrets.AUTH_URL }}
+      E2E_WORKERS: ${{ inputs.workers || 2 }}
+    steps:
+      - uses: actions/checkout@v5
+
+      # One organization key, and everything else this job needs — the AWS pair
+      # for the package registry, the Neon credentials, the test user's key —
+      # comes back from the secret store as job environment.
+      - name: Fetch this repository's secrets
+        uses: ./.github/actions/b1-secrets
+        with:
+          auth-url: ${{ secrets.AUTH_URL }}
+          api-key: ${{ secrets.B1_ORG_API_KEY }}
+          require: B1_ACCESS_KEY_ID B1_SECRET_ACCESS_KEY NEON_API_KEY NEON_PROJECT_ID
+
+      - uses: ./.github/actions/setup-node
+        with:
+          aws-access-key-id: ${{ env.B1_ACCESS_KEY_ID || secrets.B1_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.B1_SECRET_ACCESS_KEY || secrets.B1_SECRET_ACCESS_KEY }}
+          focus-workspaces: app app-server-ts web-app data e2e
+
+      - name: Prepare the runner
+        run: |
+          B1_SYSTEM_USER_PASSWORD="${B1_SYSTEM_USER_PASSWORD:-unused-by-remote-auth}" \
+            node_modules/@buildone/swat-cli/scripts/openhands/preflight-checks.sh
+      - name: Validate stack environment
+        run: node_modules/@buildone/swat-cli/scripts/openhands/validate-env.sh
+      - name: Bootstrap the test database
+        run: node_modules/@buildone/swat-cli/scripts/openhands/bootstrap-neon.sh
+      - name: Start the application stack
+        run: node_modules/@buildone/swat-cli/scripts/openhands/start-stack.sh
+      - name: Wait for the application stack
+        run: node_modules/@buildone/swat-cli/scripts/openhands/wait-for-services.sh
+
+      # --clear both times: this database branch is the suite's, and a run that
+      # inherits the last one's rows is a run whose failures are somebody
+      # else's.
+      - name: Import test data
+        run: |
+          node_modules/@buildone/swat-cli/scripts/openhands/import-data.sh
+          node_modules/@buildone/swat-cli/bin/build-one import-app --clear
+
+      # Split, rather than the single `--with-deps` this used to be. That form
+      # does two unrelated things — `sudo apt-get install` for ~30 system
+      # libraries, then a ~170MB browser download — and prints nothing until
+      # both finish, so when it once ran for 50 minutes there was no way to tell
+      # which half was stuck. Two steps with two timeouts answer that from the
+      # run page alone.
+      #
+      # The apt half is unattended, and on Ubuntu 24.04 an unattended install
+      # can stop on a needrestart prompt and wait for an answer that is never
+      # coming. These two variables are the usual cure and cost nothing if that
+      # was not the cause — the hang was never reproduced with logs, so treat
+      # them as a hypothesis and the timeouts as the actual protection.
+      - name: Install Chromium's system dependencies
+        timeout-minutes: 10
+        env:
+          DEBIAN_FRONTEND: noninteractive
+          NEEDRESTART_MODE: a
+        run: yarn workspace e2e exec playwright install-deps chromium
+
+      - name: Install Chromium
+        timeout-minutes: 10
+        run: yarn workspace e2e exec playwright install chromium
+
+      - name: Run E2E tests
+        env:
+          E2E_BASE_URL: http://localhost:8080
+        run: yarn workspace e2e test:e2e
+
+      # Kept even when the suite passes: a run that was slow or flaky is read
+      # from the stack log, and by then the runner is gone. `ps --all` catches
+      # the container that exited before it logged anything, which the logs
+      # alone cannot show — and when the stack is what died, these three files
+      # are the only evidence there is.
+      - name: Capture stack diagnostics
+        if: always()
+        continue-on-error: true
+        run: |
+          docker compose -p gitpod ps --all > src/e2e/stack-ps.txt
+          docker compose -p gitpod logs --no-color > src/e2e/stack.log
+          node_modules/@buildone/swat-cli/bin/build-one status --json > src/e2e/stack-status.json
+
+      # Puts the answer on the run page: the verdict, every failure with its
+      # error and its location, the flaky tests — which pass, so nothing else
+      # here would mention them — and a per-suite breakdown. Without it the run
+      # says "test-e2e ❌" and the rest is inside an artifact you have to
+      # download and unzip.
+      #
+      # It never fails the job. The test step above already owns that verdict,
+      # and a summariser that failed on top of it would only bury the reason.
+      # Hence the guard as well: `if: always()` includes the run where the
+      # install never finished, and there is no summariser to call then.
+      - name: Summarise the E2E results
+        if: always()
+        run: |
+          summariser=node_modules/@buildone/swat-cli/scripts/reports/e2e-report.mjs
+          if [[ ! -f "$summariser" ]]; then
+            echo "::notice title=E2E summary::Skipped: the install did not complete, so there is no summariser."
+            exit 0
+          fi
+          node "$summariser" \
+            --input src/e2e/test-results/e2e-results.json \
+            --out-dir src/e2e/test-results
+
+      - name: Upload Playwright results
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          # Re-running a failed run reuses the run id, and an artifact name
+          # that already exists is an upload error — so the attempt is part of
+          # the name, and both attempts stay downloadable side by side.
+          name: e2e-results-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            src/e2e/playwright-report
+            src/e2e/test-results
+            src/e2e/stack.log
+            src/e2e/stack-ps.txt
+            src/e2e/stack-status.json
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Stop the application stack
+        if: always()
+        continue-on-error: true
+        run: node_modules/@buildone/swat-cli/bin/build-one down
