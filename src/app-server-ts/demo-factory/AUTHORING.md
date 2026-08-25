@@ -77,6 +77,13 @@ are part of the narration cache key; the defaults match the factory's previous
 hard-coded values. For long scenes with a cloned voice, raise `stability` and
 drop `style` — a drifting clone is heard as the voice "switching" mid-scene.
 
+Long narration is synthesized as **stitched chunks** by default
+(`chunkChars: 550`, `0` disables): the text is cut at sentence ends, every
+chunk is conditioned on its neighbours' text and on the previous requests'
+ids (ElevenLabs request stitching), and audio and alignment are merged with
+ffprobe-measured chunk lengths — short anchored calls are what keeps a cloned
+voice from drifting over a two-minute scene.
+
 ## Timelapse: wait live, play back compressed
 
 A `waitFor` with `timelapse` records a real, unpredictably long wait (an agent

@@ -4,6 +4,7 @@ import {chromium} from '@playwright/test';
 import {envBoolean, resolveApiKey} from './env.mjs';
 import {ensureDir} from './files.mjs';
 import {seconds, step, warn} from './log.mjs';
+import {mediaDurationMs} from './media.mjs';
 import {executeAssertions, executeSceneActions, installDemoCursor, primeDemoCursor, resolveDemoUrl} from './actions.mjs';
 
 const sleep = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
@@ -119,24 +120,51 @@ export const recordScenes = async ({demo, manifest, sceneFilter = null}) => {
         const narrationStartTime = Date.now();
         const {timelapses} = await executeSceneActions({page, scene, baseUrl, narrationStartTime, cursor: demo.settings.cursor});
         await executeAssertions({page, assertions: sourceScene.assertions});
-        // A live wait can outrun the narration; the scene still deserves its
-        // stillness after the last action, not a cut mid-motion.
-        const desiredEndAt = Math.max(narrationStartTime + preparedScene.narrationDurationMs, Date.now()) + demo.settings.holdAfterMs;
+        // Keep recording until the narration fits the COMPOSED timeline, not
+        // the wall clock. Every compressed wait removes footage from the final
+        // scene while the audio keeps playing over it, so the wall deadline
+        // must be pushed out by exactly what the compression will take away —
+        // otherwise the scene ends with the last spoken sentences cut off
+        // (take 10: 8.4 seconds of scene 1 lost to two long waits).
+        const compressionSavingsMs = timelapses.reduce(
+          (sum, segment) => sum + (segment.toMs - segment.fromMs) - segment.targetMs,
+          0,
+        );
+        const desiredEndAt = Math.max(
+          narrationStartTime + compressionSavingsMs + preparedScene.narrationDurationMs,
+          Date.now(),
+        ) + demo.settings.holdAfterMs;
         if (Date.now() < desiredEndAt) await sleep(desiredEndAt - Date.now());
 
         const clipFile = path.join(clipsDir, `${sourceScene.id}.webm`);
-        const narrationOffsetMs = narrationStartTime - recordingStartedAt;
-        const recordedDurationMs = Date.now() - recordingStartedAt;
+        const wallDurationMs = Date.now() - recordingStartedAt;
         await context.close();
         await video.saveAs(clipFile);
         const originalVideoFile = await video.path();
         if (path.resolve(originalVideoFile) !== path.resolve(clipFile)) await rm(originalVideoFile, {force: true});
+
+        // Anchor every clip position to the clip's END, not to the wall clock.
+        // Playwright starts capturing when the page is created — before this
+        // loop's own t0 — so the clip runs LONGER than the wall span by however
+        // slow that startup was (measured up to ~2s on a cold browser). Wall-
+        // based offsets then start the narration audio too early and every cue
+        // lands late on screen. The end is the trustworthy anchor: capture
+        // stops with context.close(), immediately after the last wall event.
+        let anchorDeltaMs = 0;
+        let clipDurationMs = wallDurationMs;
+        try {
+          clipDurationMs = await mediaDurationMs(clipFile, {trimMs: 0});
+          anchorDeltaMs = clipDurationMs - wallDurationMs;
+        } catch {
+          warn(`Scene ${position}: ${sourceScene.id} — no ffprobe on this host, keeping wall-clock timing`);
+        }
+        const narrationOffsetMs = narrationStartTime - recordingStartedAt + anchorDeltaMs;
         // Timelapses leave executeSceneActions relative to the narration start;
         // the composition seeks the clip, so they are stored clip-relative.
         const clipTimelapses = timelapses.map((segment) => ({...segment, fromMs: segment.fromMs + narrationOffsetMs, toMs: segment.toMs + narrationOffsetMs}));
         if (clipTimelapses.length) step(`Scene ${position}: ${sourceScene.id} — ${clipTimelapses.map((s) => `${seconds(s.toMs - s.fromMs)} wait compressed to ${seconds(s.targetMs)}`).join(', ')}`);
-        step(`Scene ${position}: ${sourceScene.id} — recorded ${seconds(recordedDurationMs)} to ${clipFile}`);
-        recordedScenes.push({...preparedScene, clipFile, narrationOffsetMs, recordedDurationMs, timelapses: clipTimelapses});
+        step(`Scene ${position}: ${sourceScene.id} — recorded ${seconds(clipDurationMs)} to ${clipFile} (clip anchor ${anchorDeltaMs >= 0 ? '+' : ''}${anchorDeltaMs}ms)`);
+        recordedScenes.push({...preparedScene, clipFile, narrationOffsetMs, recordedDurationMs: clipDurationMs, timelapses: clipTimelapses});
       } catch (error) {
         const failureShot = path.join(clipsDir, `${sourceScene.id}.failure.png`);
         warn(`Scene ${position}: ${sourceScene.id} failed after ${seconds(Date.now() - recordingStartedAt)} — screenshot at ${failureShot}`);
