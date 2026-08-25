@@ -4,6 +4,6 @@
   "main": "index.js",
   "license": "MIT",
   "devDependencies": {
-    "@buildone/swat-data": "24.3.0-VG.410"
+    "@buildone/swat-data": "24.3.0-VG.420"
   }
 }

@@ -1,0 +1,11 @@
+# Saved authenticated session (never commit credentials/cookies)
+.auth/
+
+# Playwright artifacts
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
+
+# Local env overrides
+.env
