@@ -1,0 +1,26 @@
+{
+  "createdAt": "2026-09-05 16:32:55.458033",
+  "createdBy": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "howToUse": "",
+  "label": "",
+  "moduleGuid": "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4",
+  "objectDescription": "Shared master of the b1_demo_timeline type for run-scene rows: one block per scene sized by durationMs, cue ticks from cues, following the DemoFactoryRunPlayer instance on the same screen. Instantiate it next to the player and link DemoFactoryRunSceneDSO to it (issue #17, step 6).",
+  "objectMasterGuid": "5fbe6b3e-064c-406e-b409-8434fdea4926",
+  "objectName": "DemoFactoryRunTimeline",
+  "objectTypeGuid": "836b557e-bfb5-473a-b940-9027aa5e03b8",
+  "owner": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "status": "Active",
+  "templateObject": false,
+  "attributes": {
+    "cuesField": "cues",
+    "durationField": "durationMs",
+    "headerLabel": "Timeline",
+    "playerObject": "DemoFactoryRunPlayer"
+  },
+  "instances": [],
+  "links": [],
+  "tags": [],
+  "tenantId": null,
+  "validFrom": null,
+  "validUntil": null
+}

@@ -1,0 +1,27 @@
+{
+  "createdAt": "2026-09-05 16:32:06.961768",
+  "createdBy": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "howToUse": "",
+  "label": "",
+  "moduleGuid": "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4",
+  "objectDescription": "The live log of the demo factory's pipeline job — a b1_log_view pointed at the job-status action. Instantiate it wherever the pipeline is started from; today the Log tab of DemoFactoryDemoMaintenance (issue #17, step 5).",
+  "objectMasterGuid": "0aee09af-e45a-4f5c-a685-b4664cc675d5",
+  "objectName": "DemoFactoryJobLog",
+  "objectTypeGuid": "74d84f76-10b9-4bd0-8ec4-335e48f8fc22",
+  "owner": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "status": "Active",
+  "templateObject": false,
+  "attributes": {
+    "autoScroll": true,
+    "headerLabel": "Pipeline log",
+    "logSource": "demo-factory/demo-factory-studio/job-status",
+    "maxLines": 500,
+    "pollIntervalMs": 1500
+  },
+  "instances": [],
+  "links": [],
+  "tags": [],
+  "tenantId": null,
+  "validFrom": null,
+  "validUntil": null
+}

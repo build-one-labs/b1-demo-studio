@@ -212,6 +212,39 @@
                   ]
                 }
               ]
+            },
+            {
+              "instanceName": "logTab",
+              "objectInstanceGuid": "858e894c-b2d0-4baf-8eb8-889faa47081c",
+              "objectMasterGuid": "1e241b7b-04d8-43c4-baa7-0a979903b1c6",
+              "objectSequence": 5,
+              "attributes": {
+                "icon": "i-lucide-terminal",
+                "label": "Log",
+                "sequence": 5
+              },
+              "instances": [
+                {
+                  "instanceName": "panel_log",
+                  "objectInstanceGuid": "5bab6871-38f2-4413-8e6e-89c29aeeaafe",
+                  "objectMasterGuid": "31572117-2fe3-4262-ba03-20a74c6b59ca",
+                  "objectSequence": 1,
+                  "attributes": {
+                    "headerLabel": "Pipeline log",
+                    "panelType": "visual"
+                  },
+                  "instances": [
+                    {
+                      "instanceName": "DemoFactoryJobLog",
+                      "objectInstanceGuid": "a7aa4768-f4d1-4481-b689-e179571f00d2",
+                      "objectMasterGuid": "0aee09af-e45a-4f5c-a685-b4664cc675d5",
+                      "objectSequence": 1,
+                      "attributes": {},
+                      "instances": []
+                    }
+                  ]
+                }
+              ]
             }
           ]
         }
