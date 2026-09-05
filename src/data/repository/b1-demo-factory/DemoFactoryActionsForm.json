@@ -1,0 +1,94 @@
+{
+  "createdAt": "2026-09-05 15:34:20.132326",
+  "createdBy": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "howToUse": "",
+  "label": "",
+  "moduleGuid": "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4",
+  "objectDescription": "Actions tab of the native Studio inspector, over DemoFactorySceneDSO: the scene's browser actions and its assertions, each a JSON array edited in a b1_json_field (DemoFactoryJsonField master) with live parse feedback, side by side. Replaces the Actions tab of the former DemoFactoryStudio component (issue #17, step 2).",
+  "objectMasterGuid": "a468fadb-2933-44ce-aeaf-c96902941d01",
+  "objectName": "DemoFactoryActionsForm",
+  "objectTypeGuid": "130726b3-7c42-4f22-a324-cc07f3d21feb",
+  "owner": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "status": "Active",
+  "templateObject": false,
+  "attributes": {
+    "headerLabel": "Actions"
+  },
+  "instances": [
+    {
+      "instanceName": "actionsBlock",
+      "objectInstanceGuid": "59f3e682-d35d-42af-8f97-43011c61ed55",
+      "objectMasterGuid": "c5c097d5-52c4-4b2d-8e1a-90d3e4af5626",
+      "objectSequence": 1,
+      "attributes": {},
+      "instances": [
+        {
+          "instanceName": "actionsFieldset",
+          "objectInstanceGuid": "076692af-08cc-4af6-ac01-54b6396c2c48",
+          "objectMasterGuid": "4002bae8-5bac-45f1-82b3-0d91f7381296",
+          "objectSequence": 1,
+          "attributes": {
+            "label": "Actions"
+          },
+          "instances": [
+            {
+              "instanceName": "actions",
+              "objectInstanceGuid": "63f68201-03d2-4911-aa9f-8f31bfc394b0",
+              "objectMasterGuid": "3d2ef757-6018-4f34-84b9-fbc9311f54f9",
+              "objectSequence": 1,
+              "attributes": {
+                "label": "Browser actions (JSON array)",
+                "rows": 20
+              },
+              "instances": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "instanceName": "actionsColumnBreak",
+      "objectInstanceGuid": "986aedb1-9cc5-4901-907e-fc16d525e410",
+      "objectMasterGuid": "4b2a1744-b061-4616-a5bd-ac8f9ebd5d01",
+      "objectSequence": 2,
+      "attributes": {},
+      "instances": []
+    },
+    {
+      "instanceName": "assertionsBlock",
+      "objectInstanceGuid": "18bb3f3e-5a3e-4739-b028-81274b90f063",
+      "objectMasterGuid": "c5c097d5-52c4-4b2d-8e1a-90d3e4af5626",
+      "objectSequence": 3,
+      "attributes": {},
+      "instances": [
+        {
+          "instanceName": "assertionsFieldset",
+          "objectInstanceGuid": "48832a50-d826-464a-83cb-65754cf3d156",
+          "objectMasterGuid": "4002bae8-5bac-45f1-82b3-0d91f7381296",
+          "objectSequence": 1,
+          "attributes": {
+            "label": "Assertions"
+          },
+          "instances": [
+            {
+              "instanceName": "assertions",
+              "objectInstanceGuid": "13cb03c4-f030-459e-aad2-21b2d6aab2d3",
+              "objectMasterGuid": "3d2ef757-6018-4f34-84b9-fbc9311f54f9",
+              "objectSequence": 1,
+              "attributes": {
+                "label": "Assertions (JSON array)",
+                "rows": 20
+              },
+              "instances": []
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "links": [],
+  "tags": [],
+  "tenantId": null,
+  "validFrom": null,
+  "validUntil": null
+}
