@@ -29,6 +29,20 @@
         "tooltip": "Demos and their scenes"
       },
       "instances": []
+    },
+    {
+      "instanceName": "Settings",
+      "objectInstanceGuid": "22ed64eb-66f7-4544-9d0d-73101f2d31a5",
+      "objectMasterGuid": "2a34c785-bbd7-439f-aacd-c5e24927f26c",
+      "objectSequence": 3,
+      "attributes": {
+        "actionParameter": "DemoFactorySettingsScreen",
+        "actionType": "Launch",
+        "label": "Settings",
+        "smallImage": "i-lucide-settings",
+        "tooltip": "Runtime configuration, recording sign-in and what this host can run"
+      },
+      "instances": []
     }
   ],
   "links": [],

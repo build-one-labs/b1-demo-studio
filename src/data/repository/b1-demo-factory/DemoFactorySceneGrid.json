@@ -4,7 +4,7 @@
   "howToUse": "",
   "label": "",
   "moduleGuid": "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4",
-  "objectDescription": "Scene list of the open demo in the native Studio — the detail grid of DemoFactoryDemosScreen, bound to DemoFactorySceneDSO and filtered to the selected demo via the Join link. The hidden id column carries the key for repositionTo. Replaces the dfs-scenes list of the former DemoFactoryStudio component (issue #17, step 1).",
+  "objectDescription": "Scene list of a demo in the native Studio — the Scenes tab of DemoFactoryDemoMaintenance, bound to DemoFactorySceneDSO and filtered to the demo via the Join link. The title is a link that opens the modal DemoFactorySceneMaintenance positioned to the scene; the hidden id column carries the key. Replaces the dfs-scenes list of the former DemoFactoryStudio component (issue #17).",
   "objectMasterGuid": "863ddab1-49cd-42dd-a78e-260969f25745",
   "objectName": "DemoFactorySceneGrid",
   "objectTypeGuid": "63d81ac2-8555-44e1-9032-7064448799c4",
@@ -34,7 +34,9 @@
       "objectMasterGuid": "11ba27c0-a259-4df5-8752-2a7fd4f08242",
       "objectSequence": 2,
       "attributes": {
-        "label": "Title"
+        "action": "@8bc198e6-1afb-aebb-da14-48a39869c351{ \"containerName\": \"DemoFactorySceneMaintenance\", \"repositionTo\": eventSource.parent.selectedRecord.id }",
+        "label": "Title",
+        "visualizationType": "LINK"
       },
       "instances": []
     },

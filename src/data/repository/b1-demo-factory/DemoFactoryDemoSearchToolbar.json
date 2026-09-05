@@ -1,0 +1,68 @@
+{
+  "createdAt": "2026-09-05 15:59:09.826523",
+  "createdBy": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "howToUse": "",
+  "label": "",
+  "moduleGuid": "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4",
+  "objectDescription": "Toolbar of the demo search screen: New opens the create dialog through the grid (createNewRecord over TableIO → the grid's addRecordContainer), Import opens the demo.yaml import dialog, Ask the Demo Creator starts an agent conversation. Editing, export and the pipeline live on the demo's maintenance screen (issue #17, step 3).",
+  "objectMasterGuid": "544d6900-f904-4cf0-b5d5-f83ae61f4815",
+  "objectName": "DemoFactoryDemoSearchToolbar",
+  "objectTypeGuid": "c0f01216-5d6f-4923-b9ce-1f3049f9d2b5",
+  "owner": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "status": "Active",
+  "templateObject": false,
+  "attributes": {
+    "htmlClass": "regular",
+    "toolbarKey": "DemoFactoryDemoSearchToolbar"
+  },
+  "instances": [
+    {
+      "instanceName": "newDemo",
+      "objectInstanceGuid": "ed819a9e-d823-4cf8-887a-4b37dc03a271",
+      "objectMasterGuid": "2a34c785-bbd7-439f-aacd-c5e24927f26c",
+      "objectSequence": 1,
+      "attributes": {
+        "actionParameter": "createNewRecord",
+        "actionTarget": "TABLEIO",
+        "actionType": "PUBLISH",
+        "label": "New demo",
+        "smallImage": "i-lucide-plus",
+        "tooltip": "Create a demo — as a copy of the selected one, or from the blank starter"
+      },
+      "instances": []
+    },
+    {
+      "instanceName": "importDemo",
+      "objectInstanceGuid": "e0af2a9d-e8ff-46c3-b7d7-5035490a988a",
+      "objectMasterGuid": "2a34c785-bbd7-439f-aacd-c5e24927f26c",
+      "objectSequence": 2,
+      "attributes": {
+        "actionParameter": "#.openImport(eventSource)",
+        "actionType": "Run",
+        "label": "Import",
+        "smallImage": "i-lucide-upload",
+        "tooltip": "Import a demo.yaml"
+      },
+      "instances": []
+    },
+    {
+      "instanceName": "askAgent",
+      "objectInstanceGuid": "15a04843-483c-4a4c-b31e-07126f4ddd46",
+      "objectMasterGuid": "2a34c785-bbd7-439f-aacd-c5e24927f26c",
+      "objectSequence": 3,
+      "attributes": {
+        "actionParameter": "#.openAgent(eventSource)",
+        "actionType": "Run",
+        "label": "Ask the Demo Creator",
+        "smallImage": "i-lucide-message-square-text",
+        "tooltip": "Start a conversation with the Demo Creator agent"
+      },
+      "instances": []
+    }
+  ],
+  "links": [],
+  "tags": [],
+  "tenantId": null,
+  "validFrom": null,
+  "validUntil": null
+}

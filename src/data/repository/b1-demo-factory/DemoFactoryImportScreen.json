@@ -1,0 +1,47 @@
+{
+  "createdAt": "2026-09-05 16:02:02.136729",
+  "createdBy": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "howToUse": "",
+  "label": "",
+  "moduleGuid": "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4",
+  "objectDescription": "Import demo dialog of the native Studio, opened from the search toolbar: pasted demo.yaml text goes to import-demo, validated exactly like a Studio edit, then the search list repositions to the imported demo (issue #17, step 3).",
+  "objectMasterGuid": "cc893d22-22bc-4592-82e1-2b595df7531c",
+  "objectName": "DemoFactoryImportScreen",
+  "objectTypeGuid": "d188099d-8548-49f0-86e4-c4b28dda9ecc",
+  "owner": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "status": "Active",
+  "templateObject": false,
+  "attributes": {
+    "eventNamespace": "#",
+    "icon": "i-lucide-upload",
+    "isModal": true,
+    "title": "Import demo"
+  },
+  "instances": [
+    {
+      "instanceName": "a",
+      "objectInstanceGuid": "7b77a8a9-23bd-4bb6-9aab-8db8e7236627",
+      "objectMasterGuid": "31572117-2fe3-4262-ba03-20a74c6b59ca",
+      "objectSequence": 1,
+      "attributes": {
+        "panelMenu": "",
+        "panelType": "visual"
+      },
+      "instances": [
+        {
+          "instanceName": "DemoFactoryImportForm",
+          "objectInstanceGuid": "f688d3c3-4709-48d8-adf9-6e71b40e3b9a",
+          "objectMasterGuid": "1de25a0d-e5a2-475c-bf83-1d314081b6a4",
+          "objectSequence": 1,
+          "attributes": {},
+          "instances": []
+        }
+      ]
+    }
+  ],
+  "links": [],
+  "tags": [],
+  "tenantId": null,
+  "validFrom": null,
+  "validUntil": null
+}

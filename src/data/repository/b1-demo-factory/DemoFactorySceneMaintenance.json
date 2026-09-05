@@ -1,0 +1,166 @@
+{
+  "createdAt": "2026-09-05 16:03:48.996068",
+  "createdBy": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "howToUse": "",
+  "label": "",
+  "moduleGuid": "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4",
+  "objectDescription": "Modal maintenance screen of one scene in the native Demo Factory Studio (issue #17, step 3), opened from the scene grid's title link and positioned by repositionTo on DemoFactorySceneDSO (keyFields id, the demoId:sceneId key). The DSO instance clears the master's foreignFields and initialFetch so it fetches on its own here. Save & Close commits through the TableIO links to both tabs: Scene (title, route, ids, narration) and Actions (browser actions and assertions as JSON).",
+  "objectMasterGuid": "703ec51a-2bec-4891-b9f7-f38a12b2f879",
+  "objectName": "DemoFactorySceneMaintenance",
+  "objectTypeGuid": "d188099d-8548-49f0-86e4-c4b28dda9ecc",
+  "owner": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "status": "Active",
+  "templateObject": false,
+  "attributes": {
+    "icon": "i-lucide-clapperboard",
+    "isModal": true,
+    "title": "{{title}} — Scene"
+  },
+  "instances": [
+    {
+      "instanceName": "DemoFactorySceneDSO",
+      "objectInstanceGuid": "fff021ac-2aec-4e34-8d38-7c04cd9600e8",
+      "objectMasterGuid": "fed9022e-8527-46e7-9c60-4c7332436725",
+      "attributes": {
+        "foreignFields": "",
+        "initialFetch": ""
+      },
+      "instances": []
+    },
+    {
+      "instanceName": "MaintenanceSaveCloseToolbar",
+      "objectInstanceGuid": "2a4b911d-bad4-4648-a5b1-e5f32f765365",
+      "objectMasterGuid": "e347acb4-a872-4206-a163-fae32d8e3e60",
+      "objectSequence": 1,
+      "attributes": {},
+      "instances": []
+    },
+    {
+      "instanceName": "a",
+      "objectInstanceGuid": "65159296-cd4f-4085-b887-394f806cef11",
+      "objectMasterGuid": "31572117-2fe3-4262-ba03-20a74c6b59ca",
+      "objectSequence": 2,
+      "attributes": {
+        "panelMenu": "",
+        "panelType": "structural"
+      },
+      "instances": [
+        {
+          "instanceName": "sceneTabbar",
+          "objectInstanceGuid": "cf13fc1f-1d74-4a67-b485-74d5e333a369",
+          "objectMasterGuid": "5301c2c6-7d06-4f40-b219-a0f5c49614a3",
+          "objectSequence": 1,
+          "attributes": {},
+          "instances": [
+            {
+              "instanceName": "sceneTab",
+              "objectInstanceGuid": "19de2e17-bd83-4e78-b4eb-36ca63d44094",
+              "objectMasterGuid": "1e241b7b-04d8-43c4-baa7-0a979903b1c6",
+              "objectSequence": 1,
+              "attributes": {
+                "icon": "i-lucide-clapperboard",
+                "label": "Scene",
+                "sequence": 1
+              },
+              "instances": [
+                {
+                  "instanceName": "panel_scene",
+                  "objectInstanceGuid": "998da70c-a4e3-4cdb-a912-de167b08d67e",
+                  "objectMasterGuid": "31572117-2fe3-4262-ba03-20a74c6b59ca",
+                  "objectSequence": 1,
+                  "attributes": {
+                    "headerLabel": "Scene",
+                    "panelType": "visual"
+                  },
+                  "instances": [
+                    {
+                      "instanceName": "DemoFactorySceneForm",
+                      "objectInstanceGuid": "64ff66f3-2e9c-4380-bff2-6e76522a9dec",
+                      "objectMasterGuid": "a5b1a8b8-43fb-4031-9e31-4b41b18a2688",
+                      "objectSequence": 1,
+                      "attributes": {},
+                      "instances": []
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "instanceName": "actionsTab",
+              "objectInstanceGuid": "0091f53e-dbd5-46c2-866b-44b69b0ab41a",
+              "objectMasterGuid": "1e241b7b-04d8-43c4-baa7-0a979903b1c6",
+              "objectSequence": 2,
+              "attributes": {
+                "icon": "i-lucide-braces",
+                "label": "Actions",
+                "sequence": 2
+              },
+              "instances": [
+                {
+                  "instanceName": "panel_actions",
+                  "objectInstanceGuid": "97c78325-9d8a-4b34-b630-770a31c9e08b",
+                  "objectMasterGuid": "31572117-2fe3-4262-ba03-20a74c6b59ca",
+                  "objectSequence": 1,
+                  "attributes": {
+                    "headerLabel": "Actions",
+                    "panelType": "visual"
+                  },
+                  "instances": [
+                    {
+                      "instanceName": "DemoFactoryActionsForm",
+                      "objectInstanceGuid": "c9250af2-9d0d-42a3-b1fa-04591dc7b1e0",
+                      "objectMasterGuid": "a468fadb-2933-44ce-aeaf-c96902941d01",
+                      "objectSequence": 1,
+                      "attributes": {},
+                      "instances": []
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "links": [
+    {
+      "linkGuid": "80370415-a614-45b6-920e-4dd06a1904a1",
+      "linkName": "Primary",
+      "linkTypeGuid": "c21ecef7-8939-4534-b458-66945464b796",
+      "targetObjectInstanceGuid": "fff021ac-2aec-4e34-8d38-7c04cd9600e8"
+    },
+    {
+      "linkGuid": "293d12bf-3fac-4b77-87c2-4085012850d4",
+      "linkName": "Data",
+      "linkTypeGuid": "d37727fb-24ff-7ea3-0e14-a5d9d8526f38",
+      "sourceObjectInstanceGuid": "fff021ac-2aec-4e34-8d38-7c04cd9600e8",
+      "targetObjectInstanceGuid": "64ff66f3-2e9c-4380-bff2-6e76522a9dec"
+    },
+    {
+      "linkGuid": "cd9db214-8bdb-4170-b859-3aa7aab385f5",
+      "linkName": "Data",
+      "linkTypeGuid": "d37727fb-24ff-7ea3-0e14-a5d9d8526f38",
+      "sourceObjectInstanceGuid": "fff021ac-2aec-4e34-8d38-7c04cd9600e8",
+      "targetObjectInstanceGuid": "c9250af2-9d0d-42a3-b1fa-04591dc7b1e0"
+    },
+    {
+      "linkGuid": "4370f0b8-3634-43e7-9ec5-4912500e1495",
+      "linkName": "TableIO",
+      "linkTypeGuid": "d37727fb-24ff-7ea3-0e14-a6d9d4d6d61d",
+      "sourceObjectInstanceGuid": "2a4b911d-bad4-4648-a5b1-e5f32f765365",
+      "targetObjectInstanceGuid": "64ff66f3-2e9c-4380-bff2-6e76522a9dec"
+    },
+    {
+      "linkGuid": "562c45d7-5b3e-418e-a7e3-ca2cff8ab2b2",
+      "linkName": "TableIO",
+      "linkTypeGuid": "d37727fb-24ff-7ea3-0e14-a6d9d4d6d61d",
+      "sourceObjectInstanceGuid": "2a4b911d-bad4-4648-a5b1-e5f32f765365",
+      "targetObjectInstanceGuid": "c9250af2-9d0d-42a3-b1fa-04591dc7b1e0"
+    }
+  ],
+  "tags": [],
+  "tenantId": null,
+  "validFrom": null,
+  "validUntil": null
+}

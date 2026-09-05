@@ -1,0 +1,249 @@
+{
+  "createdAt": "2026-09-05 16:03:34.772217",
+  "createdBy": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "howToUse": "",
+  "label": "",
+  "moduleGuid": "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4",
+  "objectDescription": "Maintenance screen of one demo in the native Demo Factory Studio (issue #17, step 3), opened from the search grid's title link and positioned by repositionTo on DemoFactoryDemoDSO (keyFields id). Toolbars: Save / Export / Delete / Close, and the pipeline stages. Tabs: Demo (settings form), Voice-over (narration form), Scenes (toolbar and the scene grid, whose title link opens the modal DemoFactorySceneMaintenance). DemoFactoryStageDSO carries the host's verdict per stage for the pipeline toolbar. Timeline and log join in later steps.",
+  "objectMasterGuid": "8df76e07-743f-4a1b-910d-4bb41f7126fb",
+  "objectName": "DemoFactoryDemoMaintenance",
+  "objectTypeGuid": "d188099d-8548-49f0-86e4-c4b28dda9ecc",
+  "owner": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "status": "Active",
+  "templateObject": false,
+  "attributes": {
+    "eventNamespace": "#",
+    "icon": "i-lucide-clapperboard",
+    "title": "{{title}} — Demo"
+  },
+  "instances": [
+    {
+      "instanceName": "DemoFactoryDemoDSO",
+      "objectInstanceGuid": "01d34fde-cef7-4b44-84e9-d45e3418aa73",
+      "objectMasterGuid": "5a803abc-1dd7-4f2a-be30-d0bc10d18d9c",
+      "attributes": {},
+      "instances": []
+    },
+    {
+      "instanceName": "DemoFactorySceneDSO",
+      "objectInstanceGuid": "fba1e211-b2c4-451f-8400-b558220b602a",
+      "objectMasterGuid": "fed9022e-8527-46e7-9c60-4c7332436725",
+      "attributes": {
+        "initialFetch": ""
+      },
+      "instances": []
+    },
+    {
+      "instanceName": "DemoFactoryStageDSO",
+      "objectInstanceGuid": "87a7405a-a14e-4c69-adc3-5e82111aedeb",
+      "objectMasterGuid": "8d0c95ab-277a-4f1e-86b8-892d67887fd6",
+      "attributes": {},
+      "instances": []
+    },
+    {
+      "instanceName": "DemoFactoryDemoMaintenanceToolbar",
+      "objectInstanceGuid": "b3cc0504-bc29-4c5e-8e14-ae9044ebce85",
+      "objectMasterGuid": "3bec2751-cd4e-4e1e-8d27-f95791bd7d50",
+      "objectSequence": 1,
+      "attributes": {},
+      "instances": []
+    },
+    {
+      "instanceName": "DemoFactoryPipelineToolbar",
+      "objectInstanceGuid": "c5c86642-88d9-4af2-9d78-1633af1e4d76",
+      "objectMasterGuid": "c7176d34-6169-4d2c-9207-5a7339ccee0f",
+      "objectSequence": 2,
+      "attributes": {},
+      "instances": []
+    },
+    {
+      "instanceName": "a",
+      "objectInstanceGuid": "8e77d596-a0a8-4687-8715-2f91e960d8e5",
+      "objectMasterGuid": "31572117-2fe3-4262-ba03-20a74c6b59ca",
+      "objectSequence": 3,
+      "attributes": {
+        "panelMenu": "",
+        "panelType": "structural"
+      },
+      "instances": [
+        {
+          "instanceName": "demoTabbar",
+          "objectInstanceGuid": "1e8fe270-0dfe-4c6c-b3ab-a2adcc9e62f4",
+          "objectMasterGuid": "5301c2c6-7d06-4f40-b219-a0f5c49614a3",
+          "objectSequence": 1,
+          "attributes": {},
+          "instances": [
+            {
+              "instanceName": "demoTab",
+              "objectInstanceGuid": "cfdbd3a2-3929-46d3-bbe2-611cff58812d",
+              "objectMasterGuid": "1e241b7b-04d8-43c4-baa7-0a979903b1c6",
+              "objectSequence": 1,
+              "attributes": {
+                "icon": "i-lucide-settings-2",
+                "label": "Demo",
+                "sequence": 1
+              },
+              "instances": [
+                {
+                  "instanceName": "panel_demo",
+                  "objectInstanceGuid": "7f28a04b-8228-465a-8579-b87be15f9a6d",
+                  "objectMasterGuid": "31572117-2fe3-4262-ba03-20a74c6b59ca",
+                  "objectSequence": 1,
+                  "attributes": {
+                    "headerLabel": "Demo",
+                    "panelType": "visual"
+                  },
+                  "instances": [
+                    {
+                      "instanceName": "DemoFactoryDemoForm",
+                      "objectInstanceGuid": "f62112c9-6596-4873-b297-c93f60e63f49",
+                      "objectMasterGuid": "aff98969-906d-4c91-950f-e2f270a9b619",
+                      "objectSequence": 1,
+                      "attributes": {},
+                      "instances": []
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "instanceName": "voiceoverTab",
+              "objectInstanceGuid": "72d39503-e571-4050-9080-aaaf1c3097ca",
+              "objectMasterGuid": "1e241b7b-04d8-43c4-baa7-0a979903b1c6",
+              "objectSequence": 2,
+              "attributes": {
+                "icon": "i-lucide-mic",
+                "label": "Voice-over",
+                "sequence": 2
+              },
+              "instances": [
+                {
+                  "instanceName": "panel_voiceover",
+                  "objectInstanceGuid": "6d8439f7-80eb-4d5d-b7a4-143a0c6a237e",
+                  "objectMasterGuid": "31572117-2fe3-4262-ba03-20a74c6b59ca",
+                  "objectSequence": 1,
+                  "attributes": {
+                    "headerLabel": "Voice-over",
+                    "panelType": "visual"
+                  },
+                  "instances": [
+                    {
+                      "instanceName": "DemoFactoryVoiceoverForm",
+                      "objectInstanceGuid": "fa06b235-bfba-4d49-9189-7e1f63663865",
+                      "objectMasterGuid": "9073d022-86c4-465b-8eef-6365eac87788",
+                      "objectSequence": 1,
+                      "attributes": {},
+                      "instances": []
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "instanceName": "scenesTab",
+              "objectInstanceGuid": "b08f513d-a5dd-4450-9631-773e57607079",
+              "objectMasterGuid": "1e241b7b-04d8-43c4-baa7-0a979903b1c6",
+              "objectSequence": 3,
+              "attributes": {
+                "icon": "i-lucide-list-ordered",
+                "label": "Scenes",
+                "sequence": 3
+              },
+              "instances": [
+                {
+                  "instanceName": "panel_scenes",
+                  "objectInstanceGuid": "160f6d1b-426b-42bc-98ad-7b562cd6764d",
+                  "objectMasterGuid": "31572117-2fe3-4262-ba03-20a74c6b59ca",
+                  "objectSequence": 1,
+                  "attributes": {
+                    "headerLabel": "Scenes",
+                    "panelType": "visual"
+                  },
+                  "instances": [
+                    {
+                      "instanceName": "DemoFactoryScenesToolbar",
+                      "objectInstanceGuid": "301a8d33-32cd-42b9-9379-4eadf5343254",
+                      "objectMasterGuid": "95908902-b0c2-4f6b-af0b-5b748e31bb67",
+                      "objectSequence": 1,
+                      "attributes": {},
+                      "instances": []
+                    },
+                    {
+                      "instanceName": "DemoFactorySceneGrid",
+                      "objectInstanceGuid": "295db7c0-edbd-42a9-9608-378dadf6f4bf",
+                      "objectMasterGuid": "863ddab1-49cd-42dd-a78e-260969f25745",
+                      "objectSequence": 2,
+                      "attributes": {},
+                      "instances": []
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "links": [
+    {
+      "linkGuid": "1126deb8-2a3f-4454-8f75-a56cd08d315c",
+      "linkName": "Primary",
+      "linkTypeGuid": "c21ecef7-8939-4534-b458-66945464b796",
+      "targetObjectInstanceGuid": "01d34fde-cef7-4b44-84e9-d45e3418aa73"
+    },
+    {
+      "linkGuid": "cba2471d-4485-4285-a24c-38f44103fce2",
+      "linkName": "Data",
+      "linkTypeGuid": "d37727fb-24ff-7ea3-0e14-a5d9d8526f38",
+      "sourceObjectInstanceGuid": "01d34fde-cef7-4b44-84e9-d45e3418aa73",
+      "targetObjectInstanceGuid": "f62112c9-6596-4873-b297-c93f60e63f49"
+    },
+    {
+      "linkGuid": "4977250b-7df7-4819-871c-be9e10695621",
+      "linkName": "Data",
+      "linkTypeGuid": "d37727fb-24ff-7ea3-0e14-a5d9d8526f38",
+      "sourceObjectInstanceGuid": "01d34fde-cef7-4b44-84e9-d45e3418aa73",
+      "targetObjectInstanceGuid": "fa06b235-bfba-4d49-9189-7e1f63663865"
+    },
+    {
+      "linkGuid": "e5de901d-9d87-4a17-8f6b-7e0aece42577",
+      "linkName": "Join",
+      "linkTypeGuid": "8bf587d6-57c7-29a2-e114-26c2384051bc",
+      "sourceObjectInstanceGuid": "01d34fde-cef7-4b44-84e9-d45e3418aa73",
+      "targetObjectInstanceGuid": "fba1e211-b2c4-451f-8400-b558220b602a"
+    },
+    {
+      "linkGuid": "3b478ee4-e0a7-4e9c-a522-5328fa1b9b1c",
+      "linkName": "Data",
+      "linkTypeGuid": "d37727fb-24ff-7ea3-0e14-a5d9d8526f38",
+      "sourceObjectInstanceGuid": "fba1e211-b2c4-451f-8400-b558220b602a",
+      "targetObjectInstanceGuid": "295db7c0-edbd-42a9-9608-378dadf6f4bf"
+    },
+    {
+      "linkGuid": "542f4e2a-6b61-4a3f-9774-1090615129d0",
+      "linkName": "TableIO",
+      "linkTypeGuid": "d37727fb-24ff-7ea3-0e14-a6d9d4d6d61d",
+      "sourceObjectInstanceGuid": "b3cc0504-bc29-4c5e-8e14-ae9044ebce85",
+      "targetObjectInstanceGuid": "f62112c9-6596-4873-b297-c93f60e63f49"
+    },
+    {
+      "linkGuid": "90c3c6a5-61f7-41a9-b8b7-b7f8c19efa53",
+      "linkName": "TableIO",
+      "linkTypeGuid": "d37727fb-24ff-7ea3-0e14-a6d9d4d6d61d",
+      "sourceObjectInstanceGuid": "b3cc0504-bc29-4c5e-8e14-ae9044ebce85",
+      "targetObjectInstanceGuid": "fa06b235-bfba-4d49-9189-7e1f63663865"
+    },
+    {
+      "linkGuid": "a2271da4-950a-4966-bc15-8c5f1297949b",
+      "linkName": "TableIO",
+      "linkTypeGuid": "d37727fb-24ff-7ea3-0e14-a6d9d4d6d61d",
+      "sourceObjectInstanceGuid": "301a8d33-32cd-42b9-9379-4eadf5343254",
+      "targetObjectInstanceGuid": "295db7c0-edbd-42a9-9608-378dadf6f4bf"
+    }
+  ],
+  "tags": [],
+  "tenantId": null,
+  "validFrom": null,
+  "validUntil": null
+}

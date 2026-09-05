@@ -1,0 +1,102 @@
+{
+  "createdAt": "2026-09-05 16:00:37.087699",
+  "createdBy": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "howToUse": "",
+  "label": "",
+  "moduleGuid": "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4",
+  "objectDescription": "Form of the Import demo dialog: the pasted demo.yaml text, what to do when the id collides (refuse, overwrite, import as a copy) and the copy's new id. Import hands the text to import-demo, which validates it exactly like a Studio edit (issue #17, step 3).",
+  "objectMasterGuid": "1de25a0d-e5a2-475c-bf83-1d314081b6a4",
+  "objectName": "DemoFactoryImportForm",
+  "objectTypeGuid": "130726b3-7c42-4f22-a324-cc07f3d21feb",
+  "owner": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "status": "Active",
+  "templateObject": false,
+  "attributes": {
+    "headerLabel": "Import demo"
+  },
+  "instances": [
+    {
+      "instanceName": "importFieldset",
+      "objectInstanceGuid": "26c18f2f-9e87-48ae-ada1-df70468e3efc",
+      "objectMasterGuid": "4002bae8-5bac-45f1-82b3-0d91f7381296",
+      "objectSequence": 1,
+      "attributes": {
+        "label": "demo.yaml"
+      },
+      "instances": [
+        {
+          "instanceName": "yaml",
+          "objectInstanceGuid": "c25cbb1e-7eb4-4e90-8e40-1ff683094464",
+          "objectMasterGuid": "531100c8-2ec2-4e63-9195-1e2663071e94",
+          "objectSequence": 1,
+          "attributes": {
+            "label": "Paste the demo.yaml text — the export of this or another environment",
+            "required": true,
+            "rows": 14
+          },
+          "instances": []
+        },
+        {
+          "instanceName": "mode",
+          "objectInstanceGuid": "a494fd5d-304a-45a8-ace1-af49e2306ac6",
+          "objectMasterGuid": "b1b73251-5116-37b7-e314-de2cc0dc4ddb",
+          "objectSequence": 2,
+          "attributes": {
+            "label": "When a demo with this id exists",
+            "optionsList": "fail,overwrite,copy"
+          },
+          "instances": []
+        },
+        {
+          "instanceName": "newId",
+          "objectInstanceGuid": "fe64c418-e745-4bf2-9561-0010bfa34ae6",
+          "objectMasterGuid": "81756e31-509d-46ef-a774-1c52876e0a11",
+          "objectSequence": 3,
+          "attributes": {
+            "label": "New id for the copy — defaults to <id>-copy"
+          },
+          "instances": []
+        }
+      ]
+    },
+    {
+      "instanceName": "importHelp",
+      "objectInstanceGuid": "8ec3aa2a-9347-45d4-bc7d-01efc34f27a8",
+      "objectMasterGuid": "ec630cb7-644c-47e2-85a1-d8513048a915",
+      "objectSequence": 2,
+      "attributes": {
+        "text": "The import is validated exactly like a Studio edit; nothing lands if the schema refuses it.",
+        "variant": "caption"
+      },
+      "instances": []
+    },
+    {
+      "instanceName": "cancelButton",
+      "objectInstanceGuid": "91293250-9d83-4832-b7d8-3277bff7d181",
+      "objectMasterGuid": "efc1a521-3c11-4af2-bfaa-83b1f9c07abf",
+      "objectSequence": 3,
+      "attributes": {
+        "eventClick": "b1.closeScreen(eventSource.screen)",
+        "htmlClass": "p-button-text",
+        "label": "Cancel"
+      },
+      "instances": []
+    },
+    {
+      "instanceName": "importButton",
+      "objectInstanceGuid": "f66aeeda-b82b-4068-826e-15d5bffa12d4",
+      "objectMasterGuid": "efc1a521-3c11-4af2-bfaa-83b1f9c07abf",
+      "objectSequence": 4,
+      "attributes": {
+        "eventClick": "#.importDemo(eventSource)",
+        "label": "Import"
+      },
+      "instances": []
+    }
+  ],
+  "links": [],
+  "tags": [],
+  "tenantId": null,
+  "validFrom": null,
+  "validUntil": null
+}

@@ -1,0 +1,83 @@
+{
+  "createdAt": "2026-09-05 16:08:05.697517",
+  "createdBy": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "howToUse": "",
+  "label": "",
+  "moduleGuid": "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4",
+  "objectDescription": "Runtime settings of the demo pipeline on the Settings screen, over DemoFactorySettingDSO: one row per allowed env key, the value editable in place (row edit, committed on save). Secret keys show only whether they are configured — the server keeps their value out of the row. Replaces the Settings tab of the former DemoFactoryStudio component (issue #17, step 3).",
+  "objectMasterGuid": "c99d4c60-b802-481a-84f2-66ff9c0d5ec7",
+  "objectName": "DemoFactorySettingsGrid",
+  "objectTypeGuid": "63d81ac2-8555-44e1-9032-7064448799c4",
+  "owner": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "status": "Active",
+  "templateObject": false,
+  "attributes": {
+    "autoCommit": true,
+    "editMode": "row",
+    "enabled": true,
+    "eventRowEditSave": "#.refreshVerdicts(eventSource)",
+    "filterMode": "global",
+    "headerLabel": "Runtime configuration"
+  },
+  "instances": [
+    {
+      "instanceName": "label",
+      "objectInstanceGuid": "3dc200ed-a64d-4f88-b6e0-aeb07403df1c",
+      "objectMasterGuid": "11ba27c0-a259-4df5-8752-2a7fd4f08242",
+      "objectSequence": 1,
+      "attributes": {
+        "enabled": false,
+        "label": "Setting"
+      },
+      "instances": []
+    },
+    {
+      "instanceName": "value",
+      "objectInstanceGuid": "7759823e-e690-43dd-af63-1c9644ea933c",
+      "objectMasterGuid": "11ba27c0-a259-4df5-8752-2a7fd4f08242",
+      "objectSequence": 2,
+      "attributes": {
+        "label": "Value"
+      },
+      "instances": []
+    },
+    {
+      "instanceName": "configured",
+      "objectInstanceGuid": "deca45d0-cf27-4a61-b2db-d36607f62f56",
+      "objectMasterGuid": "3d463fd8-49d9-4094-8f0a-9ad8d28f653f",
+      "objectSequence": 3,
+      "attributes": {
+        "enabled": false,
+        "label": "Configured"
+      },
+      "instances": []
+    },
+    {
+      "instanceName": "source",
+      "objectInstanceGuid": "33f25160-f517-4da2-90d7-29c978f8f894",
+      "objectMasterGuid": "11ba27c0-a259-4df5-8752-2a7fd4f08242",
+      "objectSequence": 4,
+      "attributes": {
+        "enabled": false,
+        "label": "Source"
+      },
+      "instances": []
+    },
+    {
+      "instanceName": "key",
+      "objectInstanceGuid": "354962e4-3940-479a-ad0f-ba1c0ed0d286",
+      "objectMasterGuid": "11ba27c0-a259-4df5-8752-2a7fd4f08242",
+      "objectSequence": 5,
+      "attributes": {
+        "enabled": false,
+        "label": "Key"
+      },
+      "instances": []
+    }
+  ],
+  "links": [],
+  "tags": [],
+  "tenantId": null,
+  "validFrom": null,
+  "validUntil": null
+}
