@@ -1,0 +1,78 @@
+{
+  "createdAt": "2026-09-05 15:27:02.817287",
+  "createdBy": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "howToUse": "",
+  "label": "",
+  "moduleGuid": "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4",
+  "objectDescription": "Demo list of the native Studio — the master grid of DemoFactoryDemosScreen, bound to DemoFactoryDemoDSO. Selecting a row drives the scene grid, the inspector forms and the pipeline through the Join links on the screen. Replaces the dfs-picker of the former DemoFactoryStudio component (issue #17, step 1).",
+  "objectMasterGuid": "d21301dd-4430-4104-b099-7f1047782549",
+  "objectName": "DemoFactoryDemoGrid",
+  "objectTypeGuid": "63d81ac2-8555-44e1-9032-7064448799c4",
+  "owner": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "status": "Active",
+  "templateObject": false,
+  "attributes": {
+    "filterMode": "global",
+    "headerLabel": "Demos"
+  },
+  "instances": [
+    {
+      "instanceName": "title",
+      "objectInstanceGuid": "0ff85ac3-519b-476a-887b-1218366d6669",
+      "objectMasterGuid": "11ba27c0-a259-4df5-8752-2a7fd4f08242",
+      "objectSequence": 1,
+      "attributes": {
+        "label": "Title"
+      },
+      "instances": []
+    },
+    {
+      "instanceName": "id",
+      "objectInstanceGuid": "6df030e4-c837-4de9-80bd-5447f6084fe2",
+      "objectMasterGuid": "11ba27c0-a259-4df5-8752-2a7fd4f08242",
+      "objectSequence": 2,
+      "attributes": {
+        "label": "Id"
+      },
+      "instances": []
+    },
+    {
+      "instanceName": "sceneCount",
+      "objectInstanceGuid": "13ca31fa-7a38-4e58-88f6-48499df01dd6",
+      "objectMasterGuid": "11ba27c0-a259-4df5-8752-2a7fd4f08242",
+      "objectSequence": 3,
+      "attributes": {
+        "align": "right",
+        "dataType": "integer",
+        "label": "Scenes"
+      },
+      "instances": []
+    },
+    {
+      "instanceName": "invalid",
+      "objectInstanceGuid": "abee1a2e-40c7-4676-918f-43e06b80c33a",
+      "objectMasterGuid": "3d463fd8-49d9-4094-8f0a-9ad8d28f653f",
+      "objectSequence": 4,
+      "attributes": {
+        "label": "Invalid"
+      },
+      "instances": []
+    },
+    {
+      "instanceName": "updatedAt",
+      "objectInstanceGuid": "19a28286-7cb3-4bbd-95df-d54a97ac42e9",
+      "objectMasterGuid": "6ce7a38a-5e9e-456f-a816-34cfcbf84de9",
+      "objectSequence": 5,
+      "attributes": {
+        "dataType": "datetime",
+        "label": "Updated"
+      },
+      "instances": []
+    }
+  ],
+  "links": [],
+  "tags": [],
+  "tenantId": null,
+  "validFrom": null,
+  "validUntil": null
+}

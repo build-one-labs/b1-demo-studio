@@ -1,0 +1,136 @@
+{
+  "createdAt": "2026-09-05 15:27:33.475275",
+  "createdBy": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "howToUse": "",
+  "label": "",
+  "moduleGuid": "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4",
+  "objectDescription": "Demos view of the native Demo Factory Studio (issue #17, step 1): a resizable split with the demo list (DemoFactoryDemoGrid over DemoFactoryDemoDSO, the primary) on the left and the scenes of the selected demo (DemoFactorySceneGrid over DemoFactorySceneDSO, Join) on the right. The scene DSO instance clears the master's initialFetch #none so the Join cursorChange fetches it. Inspector forms, toolbar, timeline and log join this screen in later steps.",
+  "objectMasterGuid": "baf6c9b4-d106-4126-93c0-311b7d061a63",
+  "objectName": "DemoFactoryDemosScreen",
+  "objectTypeGuid": "d188099d-8548-49f0-86e4-c4b28dda9ecc",
+  "owner": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "status": "Active",
+  "templateObject": false,
+  "attributes": {
+    "icon": "i-lucide-layout-grid",
+    "title": "Demos"
+  },
+  "instances": [
+    {
+      "instanceName": "DemoFactoryDemoDSO",
+      "objectInstanceGuid": "bbaeb5f9-1a4c-43eb-9484-3f950305d123",
+      "objectMasterGuid": "5a803abc-1dd7-4f2a-be30-d0bc10d18d9c",
+      "attributes": {},
+      "instances": []
+    },
+    {
+      "instanceName": "DemoFactorySceneDSO",
+      "objectInstanceGuid": "7546bc25-dcd4-45c4-9c8c-ae3c8154de07",
+      "objectMasterGuid": "fed9022e-8527-46e7-9c60-4c7332436725",
+      "attributes": {
+        "initialFetch": ""
+      },
+      "instances": []
+    },
+    {
+      "instanceName": "split_demos",
+      "objectInstanceGuid": "e346ade3-da10-48c4-bb1a-8dd9c4f146af",
+      "objectMasterGuid": "ec155b38-b1bc-433c-976c-aa2254b6b675",
+      "objectSequence": 1,
+      "attributes": {
+        "direction": "horizontal"
+      },
+      "instances": [
+        {
+          "instanceName": "pane_demos",
+          "objectInstanceGuid": "79335a72-b76f-4a56-ad2c-c4b81c4c86b5",
+          "objectMasterGuid": "42d23280-0576-4959-b408-9360cf65764f",
+          "objectSequence": 1,
+          "attributes": {},
+          "instances": [
+            {
+              "instanceName": "panel_demos",
+              "objectInstanceGuid": "0f92fea0-f69b-4439-8ab6-6ece474a0eda",
+              "objectMasterGuid": "31572117-2fe3-4262-ba03-20a74c6b59ca",
+              "objectSequence": 1,
+              "attributes": {
+                "headerLabel": "Demos"
+              },
+              "instances": [
+                {
+                  "instanceName": "DemoFactoryDemoGrid",
+                  "objectInstanceGuid": "08da73f8-e773-4e18-a33d-9fa34c4add1f",
+                  "objectMasterGuid": "d21301dd-4430-4104-b099-7f1047782549",
+                  "objectSequence": 1,
+                  "attributes": {},
+                  "instances": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "instanceName": "pane_scenes",
+          "objectInstanceGuid": "85cd55cb-21bb-48b9-a724-e2612e309e7d",
+          "objectMasterGuid": "42d23280-0576-4959-b408-9360cf65764f",
+          "objectSequence": 2,
+          "attributes": {},
+          "instances": [
+            {
+              "instanceName": "panel_scenes",
+              "objectInstanceGuid": "7482b02e-e2f6-485e-83cc-fc8b3d38b7b3",
+              "objectMasterGuid": "31572117-2fe3-4262-ba03-20a74c6b59ca",
+              "objectSequence": 1,
+              "attributes": {
+                "headerLabel": "Scenes"
+              },
+              "instances": [
+                {
+                  "instanceName": "DemoFactorySceneGrid",
+                  "objectInstanceGuid": "37c9912a-a178-45b4-9f0a-0be973c03970",
+                  "objectMasterGuid": "863ddab1-49cd-42dd-a78e-260969f25745",
+                  "objectSequence": 1,
+                  "attributes": {},
+                  "instances": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "links": [
+    {
+      "linkGuid": "9282cf64-c642-4897-8319-ed540a87b26f",
+      "linkName": "Primary",
+      "linkTypeGuid": "c21ecef7-8939-4534-b458-66945464b796",
+      "targetObjectInstanceGuid": "bbaeb5f9-1a4c-43eb-9484-3f950305d123"
+    },
+    {
+      "linkGuid": "23ca2926-6cb5-4bb7-987b-334a1ad6a043",
+      "linkName": "Data",
+      "linkTypeGuid": "d37727fb-24ff-7ea3-0e14-a5d9d8526f38",
+      "sourceObjectInstanceGuid": "bbaeb5f9-1a4c-43eb-9484-3f950305d123",
+      "targetObjectInstanceGuid": "08da73f8-e773-4e18-a33d-9fa34c4add1f"
+    },
+    {
+      "linkGuid": "7d9fdd8d-0533-428d-b847-f7289faa0504",
+      "linkName": "Data",
+      "linkTypeGuid": "d37727fb-24ff-7ea3-0e14-a5d9d8526f38",
+      "sourceObjectInstanceGuid": "7546bc25-dcd4-45c4-9c8c-ae3c8154de07",
+      "targetObjectInstanceGuid": "37c9912a-a178-45b4-9f0a-0be973c03970"
+    },
+    {
+      "linkGuid": "ffd82c1a-4da7-4d49-91a5-58d503cb7644",
+      "linkName": "Join",
+      "linkTypeGuid": "8bf587d6-57c7-29a2-e114-26c2384051bc",
+      "sourceObjectInstanceGuid": "bbaeb5f9-1a4c-43eb-9484-3f950305d123",
+      "targetObjectInstanceGuid": "7546bc25-dcd4-45c4-9c8c-ae3c8154de07"
+    }
+  ],
+  "tags": [],
+  "tenantId": null,
+  "validFrom": null,
+  "validUntil": null
+}
