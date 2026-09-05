@@ -323,6 +323,20 @@
       "linkTypeGuid": "d37727fb-24ff-7ea3-0e14-a5d9d8526f38",
       "sourceObjectInstanceGuid": "26677a3c-8ce7-486f-938e-5a2cbb332f01",
       "targetObjectInstanceGuid": "b82a1b39-d968-4350-81e5-6bad0768ae47"
+    },
+    {
+      "linkGuid": "3a62a009-35ec-4490-9d23-430129b2f358",
+      "linkName": "Filter",
+      "linkTypeGuid": "ac7518d7-ef25-faab-3714-cd9dc06f3864",
+      "sourceObjectInstanceGuid": "415c3bde-2a15-4bdd-a1ce-15a91a7b84d3",
+      "targetObjectInstanceGuid": "26677a3c-8ce7-486f-938e-5a2cbb332f01"
+    },
+    {
+      "linkGuid": "29d6c36e-6bee-4a01-8702-bae5f259849a",
+      "linkName": "Filter",
+      "linkTypeGuid": "ac7518d7-ef25-faab-3714-cd9dc06f3864",
+      "sourceObjectInstanceGuid": "492d1a24-3d48-46d4-8766-7917bf8f4f93",
+      "targetObjectInstanceGuid": "8d588866-bc43-4919-8a1d-43f0ba63e082"
     }
   ],
   "tags": [],

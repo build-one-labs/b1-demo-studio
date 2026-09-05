@@ -61,6 +61,13 @@
       "linkTypeGuid": "d37727fb-24ff-7ea3-0e14-a5d9d8526f38",
       "sourceObjectInstanceGuid": "f453e7c6-9aa9-4eb5-a898-2c7acc22d1dd",
       "targetObjectInstanceGuid": "4eecdac6-cb9d-4512-8eb9-cffe3e993e4a"
+    },
+    {
+      "linkGuid": "2e633ff9-6074-474c-b790-7e025b10f4d3",
+      "linkName": "Filter",
+      "linkTypeGuid": "ac7518d7-ef25-faab-3714-cd9dc06f3864",
+      "sourceObjectInstanceGuid": "4eecdac6-cb9d-4512-8eb9-cffe3e993e4a",
+      "targetObjectInstanceGuid": "f453e7c6-9aa9-4eb5-a898-2c7acc22d1dd"
     }
   ],
   "tags": [],

@@ -76,6 +76,13 @@
       "linkTypeGuid": "d37727fb-24ff-7ea3-0e14-a6d9d4d6d61d",
       "sourceObjectInstanceGuid": "747c8076-bbdd-4864-a014-f3809e6d0018",
       "targetObjectInstanceGuid": "08da73f8-e773-4e18-a33d-9fa34c4add1f"
+    },
+    {
+      "linkGuid": "8ba9b22b-b4ee-4d4d-89ee-05da6f2d6245",
+      "linkName": "Filter",
+      "linkTypeGuid": "ac7518d7-ef25-faab-3714-cd9dc06f3864",
+      "sourceObjectInstanceGuid": "08da73f8-e773-4e18-a33d-9fa34c4add1f",
+      "targetObjectInstanceGuid": "bbaeb5f9-1a4c-43eb-9484-3f950305d123"
     }
   ],
   "tags": [],
