@@ -2,13 +2,15 @@
  * Same reasoning as the materializer: the one path read here is the demo's own
  * materialized file, contained by safeChildPath().
  */
-import { readFile } from 'node:fs/promises';
+import { readFile, rm } from 'node:fs/promises';
 import path from 'node:path';
 
 import { Injectable, Logger } from '@nestjs/common';
+import { ClsService } from 'nestjs-cls';
 import YAML from 'yaml';
 
 import { assertSafeId, projectRootFrom, safeChildPath } from './demo-factory.lib';
+import { INTERNAL_WRITE } from './demo-factory.materializer';
 import { DemoDocument, DemoRow, demoToRows, DSO, rowsToDemo, SceneRow } from './demo-factory.rows';
 import { DemoFactoryStore } from './demo-factory.store';
 
@@ -38,7 +40,10 @@ export class DemoFactoryTransfer {
 
   private readonly demosRoot = path.join(this.projectRoot, 'demos');
 
-  constructor(private readonly store: DemoFactoryStore) {}
+  constructor(
+    private readonly store: DemoFactoryStore,
+    private readonly cls: ClsService
+  ) {}
 
   /**
    * The demo as YAML.
@@ -180,21 +185,45 @@ export class DemoFactoryTransfer {
   }
 
   /**
-   * Remove a demo with everything that belongs to it.
+   * Delete a demo: its row, its scene rows and its directory.
    *
-   * One commit: the materializer's delete hook cascades to the scene rows and
-   * removes `demos/<id>/`, so there is no order here that could half-finish.
+   * The cascade is spelled out here rather than left to the materializer's
+   * delete hook. That hook runs for a delete that arrives over the data-source
+   * route; a commit made in-process, as this one is, has been seen to leave the
+   * scene rows and the directory behind — and a directory nothing owns is
+   * re-imported as a demo on the next start. So whatever the hook did or did not
+   * do, what remains is removed here, marked as an internal write so the
+   * materializer does not try to re-validate a demo that is on its way out.
+   *
    * Deleting a demo that is not there is not an error — the caller wanted it
-   * gone, and it is.
+   * gone, and it is; leftovers of an earlier, partial delete go with it.
    */
   async deleteDemo(demoId: string): Promise<{ demoId: string; existed: boolean }> {
     assertSafeId(demoId, 'demo id');
     const demo = (await this.store.read<DemoRow>(DSO.demo)).find((row) => row.id === demoId);
-    if (!demo) return { demoId, existed: false };
 
-    await this.store.commit(DSO.demo, { deletedRecords: [demo] });
-    this.logger.log(`Deleted ${demoId}`);
-    return { demoId, existed: true };
+    if (demo) await this.store.commit(DSO.demo, { deletedRecords: [demo] });
+
+    const orphaned = (await this.store.read<SceneRow>(DSO.scene)).filter((row) => row.demoId === demoId);
+    if (orphaned.length > 0) {
+      await this.asInternalWrite(() => this.store.commit(DSO.scene, { deletedRecords: orphaned }));
+    }
+    await rm(safeChildPath(this.demosRoot, demoId), { recursive: true, force: true });
+
+    if (demo) this.logger.log(`Deleted ${demoId} with ${orphaned.length} scene(s) and its directory`);
+    return { demoId, existed: Boolean(demo) };
+  }
+
+  /** Mark everything `work` writes as the server's own — see DemoFactorySeedService.asInternalWrite. */
+  private async asInternalWrite<T>(work: () => Promise<T>): Promise<T> {
+    if (!this.cls.isActive()) return work();
+    const previous: unknown = this.cls.get(INTERNAL_WRITE);
+    this.cls.set(INTERNAL_WRITE, true);
+    try {
+      return await work();
+    } finally {
+      this.cls.set(INTERNAL_WRITE, previous);
+    }
   }
 
   private async assembleDocument(demoId: string): Promise<DemoDocument> {
