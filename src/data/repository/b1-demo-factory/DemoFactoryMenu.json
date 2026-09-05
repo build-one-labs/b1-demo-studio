@@ -4,7 +4,7 @@
   "howToUse": "",
   "label": "",
   "moduleGuid": "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4",
-  "objectDescription": "Main menu of the native Demo Factory Studio, rendered by the sidebar of DemoFactoryNativeScreen. One Launch action per Studio view — Demos, Runs, Settings — replacing the dfs-rail of the former DemoFactoryStudio component (issue #17). Runs and Settings are added as their screens come into being (steps 2 and 4).",
+  "objectDescription": "Main menu of the native Demo Factory Studio, rendered by the sidebar of DemoFactoryNativeScreen: Demos (search → maintenance), Runs (search → maintenance) and Settings. Replaces the dfs-rail of the former DemoFactoryStudio component (issue #17).",
   "objectMasterGuid": "9d877048-ac24-4fc9-ac55-53ee7e278c11",
   "objectName": "DemoFactoryMenu",
   "objectTypeGuid": "697af4f7-4f36-46a9-aef0-16088ab1c4c4",
@@ -27,6 +27,20 @@
         "label": "Demos",
         "smallImage": "i-lucide-layout-grid",
         "tooltip": "Demos and their scenes"
+      },
+      "instances": []
+    },
+    {
+      "instanceName": "Runs",
+      "objectInstanceGuid": "a28b5386-9513-4d69-bcd7-6522d71d87e9",
+      "objectMasterGuid": "2a34c785-bbd7-439f-aacd-c5e24927f26c",
+      "objectSequence": 2,
+      "attributes": {
+        "actionParameter": "DemoFactoryRunSearch",
+        "actionType": "Launch",
+        "label": "Runs",
+        "smallImage": "i-lucide-film",
+        "tooltip": "Recorded and rendered runs"
       },
       "instances": []
     },

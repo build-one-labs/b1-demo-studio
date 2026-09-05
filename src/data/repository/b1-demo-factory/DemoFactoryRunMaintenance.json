@@ -1,0 +1,224 @@
+{
+  "createdAt": "2026-09-05 16:22:49.380574",
+  "createdBy": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "howToUse": "",
+  "label": "",
+  "moduleGuid": "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4",
+  "objectDescription": "Maintenance screen of one run in the native Demo Factory Studio (issue #17, step 4), opened from a run grid's link and positioned by repositionTo on DemoFactoryRunDSO (keyFields runId; the instance clears the master's foreignFields and initialFetch). Toolbar: open video, open captions, close. Tabs: Run (the facts, read-only), Scenes (per-scene results, Join) and Captions (cues, Join). The preview — b1_media_player and b1_demo_timeline — joins as a tab in step 6.",
+  "objectMasterGuid": "4d847a68-35ca-4843-a8fa-81c7b5698618",
+  "objectName": "DemoFactoryRunMaintenance",
+  "objectTypeGuid": "d188099d-8548-49f0-86e4-c4b28dda9ecc",
+  "owner": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "status": "Active",
+  "templateObject": false,
+  "attributes": {
+    "eventNamespace": "#",
+    "icon": "i-lucide-film",
+    "title": "{{runId}} — Run"
+  },
+  "instances": [
+    {
+      "instanceName": "DemoFactoryRunDSO",
+      "objectInstanceGuid": "e2d52133-7b38-4675-a3fa-6134f3b036c6",
+      "objectMasterGuid": "49b67af7-2346-40c3-8ba3-ff546ed534cd",
+      "attributes": {
+        "foreignFields": "",
+        "initialFetch": ""
+      },
+      "instances": []
+    },
+    {
+      "instanceName": "DemoFactoryRunSceneDSO",
+      "objectInstanceGuid": "26677a3c-8ce7-486f-938e-5a2cbb332f01",
+      "objectMasterGuid": "2189c867-4a1d-428e-8a0d-980a35c0fe32",
+      "attributes": {
+        "initialFetch": ""
+      },
+      "instances": []
+    },
+    {
+      "instanceName": "DemoFactoryCaptionDSO",
+      "objectInstanceGuid": "8d588866-bc43-4919-8a1d-43f0ba63e082",
+      "objectMasterGuid": "9e5a1d69-57d5-4182-b47e-685a96d3137d",
+      "attributes": {
+        "initialFetch": ""
+      },
+      "instances": []
+    },
+    {
+      "instanceName": "DemoFactoryRunToolbar",
+      "objectInstanceGuid": "7877d9d7-9214-4275-8807-1d54c0b282d3",
+      "objectMasterGuid": "0a00e2f5-5875-40e9-a6f3-24c162aed708",
+      "objectSequence": 1,
+      "attributes": {},
+      "instances": []
+    },
+    {
+      "instanceName": "a",
+      "objectInstanceGuid": "7b16d1d3-aee2-48f9-ba82-b8adf96d317a",
+      "objectMasterGuid": "31572117-2fe3-4262-ba03-20a74c6b59ca",
+      "objectSequence": 2,
+      "attributes": {
+        "panelMenu": "",
+        "panelType": "structural"
+      },
+      "instances": [
+        {
+          "instanceName": "runTabbar",
+          "objectInstanceGuid": "81bff75b-800d-4ede-8524-4d132f40d005",
+          "objectMasterGuid": "5301c2c6-7d06-4f40-b219-a0f5c49614a3",
+          "objectSequence": 1,
+          "attributes": {},
+          "instances": [
+            {
+              "instanceName": "runTab",
+              "objectInstanceGuid": "ccb4cb9e-a42d-4e35-8850-bbe196362564",
+              "objectMasterGuid": "1e241b7b-04d8-43c4-baa7-0a979903b1c6",
+              "objectSequence": 1,
+              "attributes": {
+                "icon": "i-lucide-info",
+                "label": "Run",
+                "sequence": 1
+              },
+              "instances": [
+                {
+                  "instanceName": "panel_run",
+                  "objectInstanceGuid": "8d4d1bd5-ff47-45b7-930a-51eadf1c31db",
+                  "objectMasterGuid": "31572117-2fe3-4262-ba03-20a74c6b59ca",
+                  "objectSequence": 1,
+                  "attributes": {
+                    "headerLabel": "Run",
+                    "panelType": "visual"
+                  },
+                  "instances": [
+                    {
+                      "instanceName": "DemoFactoryRunForm",
+                      "objectInstanceGuid": "3e5cd3a4-7b24-4b20-94d8-ae7a0ee35105",
+                      "objectMasterGuid": "bef869fd-1be2-4049-9d5c-991ade3dff67",
+                      "objectSequence": 1,
+                      "attributes": {},
+                      "instances": []
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "instanceName": "runScenesTab",
+              "objectInstanceGuid": "d0e6f6c3-a42d-4c94-8d69-988fae35a8e3",
+              "objectMasterGuid": "1e241b7b-04d8-43c4-baa7-0a979903b1c6",
+              "objectSequence": 2,
+              "attributes": {
+                "icon": "i-lucide-list-ordered",
+                "label": "Scenes",
+                "sequence": 2
+              },
+              "instances": [
+                {
+                  "instanceName": "panel_run_scenes",
+                  "objectInstanceGuid": "eea394bf-70c2-4351-be64-f8a370cdd588",
+                  "objectMasterGuid": "31572117-2fe3-4262-ba03-20a74c6b59ca",
+                  "objectSequence": 1,
+                  "attributes": {
+                    "headerLabel": "Scenes of this run",
+                    "panelType": "visual"
+                  },
+                  "instances": [
+                    {
+                      "instanceName": "DemoFactoryRunSceneGrid",
+                      "objectInstanceGuid": "415c3bde-2a15-4bdd-a1ce-15a91a7b84d3",
+                      "objectMasterGuid": "a6667ac3-b479-45bb-8f78-45185834d7cb",
+                      "objectSequence": 1,
+                      "attributes": {},
+                      "instances": []
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "instanceName": "captionsTab",
+              "objectInstanceGuid": "13321ab9-0a6d-4735-a607-f3a316fbab26",
+              "objectMasterGuid": "1e241b7b-04d8-43c4-baa7-0a979903b1c6",
+              "objectSequence": 3,
+              "attributes": {
+                "icon": "i-lucide-captions",
+                "label": "Captions",
+                "sequence": 3
+              },
+              "instances": [
+                {
+                  "instanceName": "panel_captions",
+                  "objectInstanceGuid": "e8e4dadc-4c03-49b4-be0c-8d373838204c",
+                  "objectMasterGuid": "31572117-2fe3-4262-ba03-20a74c6b59ca",
+                  "objectSequence": 1,
+                  "attributes": {
+                    "headerLabel": "Captions",
+                    "panelType": "visual"
+                  },
+                  "instances": [
+                    {
+                      "instanceName": "DemoFactoryCaptionGrid",
+                      "objectInstanceGuid": "492d1a24-3d48-46d4-8766-7917bf8f4f93",
+                      "objectMasterGuid": "1489162a-4201-4bba-8e06-854360d2f072",
+                      "objectSequence": 1,
+                      "attributes": {},
+                      "instances": []
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "links": [
+    {
+      "linkGuid": "776c2328-9f79-4396-8b29-9e72f4f0fa47",
+      "linkName": "Primary",
+      "linkTypeGuid": "c21ecef7-8939-4534-b458-66945464b796",
+      "targetObjectInstanceGuid": "e2d52133-7b38-4675-a3fa-6134f3b036c6"
+    },
+    {
+      "linkGuid": "fbffffe9-e1aa-43dc-922c-f784a5210bbd",
+      "linkName": "Data",
+      "linkTypeGuid": "d37727fb-24ff-7ea3-0e14-a5d9d8526f38",
+      "sourceObjectInstanceGuid": "e2d52133-7b38-4675-a3fa-6134f3b036c6",
+      "targetObjectInstanceGuid": "3e5cd3a4-7b24-4b20-94d8-ae7a0ee35105"
+    },
+    {
+      "linkGuid": "b097167a-ab2d-469f-a4d8-84d3b7060964",
+      "linkName": "Join",
+      "linkTypeGuid": "8bf587d6-57c7-29a2-e114-26c2384051bc",
+      "sourceObjectInstanceGuid": "e2d52133-7b38-4675-a3fa-6134f3b036c6",
+      "targetObjectInstanceGuid": "26677a3c-8ce7-486f-938e-5a2cbb332f01"
+    },
+    {
+      "linkGuid": "912d88c2-4d8e-4868-aeb1-61ed942874cb",
+      "linkName": "Join",
+      "linkTypeGuid": "8bf587d6-57c7-29a2-e114-26c2384051bc",
+      "sourceObjectInstanceGuid": "e2d52133-7b38-4675-a3fa-6134f3b036c6",
+      "targetObjectInstanceGuid": "8d588866-bc43-4919-8a1d-43f0ba63e082"
+    },
+    {
+      "linkGuid": "daea5877-84cf-416f-9bf5-72500096be41",
+      "linkName": "Data",
+      "linkTypeGuid": "d37727fb-24ff-7ea3-0e14-a5d9d8526f38",
+      "sourceObjectInstanceGuid": "26677a3c-8ce7-486f-938e-5a2cbb332f01",
+      "targetObjectInstanceGuid": "415c3bde-2a15-4bdd-a1ce-15a91a7b84d3"
+    },
+    {
+      "linkGuid": "04edf091-52ed-4e56-acf3-e218b5431d20",
+      "linkName": "Data",
+      "linkTypeGuid": "d37727fb-24ff-7ea3-0e14-a5d9d8526f38",
+      "sourceObjectInstanceGuid": "8d588866-bc43-4919-8a1d-43f0ba63e082",
+      "targetObjectInstanceGuid": "492d1a24-3d48-46d4-8766-7917bf8f4f93"
+    }
+  ],
+  "tags": [],
+  "tenantId": null,
+  "validFrom": null,
+  "validUntil": null
+}

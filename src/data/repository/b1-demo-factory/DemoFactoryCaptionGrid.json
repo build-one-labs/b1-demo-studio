@@ -1,0 +1,96 @@
+{
+  "createdAt": "2026-09-05 16:20:56.926685",
+  "createdBy": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "howToUse": "",
+  "label": "",
+  "moduleGuid": "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4",
+  "objectDescription": "Caption cues of one run on the run maintenance screen, over DemoFactoryCaptionDSO (Join from the run): scene, index, start and end, text — what the .srt holds, one row per cue (issue #17, step 4).",
+  "objectMasterGuid": "1489162a-4201-4bba-8e06-854360d2f072",
+  "objectName": "DemoFactoryCaptionGrid",
+  "objectTypeGuid": "63d81ac2-8555-44e1-9032-7064448799c4",
+  "owner": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "status": "Active",
+  "templateObject": false,
+  "attributes": {
+    "filterMode": "global",
+    "headerLabel": "Captions"
+  },
+  "instances": [
+    {
+      "instanceName": "sceneId",
+      "objectInstanceGuid": "ba4bb16e-b7a2-41d1-b8a5-e47ebef55839",
+      "objectMasterGuid": "11ba27c0-a259-4df5-8752-2a7fd4f08242",
+      "objectSequence": 1,
+      "attributes": {
+        "label": "Scene"
+      },
+      "instances": []
+    },
+    {
+      "instanceName": "index",
+      "objectInstanceGuid": "c456273e-0c0f-4290-bb00-cfcdeed95c78",
+      "objectMasterGuid": "11ba27c0-a259-4df5-8752-2a7fd4f08242",
+      "objectSequence": 2,
+      "attributes": {
+        "align": "right",
+        "dataType": "integer",
+        "label": "#"
+      },
+      "instances": []
+    },
+    {
+      "instanceName": "startMs",
+      "objectInstanceGuid": "712ccca0-5398-498b-94e8-4b064d0b6754",
+      "objectMasterGuid": "11ba27c0-a259-4df5-8752-2a7fd4f08242",
+      "objectSequence": 3,
+      "attributes": {
+        "align": "right",
+        "dataType": "integer",
+        "label": "Start",
+        "suffix": " ms",
+        "useGrouping": false
+      },
+      "instances": []
+    },
+    {
+      "instanceName": "endMs",
+      "objectInstanceGuid": "dfdbe1d9-2ade-424b-94eb-2b8e0179640a",
+      "objectMasterGuid": "11ba27c0-a259-4df5-8752-2a7fd4f08242",
+      "objectSequence": 4,
+      "attributes": {
+        "align": "right",
+        "dataType": "integer",
+        "label": "End",
+        "suffix": " ms",
+        "useGrouping": false
+      },
+      "instances": []
+    },
+    {
+      "instanceName": "text",
+      "objectInstanceGuid": "87fdc56c-1813-47e9-9268-7557c3d8df93",
+      "objectMasterGuid": "11ba27c0-a259-4df5-8752-2a7fd4f08242",
+      "objectSequence": 5,
+      "attributes": {
+        "label": "Text"
+      },
+      "instances": []
+    },
+    {
+      "instanceName": "id",
+      "objectInstanceGuid": "620d7822-3208-47b6-a2a6-b24bb8635307",
+      "objectMasterGuid": "11ba27c0-a259-4df5-8752-2a7fd4f08242",
+      "objectSequence": 6,
+      "attributes": {
+        "enabled": false,
+        "label": "Key"
+      },
+      "instances": []
+    }
+  ],
+  "links": [],
+  "tags": [],
+  "tenantId": null,
+  "validFrom": null,
+  "validUntil": null
+}

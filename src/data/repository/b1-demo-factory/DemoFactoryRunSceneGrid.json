@@ -1,0 +1,120 @@
+{
+  "createdAt": "2026-09-05 16:20:50.843349",
+  "createdBy": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "howToUse": "",
+  "label": "",
+  "moduleGuid": "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4",
+  "objectDescription": "Per-scene results of one run on the run maintenance screen, over DemoFactoryRunSceneDSO (Join from the run): position, title, whether a clip was recorded, recorded and narration durations and the narration offset (issue #17, step 4).",
+  "objectMasterGuid": "a6667ac3-b479-45bb-8f78-45185834d7cb",
+  "objectName": "DemoFactoryRunSceneGrid",
+  "objectTypeGuid": "63d81ac2-8555-44e1-9032-7064448799c4",
+  "owner": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "status": "Active",
+  "templateObject": false,
+  "attributes": {
+    "filterMode": "global",
+    "headerLabel": "Scenes of this run"
+  },
+  "instances": [
+    {
+      "instanceName": "sequence",
+      "objectInstanceGuid": "0fce65a0-ca47-4b74-b800-c370cffb8e60",
+      "objectMasterGuid": "11ba27c0-a259-4df5-8752-2a7fd4f08242",
+      "objectSequence": 1,
+      "attributes": {
+        "align": "right",
+        "dataType": "integer",
+        "label": "#"
+      },
+      "instances": []
+    },
+    {
+      "instanceName": "title",
+      "objectInstanceGuid": "5dc3a838-6202-4da1-826e-4234bb3608b8",
+      "objectMasterGuid": "11ba27c0-a259-4df5-8752-2a7fd4f08242",
+      "objectSequence": 2,
+      "attributes": {
+        "label": "Title"
+      },
+      "instances": []
+    },
+    {
+      "instanceName": "sceneId",
+      "objectInstanceGuid": "f7a54870-82a1-4d5e-9547-02f9d8bf435b",
+      "objectMasterGuid": "11ba27c0-a259-4df5-8752-2a7fd4f08242",
+      "objectSequence": 3,
+      "attributes": {
+        "label": "Scene id"
+      },
+      "instances": []
+    },
+    {
+      "instanceName": "hasClip",
+      "objectInstanceGuid": "f2c2e917-3174-4368-a6f4-d1269a94f1af",
+      "objectMasterGuid": "3d463fd8-49d9-4094-8f0a-9ad8d28f653f",
+      "objectSequence": 4,
+      "attributes": {
+        "label": "Clip"
+      },
+      "instances": []
+    },
+    {
+      "instanceName": "recordedDurationMs",
+      "objectInstanceGuid": "4749e439-a206-416a-9526-2042d4df3ecd",
+      "objectMasterGuid": "11ba27c0-a259-4df5-8752-2a7fd4f08242",
+      "objectSequence": 5,
+      "attributes": {
+        "align": "right",
+        "dataType": "integer",
+        "label": "Recorded",
+        "suffix": " ms",
+        "useGrouping": false
+      },
+      "instances": []
+    },
+    {
+      "instanceName": "narrationDurationMs",
+      "objectInstanceGuid": "14ca316c-87f9-4a65-9add-77f213d5e93d",
+      "objectMasterGuid": "11ba27c0-a259-4df5-8752-2a7fd4f08242",
+      "objectSequence": 6,
+      "attributes": {
+        "align": "right",
+        "dataType": "integer",
+        "label": "Narration",
+        "suffix": " ms",
+        "useGrouping": false
+      },
+      "instances": []
+    },
+    {
+      "instanceName": "narrationOffsetMs",
+      "objectInstanceGuid": "d51c7725-0002-4c7d-b4ac-af221664c1be",
+      "objectMasterGuid": "11ba27c0-a259-4df5-8752-2a7fd4f08242",
+      "objectSequence": 7,
+      "attributes": {
+        "align": "right",
+        "dataType": "integer",
+        "label": "Offset",
+        "suffix": " ms",
+        "useGrouping": false
+      },
+      "instances": []
+    },
+    {
+      "instanceName": "id",
+      "objectInstanceGuid": "b0fd9596-987f-47ff-9738-15072a17ec02",
+      "objectMasterGuid": "11ba27c0-a259-4df5-8752-2a7fd4f08242",
+      "objectSequence": 8,
+      "attributes": {
+        "enabled": false,
+        "label": "Key"
+      },
+      "instances": []
+    }
+  ],
+  "links": [],
+  "tags": [],
+  "tenantId": null,
+  "validFrom": null,
+  "validUntil": null
+}

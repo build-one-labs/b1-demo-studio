@@ -1,0 +1,70 @@
+{
+  "createdAt": "2026-09-05 16:21:59.55104",
+  "createdBy": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "howToUse": "",
+  "label": "",
+  "moduleGuid": "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4",
+  "objectDescription": "Run search screen of the native Demo Factory Studio (issue #17, step 4), opened from the Runs entry of DemoFactoryMenu: every recorded and rendered run, newest first, over DemoFactoryRunDSO. The DSO instance clears the master's foreignFields and initialFetch so it lists all demos' runs here. The run id link opens DemoFactoryRunMaintenance positioned to the run.",
+  "objectMasterGuid": "509c796b-834d-43b4-91c4-1cdc3c53b432",
+  "objectName": "DemoFactoryRunSearch",
+  "objectTypeGuid": "d188099d-8548-49f0-86e4-c4b28dda9ecc",
+  "owner": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "status": "Active",
+  "templateObject": false,
+  "attributes": {
+    "icon": "i-lucide-film",
+    "title": "Runs"
+  },
+  "instances": [
+    {
+      "instanceName": "DemoFactoryRunDSO",
+      "objectInstanceGuid": "f453e7c6-9aa9-4eb5-a898-2c7acc22d1dd",
+      "objectMasterGuid": "49b67af7-2346-40c3-8ba3-ff546ed534cd",
+      "attributes": {
+        "foreignFields": "",
+        "initialFetch": "",
+        "maintenanceScreen": "DemoFactoryRunMaintenance"
+      },
+      "instances": []
+    },
+    {
+      "instanceName": "panel_runs",
+      "objectInstanceGuid": "dce129ec-b1e3-4b7d-b165-e72c4d28d6f3",
+      "objectMasterGuid": "31572117-2fe3-4262-ba03-20a74c6b59ca",
+      "objectSequence": 1,
+      "attributes": {
+        "headerLabel": "Runs",
+        "panelType": "visual"
+      },
+      "instances": [
+        {
+          "instanceName": "DemoFactoryRunGrid",
+          "objectInstanceGuid": "4eecdac6-cb9d-4512-8eb9-cffe3e993e4a",
+          "objectMasterGuid": "48343e20-b19a-4027-ad5f-846cc3dc2017",
+          "objectSequence": 1,
+          "attributes": {},
+          "instances": []
+        }
+      ]
+    }
+  ],
+  "links": [
+    {
+      "linkGuid": "22dd7e2f-82cb-4b1d-b55a-0f9fdfad708f",
+      "linkName": "Primary",
+      "linkTypeGuid": "c21ecef7-8939-4534-b458-66945464b796",
+      "targetObjectInstanceGuid": "f453e7c6-9aa9-4eb5-a898-2c7acc22d1dd"
+    },
+    {
+      "linkGuid": "ad6ac440-3e23-4d02-984d-66e0ec6c46c9",
+      "linkName": "Data",
+      "linkTypeGuid": "d37727fb-24ff-7ea3-0e14-a5d9d8526f38",
+      "sourceObjectInstanceGuid": "f453e7c6-9aa9-4eb5-a898-2c7acc22d1dd",
+      "targetObjectInstanceGuid": "4eecdac6-cb9d-4512-8eb9-cffe3e993e4a"
+    }
+  ],
+  "tags": [],
+  "tenantId": null,
+  "validFrom": null,
+  "validUntil": null
+}
