@@ -1,0 +1,193 @@
+{
+  "createdAt": "2026-09-05 16:08:47.98607",
+  "createdBy": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "howToUse": "",
+  "label": "",
+  "moduleGuid": "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4",
+  "objectDescription": "Settings view of the native Demo Factory Studio (issue #17, step 3), opened from the Settings entry of DemoFactoryMenu: the runtime configuration grid (DemoFactorySettingDSO, values edited in place) on the left; on the right the recording sign-in (mint the auth state from a pasted session token) above what this host can do (DemoFactoryHostDSO). Saving a value or minting the auth state re-asks the stage verdicts (DemoFactoryStageDSO) and the host capabilities, because several settings decide what the host can run.",
+  "objectMasterGuid": "20973f2d-d555-4fc2-812b-1385fe9d0ef9",
+  "objectName": "DemoFactorySettingsScreen",
+  "objectTypeGuid": "d188099d-8548-49f0-86e4-c4b28dda9ecc",
+  "owner": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "status": "Active",
+  "templateObject": false,
+  "attributes": {
+    "eventNamespace": "#",
+    "icon": "i-lucide-settings",
+    "title": "Settings"
+  },
+  "instances": [
+    {
+      "instanceName": "DemoFactorySettingDSO",
+      "objectInstanceGuid": "1277cc9b-d322-4822-a0a8-49aa32c4b810",
+      "objectMasterGuid": "9ee708a5-062f-4fbc-8d61-90cea1e96284",
+      "attributes": {},
+      "instances": []
+    },
+    {
+      "instanceName": "DemoFactoryHostDSO",
+      "objectInstanceGuid": "fda67b64-93ac-4219-ac34-cb3d20f58344",
+      "objectMasterGuid": "ea473534-6458-4dfc-9508-f2d07d897cf5",
+      "attributes": {},
+      "instances": []
+    },
+    {
+      "instanceName": "DemoFactoryStageDSO",
+      "objectInstanceGuid": "9e2bdada-73d5-4092-bf12-0f7c86cb330e",
+      "objectMasterGuid": "8d0c95ab-277a-4f1e-86b8-892d67887fd6",
+      "attributes": {},
+      "instances": []
+    },
+    {
+      "instanceName": "split_settings",
+      "objectInstanceGuid": "7e500038-74f5-48e1-972d-ad4a1e58c5da",
+      "objectMasterGuid": "ec155b38-b1bc-433c-976c-aa2254b6b675",
+      "objectSequence": 1,
+      "attributes": {
+        "direction": "horizontal"
+      },
+      "instances": [
+        {
+          "instanceName": "pane_settings",
+          "objectInstanceGuid": "5c296f7f-54cc-401f-824f-8d239de5d975",
+          "objectMasterGuid": "42d23280-0576-4959-b408-9360cf65764f",
+          "objectSequence": 1,
+          "attributes": {},
+          "instances": [
+            {
+              "instanceName": "panel_settings",
+              "objectInstanceGuid": "5fb3b569-8761-4a91-9f22-f324c3eb8512",
+              "objectMasterGuid": "31572117-2fe3-4262-ba03-20a74c6b59ca",
+              "objectSequence": 1,
+              "attributes": {
+                "headerLabel": "Runtime configuration",
+                "panelType": "visual"
+              },
+              "instances": [
+                {
+                  "instanceName": "DemoFactorySettingsGrid",
+                  "objectInstanceGuid": "84cbc090-0e33-4a0f-be1d-3e9a6c4b3ae0",
+                  "objectMasterGuid": "c99d4c60-b802-481a-84f2-66ff9c0d5ec7",
+                  "objectSequence": 1,
+                  "attributes": {},
+                  "instances": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "instanceName": "pane_host",
+          "objectInstanceGuid": "5f808b95-e441-4ec4-9588-3b87734848ba",
+          "objectMasterGuid": "42d23280-0576-4959-b408-9360cf65764f",
+          "objectSequence": 2,
+          "attributes": {},
+          "instances": [
+            {
+              "instanceName": "split_host",
+              "objectInstanceGuid": "cce3bf90-205b-4006-b5ce-aebb4518a20f",
+              "objectMasterGuid": "ec155b38-b1bc-433c-976c-aa2254b6b675",
+              "objectSequence": 1,
+              "attributes": {
+                "direction": "vertical"
+              },
+              "instances": [
+                {
+                  "instanceName": "pane_auth",
+                  "objectInstanceGuid": "ae652d38-b5d3-43ad-8607-b23b8ec7f2ed",
+                  "objectMasterGuid": "42d23280-0576-4959-b408-9360cf65764f",
+                  "objectSequence": 1,
+                  "attributes": {},
+                  "instances": [
+                    {
+                      "instanceName": "panel_auth",
+                      "objectInstanceGuid": "472bb3c9-09a5-45b3-9746-e478d5f954a8",
+                      "objectMasterGuid": "31572117-2fe3-4262-ba03-20a74c6b59ca",
+                      "objectSequence": 1,
+                      "attributes": {
+                        "headerLabel": "Recording sign-in",
+                        "panelType": "visual"
+                      },
+                      "instances": [
+                        {
+                          "instanceName": "DemoFactoryAuthForm",
+                          "objectInstanceGuid": "6fa7a76a-c9f9-4e69-8f6e-d8d0451d620e",
+                          "objectMasterGuid": "1dd86e7d-3703-45fe-8ca9-8fadf9ae5ece",
+                          "objectSequence": 1,
+                          "attributes": {},
+                          "instances": []
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "instanceName": "pane_capabilities",
+                  "objectInstanceGuid": "a9457554-7e0c-4b05-a6d8-69e0a22ce12b",
+                  "objectMasterGuid": "42d23280-0576-4959-b408-9360cf65764f",
+                  "objectSequence": 2,
+                  "attributes": {},
+                  "instances": [
+                    {
+                      "instanceName": "panel_capabilities",
+                      "objectInstanceGuid": "4c58d792-1a9f-4fd8-b82d-ec9c2d974a4f",
+                      "objectMasterGuid": "31572117-2fe3-4262-ba03-20a74c6b59ca",
+                      "objectSequence": 1,
+                      "attributes": {
+                        "headerLabel": "This host",
+                        "panelType": "visual"
+                      },
+                      "instances": [
+                        {
+                          "instanceName": "DemoFactoryHostForm",
+                          "objectInstanceGuid": "cecbbf60-26bc-4851-a417-92154f6af4f1",
+                          "objectMasterGuid": "e455469e-3f90-49fe-9d42-2a900cc91fdc",
+                          "objectSequence": 1,
+                          "attributes": {},
+                          "instances": []
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "links": [
+    {
+      "linkGuid": "c396ce40-df38-4c7a-b521-4803fde421b1",
+      "linkName": "Primary",
+      "linkTypeGuid": "c21ecef7-8939-4534-b458-66945464b796",
+      "targetObjectInstanceGuid": "1277cc9b-d322-4822-a0a8-49aa32c4b810"
+    },
+    {
+      "linkGuid": "b7e83215-2a62-41e7-9f75-d2fcb892ce1a",
+      "linkName": "Data",
+      "linkTypeGuid": "d37727fb-24ff-7ea3-0e14-a5d9d8526f38",
+      "sourceObjectInstanceGuid": "1277cc9b-d322-4822-a0a8-49aa32c4b810",
+      "targetObjectInstanceGuid": "84cbc090-0e33-4a0f-be1d-3e9a6c4b3ae0"
+    },
+    {
+      "linkGuid": "21c054bc-17c4-4fe9-86f5-da08104a56c6",
+      "linkName": "Data",
+      "linkTypeGuid": "d37727fb-24ff-7ea3-0e14-a5d9d8526f38",
+      "sourceObjectInstanceGuid": "fda67b64-93ac-4219-ac34-cb3d20f58344",
+      "targetObjectInstanceGuid": "cecbbf60-26bc-4851-a417-92154f6af4f1"
+    },
+    {
+      "linkGuid": "1c675bdd-3331-42b0-9826-71cfea4b6272",
+      "linkName": "Filter",
+      "linkTypeGuid": "ac7518d7-ef25-faab-3714-cd9dc06f3864",
+      "sourceObjectInstanceGuid": "84cbc090-0e33-4a0f-be1d-3e9a6c4b3ae0",
+      "targetObjectInstanceGuid": "1277cc9b-d322-4822-a0a8-49aa32c4b810"
+    }
+  ],
+  "tags": [],
+  "tenantId": null,
+  "validFrom": null,
+  "validUntil": null
+}

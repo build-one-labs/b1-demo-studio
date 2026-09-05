@@ -1,0 +1,48 @@
+{
+  "createdAt": "2026-09-05 16:02:05.826034",
+  "createdBy": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "howToUse": "",
+  "label": "",
+  "moduleGuid": "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4",
+  "objectDescription": "Ask the Demo Creator dialog of the native Studio, opened from the search toolbar: starts a conversation with the Demo Creator agent (the selected demo as context) through the agent proxy and opens the chat screen on it (issue #17, step 3).",
+  "objectMasterGuid": "7b526ce6-9534-4140-963e-b213435d56c9",
+  "objectName": "DemoFactoryAgentScreen",
+  "objectTypeGuid": "d188099d-8548-49f0-86e4-c4b28dda9ecc",
+  "owner": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "status": "Active",
+  "templateObject": false,
+  "attributes": {
+    "eventNamespace": "#",
+    "icon": "i-lucide-message-square-text",
+    "isModal": true,
+    "maximizable": false,
+    "title": "Ask the Demo Creator"
+  },
+  "instances": [
+    {
+      "instanceName": "a",
+      "objectInstanceGuid": "a17dcf94-ac62-4110-ac8b-6d6802bd0812",
+      "objectMasterGuid": "31572117-2fe3-4262-ba03-20a74c6b59ca",
+      "objectSequence": 1,
+      "attributes": {
+        "panelMenu": "",
+        "panelType": "visual"
+      },
+      "instances": [
+        {
+          "instanceName": "DemoFactoryAgentForm",
+          "objectInstanceGuid": "f2a7f8f3-a64f-4716-bb31-811ad8fe13af",
+          "objectMasterGuid": "4ce79432-ebee-4acc-bb82-ef322f3a7185",
+          "objectSequence": 1,
+          "attributes": {},
+          "instances": []
+        }
+      ]
+    }
+  ],
+  "links": [],
+  "tags": [],
+  "tenantId": null,
+  "validFrom": null,
+  "validUntil": null
+}

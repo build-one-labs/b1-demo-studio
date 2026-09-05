@@ -1,0 +1,129 @@
+{
+  "createdAt": "2026-09-05 15:34:13.160481",
+  "createdBy": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "howToUse": "",
+  "label": "",
+  "moduleGuid": "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4",
+  "objectDescription": "Scene tab of the native Studio inspector, over DemoFactorySceneDSO: what the scene is (title, route, ids, position) on the left and its narration with [cue:…] markers on the right. Edits the row the scene grid selects; saved through the Save toolbar. Replaces the Scene tab of the former DemoFactoryStudio component (issue #17, step 2).",
+  "objectMasterGuid": "a5b1a8b8-43fb-4031-9e31-4b41b18a2688",
+  "objectName": "DemoFactorySceneForm",
+  "objectTypeGuid": "130726b3-7c42-4f22-a324-cc07f3d21feb",
+  "owner": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "status": "Active",
+  "templateObject": false,
+  "attributes": {
+    "headerLabel": "Scene"
+  },
+  "instances": [
+    {
+      "instanceName": "sceneBlock",
+      "objectInstanceGuid": "2a78a124-5d5b-4da5-ab98-df49f8c2cb13",
+      "objectMasterGuid": "c5c097d5-52c4-4b2d-8e1a-90d3e4af5626",
+      "objectSequence": 1,
+      "attributes": {},
+      "instances": [
+        {
+          "instanceName": "sceneFieldset",
+          "objectInstanceGuid": "055fff1e-ebc6-47fd-b8b7-642c823aad00",
+          "objectMasterGuid": "4002bae8-5bac-45f1-82b3-0d91f7381296",
+          "objectSequence": 1,
+          "attributes": {
+            "label": "Scene"
+          },
+          "instances": [
+            {
+              "instanceName": "title",
+              "objectInstanceGuid": "13a898a6-dbb7-453e-ae12-6def2b93c2fc",
+              "objectMasterGuid": "81756e31-509d-46ef-a774-1c52876e0a11",
+              "objectSequence": 1,
+              "attributes": {
+                "label": "Scene title",
+                "required": true
+              },
+              "instances": []
+            },
+            {
+              "instanceName": "route",
+              "objectInstanceGuid": "fef68173-0582-4794-96b1-776bfee6f5b1",
+              "objectMasterGuid": "81756e31-509d-46ef-a774-1c52876e0a11",
+              "objectSequence": 2,
+              "attributes": {
+                "label": "Route",
+                "required": true
+              },
+              "instances": []
+            },
+            {
+              "instanceName": "sceneId",
+              "objectInstanceGuid": "6dc5afd4-29f3-495a-8be3-697713af4074",
+              "objectMasterGuid": "81756e31-509d-46ef-a774-1c52876e0a11",
+              "objectSequence": 3,
+              "attributes": {
+                "enabled": false,
+                "label": "Scene id"
+              },
+              "instances": []
+            },
+            {
+              "instanceName": "sequence",
+              "objectInstanceGuid": "8517ddec-e3d1-4be7-8391-b580620d8316",
+              "objectMasterGuid": "81756e31-509d-46ef-a774-1c52876e0a11",
+              "objectSequence": 4,
+              "attributes": {
+                "dataType": "integer",
+                "label": "Position",
+                "min": 1,
+                "useGrouping": false
+              },
+              "instances": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "instanceName": "sceneColumnBreak",
+      "objectInstanceGuid": "fb6e7f35-3a56-4bed-8b54-fc828ed716f5",
+      "objectMasterGuid": "4b2a1744-b061-4616-a5bd-ac8f9ebd5d01",
+      "objectSequence": 2,
+      "attributes": {},
+      "instances": []
+    },
+    {
+      "instanceName": "narrationBlock",
+      "objectInstanceGuid": "6245ccf1-fce5-4f1b-89d8-b0b5fefec3c8",
+      "objectMasterGuid": "c5c097d5-52c4-4b2d-8e1a-90d3e4af5626",
+      "objectSequence": 3,
+      "attributes": {},
+      "instances": [
+        {
+          "instanceName": "narrationFieldset",
+          "objectInstanceGuid": "a26571bf-fa7c-4dbc-93d3-aa22759a142e",
+          "objectMasterGuid": "4002bae8-5bac-45f1-82b3-0d91f7381296",
+          "objectSequence": 1,
+          "attributes": {
+            "label": "Voice-over"
+          },
+          "instances": [
+            {
+              "instanceName": "narration",
+              "objectInstanceGuid": "1b1b9db4-b273-48c4-bdfd-1534e0771213",
+              "objectMasterGuid": "531100c8-2ec2-4e63-9195-1e2663071e94",
+              "objectSequence": 1,
+              "attributes": {
+                "label": "Narration — mark actions with [cue:name]",
+                "rows": 12
+              },
+              "instances": []
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "links": [],
+  "tags": [],
+  "tenantId": null,
+  "validFrom": null,
+  "validUntil": null
+}

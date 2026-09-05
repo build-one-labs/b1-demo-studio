@@ -1,0 +1,66 @@
+{
+  "createdAt": "2026-09-05 16:21:53.237975",
+  "createdBy": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "howToUse": "",
+  "label": "",
+  "moduleGuid": "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4",
+  "objectDescription": "Toolbar of the run maintenance screen: open the rendered video and the captions file in a new tab (the media routes of the demo factory), and close. Runs are produced by the pipeline and never edited, so there is nothing to save (issue #17, step 4).",
+  "objectMasterGuid": "0a00e2f5-5875-40e9-a6f3-24c162aed708",
+  "objectName": "DemoFactoryRunToolbar",
+  "objectTypeGuid": "c0f01216-5d6f-4923-b9ce-1f3049f9d2b5",
+  "owner": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "status": "Active",
+  "templateObject": false,
+  "attributes": {
+    "htmlClass": "regular",
+    "toolbarKey": "DemoFactoryRunToolbar"
+  },
+  "instances": [
+    {
+      "instanceName": "openVideo",
+      "objectInstanceGuid": "e655fbaf-14ab-4632-a4e1-8a77b8a4974b",
+      "objectMasterGuid": "2a34c785-bbd7-439f-aacd-c5e24927f26c",
+      "objectSequence": 1,
+      "attributes": {
+        "actionParameter": "#.openArtefact(eventSource, 'videoUrl')",
+        "actionType": "Run",
+        "label": "Open video",
+        "smallImage": "i-lucide-film",
+        "tooltip": "Open the rendered MP4 in a new tab"
+      },
+      "instances": []
+    },
+    {
+      "instanceName": "openCaptions",
+      "objectInstanceGuid": "303cfe76-d4b8-43f3-a3dc-085e9affb6a1",
+      "objectMasterGuid": "2a34c785-bbd7-439f-aacd-c5e24927f26c",
+      "objectSequence": 2,
+      "attributes": {
+        "actionParameter": "#.openArtefact(eventSource, 'srtUrl')",
+        "actionType": "Run",
+        "label": "Open captions",
+        "smallImage": "i-lucide-captions",
+        "tooltip": "Open the SRT captions in a new tab"
+      },
+      "instances": []
+    },
+    {
+      "instanceName": "closeAction",
+      "objectInstanceGuid": "270b889e-f442-4b96-b3ca-9104c16ae666",
+      "objectMasterGuid": "2a34c785-bbd7-439f-aacd-c5e24927f26c",
+      "objectSequence": 3,
+      "attributes": {
+        "actionParameter": "b1.closeScreen(eventSource.screen)",
+        "actionType": "Run",
+        "label": "Close",
+        "smallImage": "i-lucide-x"
+      },
+      "instances": []
+    }
+  ],
+  "links": [],
+  "tags": [],
+  "tenantId": null,
+  "validFrom": null,
+  "validUntil": null
+}

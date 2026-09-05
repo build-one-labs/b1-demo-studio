@@ -1,0 +1,123 @@
+{
+  "createdAt": "2026-09-05 15:34:05.486921",
+  "createdBy": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "howToUse": "",
+  "label": "",
+  "moduleGuid": "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4",
+  "objectDescription": "Voice-over tab of the native Studio inspector, over DemoFactoryDemoDSO: the demo's narration settings (provider, ElevenLabs model and language) and the presentation switches (cursor overlay, captions). Fields bind to nested settings paths. Replaces the Voice-over tab of the former DemoFactoryStudio component (issue #17, step 2).",
+  "objectMasterGuid": "9073d022-86c4-465b-8eef-6365eac87788",
+  "objectName": "DemoFactoryVoiceoverForm",
+  "objectTypeGuid": "130726b3-7c42-4f22-a324-cc07f3d21feb",
+  "owner": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "status": "Active",
+  "templateObject": false,
+  "attributes": {
+    "headerLabel": "Voice-over"
+  },
+  "instances": [
+    {
+      "instanceName": "narrationBlock",
+      "objectInstanceGuid": "09b98e98-683d-4229-aa5d-2ec92125040b",
+      "objectMasterGuid": "c5c097d5-52c4-4b2d-8e1a-90d3e4af5626",
+      "objectSequence": 1,
+      "attributes": {},
+      "instances": [
+        {
+          "instanceName": "narrationFieldset",
+          "objectInstanceGuid": "ab08142e-a4a7-405a-b420-3366a52c9ae7",
+          "objectMasterGuid": "4002bae8-5bac-45f1-82b3-0d91f7381296",
+          "objectSequence": 1,
+          "attributes": {
+            "label": "Narration"
+          },
+          "instances": [
+            {
+              "instanceName": "settings.narration.provider",
+              "objectInstanceGuid": "5f3dd0dc-306d-4ed7-99f5-754eaa4a112c",
+              "objectMasterGuid": "b1b73251-5116-37b7-e314-de2cc0dc4ddb",
+              "objectSequence": 1,
+              "attributes": {
+                "label": "Provider",
+                "optionsList": "auto,elevenlabs,silent"
+              },
+              "instances": []
+            },
+            {
+              "instanceName": "settings.narration.defaultModelId",
+              "objectInstanceGuid": "c91418ea-eb87-483b-ac2b-9aafbb8af282",
+              "objectMasterGuid": "81756e31-509d-46ef-a774-1c52876e0a11",
+              "objectSequence": 2,
+              "attributes": {
+                "label": "ElevenLabs model"
+              },
+              "instances": []
+            },
+            {
+              "instanceName": "settings.narration.defaultLanguageCode",
+              "objectInstanceGuid": "d0437f53-0c2e-45c0-91c1-af540bb18bbe",
+              "objectMasterGuid": "81756e31-509d-46ef-a774-1c52876e0a11",
+              "objectSequence": 3,
+              "attributes": {
+                "label": "Language code"
+              },
+              "instances": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "instanceName": "voiceoverColumnBreak",
+      "objectInstanceGuid": "b7ca2f87-3d38-475b-9ff6-5a5faaa84ad0",
+      "objectMasterGuid": "4b2a1744-b061-4616-a5bd-ac8f9ebd5d01",
+      "objectSequence": 2,
+      "attributes": {},
+      "instances": []
+    },
+    {
+      "instanceName": "presentationBlock",
+      "objectInstanceGuid": "6c1b75e0-a91a-44b8-abfc-62b432382e3a",
+      "objectMasterGuid": "c5c097d5-52c4-4b2d-8e1a-90d3e4af5626",
+      "objectSequence": 3,
+      "attributes": {},
+      "instances": [
+        {
+          "instanceName": "presentationFieldset",
+          "objectInstanceGuid": "3fc58999-5ab1-4a5c-8da5-c1fb8564253b",
+          "objectMasterGuid": "4002bae8-5bac-45f1-82b3-0d91f7381296",
+          "objectSequence": 1,
+          "attributes": {
+            "label": "Presentation"
+          },
+          "instances": [
+            {
+              "instanceName": "settings.cursor.enabled",
+              "objectInstanceGuid": "4178ca33-74e7-45b3-b4fd-e9804c23344a",
+              "objectMasterGuid": "b1b73251-5116-37b7-e314-e22c70d3ce3c",
+              "objectSequence": 1,
+              "attributes": {
+                "label": "Show the cursor overlay"
+              },
+              "instances": []
+            },
+            {
+              "instanceName": "settings.branding.showCaptions",
+              "objectInstanceGuid": "eca58113-a7ee-46e9-b9dc-f0645b3707df",
+              "objectMasterGuid": "b1b73251-5116-37b7-e314-e22c70d3ce3c",
+              "objectSequence": 2,
+              "attributes": {
+                "label": "Burn captions into the video"
+              },
+              "instances": []
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "links": [],
+  "tags": [],
+  "tenantId": null,
+  "validFrom": null,
+  "validUntil": null
+}

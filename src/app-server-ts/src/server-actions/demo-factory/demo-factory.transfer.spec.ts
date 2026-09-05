@@ -5,6 +5,7 @@ import { DemoRow, SceneRow } from './demo-factory.rows';
 import { DemoFactoryTransfer } from './demo-factory.transfer';
 
 import type { DemoFactoryStore } from './demo-factory.store';
+import type { ClsService } from 'nestjs-cls';
 
 /**
  * An in-memory stand-in for the clob store: read and commit with the same
@@ -75,9 +76,12 @@ const document = (id: string, sceneIds: string[]) => ({
   }))
 });
 
+/** No request context in a unit test, so internal-write marking is a no-op here. */
+const fakeCls = { isActive: () => false, get: () => undefined, set: () => undefined } as unknown as ClsService;
+
 const makeTransfer = () => {
   const store = new FakeStore();
-  const transfer = new DemoFactoryTransfer(store as unknown as DemoFactoryStore);
+  const transfer = new DemoFactoryTransfer(store as unknown as DemoFactoryStore, fakeCls);
   return { store, transfer };
 };
 
@@ -185,17 +189,30 @@ describe('DemoFactoryTransfer', () => {
     expect(after.title).toBe('As stored');
   });
 
-  it('deletes a demo, and treats deleting an absent one as done', async () => {
+  it('deletes a demo with its scene rows, and treats deleting an absent one as done', async () => {
     const { store, transfer } = makeTransfer();
-    await transfer.saveDocument(document('demo', ['one']));
+    await transfer.saveDocument(document('demo', ['one', 'two']));
+    await transfer.saveDocument(document('other', ['one']));
 
     expect(await transfer.deleteDemo('demo')).toEqual({ demoId: 'demo', existed: true });
-    expect(await store.read<DemoRow>('DemoFactoryDemoDSO')).toEqual([]);
+    expect(await store.read<DemoRow>('DemoFactoryDemoDSO')).toEqual([expect.objectContaining({ id: 'other' })]);
+    // The cascade is the service's own, not the materializer hook's (which this
+    // store does not run): the demo's scene rows are gone, the other demo's stay.
+    expect((await store.read<SceneRow>('DemoFactorySceneDSO')).map((row) => row.id)).toEqual(['other:one']);
 
-    // The scene rows go with it through the materializer's delete hook, which
-    // this store does not run — so what is asserted here is the demo row and
-    // the answer, not the cascade.
     expect(await transfer.deleteDemo('demo')).toEqual({ demoId: 'demo', existed: false });
+  });
+
+  it('removes the scene rows an earlier, partial delete left behind', async () => {
+    const { store, transfer } = makeTransfer();
+    await transfer.saveDocument(document('demo', ['one']));
+    await store.commit('DemoFactoryDemoDSO', {
+      deletedRecords: await store.read<DemoRow>('DemoFactoryDemoDSO')
+    });
+    expect(await store.read<SceneRow>('DemoFactorySceneDSO')).toHaveLength(1);
+
+    expect(await transfer.deleteDemo('demo')).toEqual({ demoId: 'demo', existed: false });
+    expect(await store.read<SceneRow>('DemoFactorySceneDSO')).toEqual([]);
   });
 
   it('refuses a demo id that would escape the demos directory', async () => {

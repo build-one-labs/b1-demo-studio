@@ -1,0 +1,55 @@
+{
+  "abstractType": false,
+  "active": true,
+  "classTypeGuid": "31faedbd-5ca8-4e5a-b519-504cbd677b48",
+  "containerType": false,
+  "createdBy": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "extendsObjectTypeGuid": "292e60e6-4ab9-4f6c-abe5-122315020236",
+  "howToUse": "# b1_media_player\n\nPlays the video of the current record of the data source it is bound to.\n\n## Data binding\nTarget of a **Data** link from a data source. The player follows the cursor record: **srcField** names the field holding the media URL (default `videoUrl`), **captionsField** the field holding the captions file URL (default `srtUrl`), offered as a download next to the player. A record without a source renders the reason instead of an empty player.\n\n## Working with a timeline\nA `b1_demo_timeline` on the same screen names the player's instance in its `playerObject` attribute; it then shows the playhead and seeks the player when a scene is clicked.\n\n## Create with\nInstantiate the shared master `DemoFactoryRunPlayer` (run rows: videoUrl / srtUrl) inside a panel or tab and link the run data source to it.",
+  "label": "Media Player",
+  "maintenanceMenu": "",
+  "objectTypeDescription": "A video player bound to a record: plays the media the record's source field points at and offers its captions file. Project-owned type of the Demo Factory Studio (b1-demo-studio, issue #17); a b1_demo_timeline on the same screen can follow and seek it.",
+  "objectTypeGuid": "84cc3847-8b58-426d-aca9-8f88c6ca9ce8",
+  "objectTypeName": "b1_media_player",
+  "owner": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "status": "Active",
+  "storeInstances": "",
+  "technicalClassName": "",
+  "vendor": "",
+  "attributes": {
+    "captionsField": "srtUrl",
+    "headerLabel": "Preview",
+    "srcField": "videoUrl",
+    "uiComponentAlias": "mediaPlayer"
+  },
+  "designSettings": {
+    "Media": [
+      "srcField",
+      "captionsField",
+      "headerLabel",
+      "htmlClass"
+    ]
+  },
+  "supportedInstanceTypes": null,
+  "supportedLinkTypes": [
+    {
+      "linkSource": false,
+      "linkTarget": true,
+      "linkTypeGuid": "d37727fb-24ff-7ea3-0e14-a5d9d8526f38",
+      "supportedLinkGuid": "5b1f84f7-b42e-44a1-ac5e-810fb3e324ef"
+    }
+  ],
+  "synonyms": [
+    "video",
+    "video player",
+    "preview"
+  ],
+  "tags": [
+    "media",
+    "video",
+    "demo-factory"
+  ],
+  "tenantId": null,
+  "validFrom": null,
+  "validUntil": null
+}

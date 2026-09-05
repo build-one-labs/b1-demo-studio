@@ -1,0 +1,116 @@
+{
+  "createdAt": "2026-09-05 16:20:42.969209",
+  "createdBy": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "howToUse": "",
+  "label": "",
+  "moduleGuid": "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4",
+  "objectDescription": "Recorded and rendered runs in the native Studio, over DemoFactoryRunDSO (newest first): on the run search screen for all demos, and on a demo's maintenance screen filtered to that demo via the Join link. The run id is a link that opens DemoFactoryRunMaintenance positioned to the run (issue #17, step 4).",
+  "objectMasterGuid": "48343e20-b19a-4027-ad5f-846cc3dc2017",
+  "objectName": "DemoFactoryRunGrid",
+  "objectTypeGuid": "63d81ac2-8555-44e1-9032-7064448799c4",
+  "owner": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "status": "Active",
+  "templateObject": false,
+  "attributes": {
+    "filterMode": "global",
+    "headerLabel": "Runs"
+  },
+  "instances": [
+    {
+      "instanceName": "runId",
+      "objectInstanceGuid": "1245f508-d748-47f8-a205-a5666d98543d",
+      "objectMasterGuid": "11ba27c0-a259-4df5-8752-2a7fd4f08242",
+      "objectSequence": 1,
+      "attributes": {
+        "action": "@8bc198e6-1afb-aebb-da14-48a39869c351{ \"containerName\": \"DemoFactoryRunMaintenance\", \"repositionTo\": eventSource.parent.selectedRecord.runId }",
+        "label": "Run",
+        "visualizationType": "LINK"
+      },
+      "instances": []
+    },
+    {
+      "instanceName": "demoId",
+      "objectInstanceGuid": "c55a93ba-355e-4996-8cc1-babb83c3abe4",
+      "objectMasterGuid": "11ba27c0-a259-4df5-8752-2a7fd4f08242",
+      "objectSequence": 2,
+      "attributes": {
+        "label": "Demo"
+      },
+      "instances": []
+    },
+    {
+      "instanceName": "createdAt",
+      "objectInstanceGuid": "72f2392c-f936-4add-8092-740aaef275b3",
+      "objectMasterGuid": "6ce7a38a-5e9e-456f-a816-34cfcbf84de9",
+      "objectSequence": 3,
+      "attributes": {
+        "dataType": "datetime",
+        "label": "Created"
+      },
+      "instances": []
+    },
+    {
+      "instanceName": "provider",
+      "objectInstanceGuid": "2b212fb9-26b7-465f-8f24-645220a90208",
+      "objectMasterGuid": "11ba27c0-a259-4df5-8752-2a7fd4f08242",
+      "objectSequence": 4,
+      "attributes": {
+        "label": "Narration"
+      },
+      "instances": []
+    },
+    {
+      "instanceName": "recordedScenes",
+      "objectInstanceGuid": "024e5c86-cde2-41f1-9299-96862a5a7b57",
+      "objectMasterGuid": "11ba27c0-a259-4df5-8752-2a7fd4f08242",
+      "objectSequence": 5,
+      "attributes": {
+        "align": "right",
+        "dataType": "integer",
+        "label": "Recorded"
+      },
+      "instances": []
+    },
+    {
+      "instanceName": "sceneCount",
+      "objectInstanceGuid": "ac57e7be-c689-464d-828b-8679c1510d4f",
+      "objectMasterGuid": "11ba27c0-a259-4df5-8752-2a7fd4f08242",
+      "objectSequence": 6,
+      "attributes": {
+        "align": "right",
+        "dataType": "integer",
+        "label": "Scenes"
+      },
+      "instances": []
+    },
+    {
+      "instanceName": "durationMs",
+      "objectInstanceGuid": "afc1c513-c2f7-4e19-b68f-e91d708ccf80",
+      "objectMasterGuid": "11ba27c0-a259-4df5-8752-2a7fd4f08242",
+      "objectSequence": 7,
+      "attributes": {
+        "align": "right",
+        "dataType": "integer",
+        "label": "Duration",
+        "suffix": " ms",
+        "useGrouping": false
+      },
+      "instances": []
+    },
+    {
+      "instanceName": "hasVideo",
+      "objectInstanceGuid": "99a7f8b3-f158-4694-a288-a7ebc32e4ec4",
+      "objectMasterGuid": "3d463fd8-49d9-4094-8f0a-9ad8d28f653f",
+      "objectSequence": 8,
+      "attributes": {
+        "label": "Video"
+      },
+      "instances": []
+    }
+  ],
+  "links": [],
+  "tags": [],
+  "tenantId": null,
+  "validFrom": null,
+  "validUntil": null
+}

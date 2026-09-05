@@ -4,7 +4,7 @@
   "howToUse": "",
   "label": "",
   "moduleGuid": "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4",
-  "objectDescription": "Demo Factory — demo-as-code pipeline that records and renders reproducible Build.One product videos.",
+  "objectDescription": "Demo Factory — demo-as-code pipeline that records and renders reproducible Build.One product videos. Its Studio is a native Build.One app since issue #17: a sidebar menu (DemoFactoryMenu) over search and maintenance screens for demos and runs, plus settings — no Vue component of its own beyond three small object types (log view, media player, demo timeline).",
   "objectMasterGuid": "7ddf5b64-55a6-42bb-b135-d780b0263865",
   "objectName": "b1-demo-factory",
   "objectTypeGuid": "99c865f6-faf7-4d36-bf0e-5b3c1f4bccd0",
@@ -13,7 +13,7 @@
   "templateObject": false,
   "attributes": {
     "colorScheme": "light",
-    "initialScreen": "DemoFactoryScreen",
+    "initialScreen": "DemoFactoryNativeScreen",
     "logoLarge": "/b1-logo.png",
     "logoSmall": "/b1-logo.png",
     "mainLayoutScreen": "taskbarMainLayout"

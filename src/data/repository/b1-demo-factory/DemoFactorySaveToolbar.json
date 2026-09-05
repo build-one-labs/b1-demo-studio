@@ -1,0 +1,40 @@
+{
+  "createdAt": "2026-09-05 15:34:23.730419",
+  "createdBy": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "howToUse": "",
+  "label": "",
+  "moduleGuid": "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4",
+  "objectDescription": "Save toolbar of the native Studio inspector: one Save action publishing saveChanges over the TableIO link to the form it sits with, which commits the edited row to its data source — the server-side materializer validates the document before anything lands. toolbarKey names this object because a toolbar renders the instances of the object its key points at (issue #17, step 2).",
+  "objectMasterGuid": "3bec2751-cd4e-4e1e-8d27-f95791bd7d50",
+  "objectName": "DemoFactorySaveToolbar",
+  "objectTypeGuid": "c0f01216-5d6f-4923-b9ce-1f3049f9d2b5",
+  "owner": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "status": "Active",
+  "templateObject": false,
+  "attributes": {
+    "htmlClass": "regular",
+    "toolbarKey": "DemoFactorySaveToolbar"
+  },
+  "instances": [
+    {
+      "instanceName": "saveAction",
+      "objectInstanceGuid": "1e0e13fc-9147-409b-be73-302a41953bb8",
+      "objectMasterGuid": "2a34c785-bbd7-439f-aacd-c5e24927f26c",
+      "objectSequence": 1,
+      "attributes": {
+        "actionParameter": "saveChanges",
+        "actionTarget": "TABLEIO",
+        "actionType": "PUBLISH",
+        "label": "Save",
+        "smallImage": "i-lucide-save",
+        "tooltip": "Save the changes of this tab"
+      },
+      "instances": []
+    }
+  ],
+  "links": [],
+  "tags": [],
+  "tenantId": null,
+  "validFrom": null,
+  "validUntil": null
+}

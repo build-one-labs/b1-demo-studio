@@ -1,0 +1,92 @@
+{
+  "createdAt": "2026-09-05 15:27:33.475275",
+  "createdBy": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "howToUse": "",
+  "label": "",
+  "moduleGuid": "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4",
+  "objectDescription": "Demo search screen of the native Demo Factory Studio (issue #17): the demo list with its toolbar (New, Import, Ask the Demo Creator). The title link opens DemoFactoryDemoMaintenance positioned to the demo, where editing, scenes and the pipeline live. Opened from the Demos entry of DemoFactoryMenu in the sidebar of DemoFactoryNativeScreen.",
+  "objectMasterGuid": "baf6c9b4-d106-4126-93c0-311b7d061a63",
+  "objectName": "DemoFactoryDemoSearch",
+  "objectTypeGuid": "d188099d-8548-49f0-86e4-c4b28dda9ecc",
+  "owner": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "status": "Active",
+  "templateObject": false,
+  "attributes": {
+    "eventNamespace": "#",
+    "icon": "i-lucide-layout-grid",
+    "title": "Demos"
+  },
+  "instances": [
+    {
+      "instanceName": "DemoFactoryDemoDSO",
+      "objectInstanceGuid": "bbaeb5f9-1a4c-43eb-9484-3f950305d123",
+      "objectMasterGuid": "5a803abc-1dd7-4f2a-be30-d0bc10d18d9c",
+      "attributes": {
+        "createRecordScreen": "DemoFactoryDemoCreate",
+        "maintenanceScreen": "DemoFactoryDemoMaintenance"
+      },
+      "instances": []
+    },
+    {
+      "instanceName": "panel_search",
+      "objectInstanceGuid": "c4a70956-8ad6-481b-83fa-bf610bb75f3c",
+      "objectMasterGuid": "31572117-2fe3-4262-ba03-20a74c6b59ca",
+      "objectSequence": 1,
+      "attributes": {
+        "headerLabel": "Demos",
+        "panelType": "visual"
+      },
+      "instances": [
+        {
+          "instanceName": "DemoFactoryDemoSearchToolbar",
+          "objectInstanceGuid": "747c8076-bbdd-4864-a014-f3809e6d0018",
+          "objectMasterGuid": "544d6900-f904-4cf0-b5d5-f83ae61f4815",
+          "objectSequence": 1,
+          "attributes": {},
+          "instances": []
+        },
+        {
+          "instanceName": "DemoFactoryDemoGrid",
+          "objectInstanceGuid": "08da73f8-e773-4e18-a33d-9fa34c4add1f",
+          "objectMasterGuid": "d21301dd-4430-4104-b099-7f1047782549",
+          "objectSequence": 2,
+          "attributes": {},
+          "instances": []
+        }
+      ]
+    }
+  ],
+  "links": [
+    {
+      "linkGuid": "2213d622-0d7f-4843-9e4e-0f9ee23d19d7",
+      "linkName": "Primary",
+      "linkTypeGuid": "c21ecef7-8939-4534-b458-66945464b796",
+      "targetObjectInstanceGuid": "bbaeb5f9-1a4c-43eb-9484-3f950305d123"
+    },
+    {
+      "linkGuid": "9671fec4-b3f4-4970-afbd-74e94ccbb91c",
+      "linkName": "Data",
+      "linkTypeGuid": "d37727fb-24ff-7ea3-0e14-a5d9d8526f38",
+      "sourceObjectInstanceGuid": "bbaeb5f9-1a4c-43eb-9484-3f950305d123",
+      "targetObjectInstanceGuid": "08da73f8-e773-4e18-a33d-9fa34c4add1f"
+    },
+    {
+      "linkGuid": "0fa68fec-4910-4b78-b073-815a2d1d65f1",
+      "linkName": "TableIO",
+      "linkTypeGuid": "d37727fb-24ff-7ea3-0e14-a6d9d4d6d61d",
+      "sourceObjectInstanceGuid": "747c8076-bbdd-4864-a014-f3809e6d0018",
+      "targetObjectInstanceGuid": "08da73f8-e773-4e18-a33d-9fa34c4add1f"
+    },
+    {
+      "linkGuid": "8ba9b22b-b4ee-4d4d-89ee-05da6f2d6245",
+      "linkName": "Filter",
+      "linkTypeGuid": "ac7518d7-ef25-faab-3714-cd9dc06f3864",
+      "sourceObjectInstanceGuid": "08da73f8-e773-4e18-a33d-9fa34c4add1f",
+      "targetObjectInstanceGuid": "bbaeb5f9-1a4c-43eb-9484-3f950305d123"
+    }
+  ],
+  "tags": [],
+  "tenantId": null,
+  "validFrom": null,
+  "validUntil": null
+}

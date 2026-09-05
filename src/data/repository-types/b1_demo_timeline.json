@@ -1,0 +1,57 @@
+{
+  "abstractType": false,
+  "active": true,
+  "classTypeGuid": "31faedbd-5ca8-4e5a-b519-504cbd677b48",
+  "containerType": false,
+  "createdBy": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "extendsObjectTypeGuid": "292e60e6-4ab9-4f6c-abe5-122315020236",
+  "howToUse": "# b1_demo_timeline\n\nDraws the records of its data source as consecutive blocks on one time axis — the scenes of a run in order — with their cue markers, and the playhead of a media player.\n\n## Data binding\nTarget of a **Data** link from a data source whose rows are ordered scenes: **durationField** (default `durationMs`) sizes a block, **cuesField** (default `cues`, a `{ name: offsetMs }` object) places the ticks, `title` labels it, `hasClip` greys out a scene that was not recorded.\n\n## Working with a player\n**playerObject** names the instance of a `b1_media_player` on the same screen. The timeline then shows where playback is and seeks the player to the start of a scene when the scene is clicked. Without it the timeline is static.\n\n## Create with\nInstantiate the shared master `DemoFactoryRunTimeline` next to a `DemoFactoryRunPlayer` and link the run-scene data source to it.",
+  "label": "Demo Timeline",
+  "maintenanceMenu": "",
+  "objectTypeDescription": "The scenes of a recorded demo run on a time axis: one block per scene sized by its duration, cue markers inside each block, and the playhead of a media player on the same screen. Project-owned, studio-specific type of the Demo Factory Studio (b1-demo-studio, issue #17).",
+  "objectTypeGuid": "836b557e-bfb5-473a-b940-9027aa5e03b8",
+  "objectTypeName": "b1_demo_timeline",
+  "owner": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "status": "Active",
+  "storeInstances": "",
+  "technicalClassName": "",
+  "vendor": "",
+  "attributes": {
+    "cuesField": "cues",
+    "durationField": "durationMs",
+    "headerLabel": "Timeline",
+    "playerObject": "",
+    "uiComponentAlias": "demoTimeline"
+  },
+  "designSettings": {
+    "Timeline": [
+      "playerObject",
+      "durationField",
+      "cuesField",
+      "headerLabel",
+      "htmlClass"
+    ]
+  },
+  "supportedInstanceTypes": null,
+  "supportedLinkTypes": [
+    {
+      "linkSource": false,
+      "linkTarget": true,
+      "linkTypeGuid": "d37727fb-24ff-7ea3-0e14-a5d9d8526f38",
+      "supportedLinkGuid": "cd413d5d-44f7-4ef3-a3f9-a05db18cf29a"
+    }
+  ],
+  "synonyms": [
+    "timeline",
+    "storyboard",
+    "scene track"
+  ],
+  "tags": [
+    "timeline",
+    "video",
+    "demo-factory"
+  ],
+  "tenantId": null,
+  "validFrom": null,
+  "validUntil": null
+}
