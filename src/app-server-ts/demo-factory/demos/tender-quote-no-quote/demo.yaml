@@ -1,0 +1,447 @@
+schemaVersion: 1
+id: tender-quote-no-quote
+title: Jeder baut. Die IT behält die Regeln.
+description: >
+  Ein Vertriebsmitarbeiter beschreibt in einem Absatz, was er für die
+  Angebotsentscheidung braucht, und ein Agent baut es ihm — als privaten
+  Entwurf, in einer Umgebung, die die IT vorher eingerichtet hat. Danach die
+  andere Seite: die Bewertung läuft live und belegt jede Zeile mit der Seite,
+  aus der sie stammt, und im Object Designer stehen die Verarbeitungs-Pipeline
+  und die Richtlinie, die der Vertrieb benutzt, aber nicht ändern kann.
+
+# ============================================================================
+# VOR DEM DREH LESEN
+#
+# ZIEL-DEPLOYMENT. Dieses Blueprint (b1-demo-studio) enthält das Modul
+# DocumentAI NICHT — src/data/repository hat hier nur b1-demo-factory. Die
+# Demo nimmt deshalb gegen ein vanguard auf, so wie b1-vibecode-governance es
+# tut. Stand 05.09.2026 liegt DocumentAI aber noch nicht auf develop, es
+# steckt im offenen PR #2044 (Branch
+# feature/b1-1143-add-support-for-ai-document-processing) — gegen
+# vanguard-develop.test.build.one ist sie also erst nach dem Merge aufnehmbar.
+# Prüfen mit:
+#   gh api /repos/build-one-labs/vanguard/contents/src/data/repository/DocumentAI?ref=develop
+#
+# BIS DAHIN: GEGEN EINEN CODESPACE AUFNEHMEN. Ein vanguard-Codespace auf dem
+# Branch hat das Modul, und sein Port 8080 lässt sich öffentlich schalten —
+# das ist eine vollwertige Aufnahme-URL. Am 05.09.2026 gegen einen laufenden
+# Codespace durchgemessen:
+#   anonym auf eine Daten-URL          401  (nichts liegt offen)
+#   Session-Handoff über den Tunnel    302, Cookie gesetzt
+#   dieselbe URL mit Session           200, 8 Collections
+#   /screens/SampleTenderDocumentsScreen 200
+# Port öffentlich schalten (im vanguard-Codespace):
+#   gh codespace ports visibility 8080:public -c "$CODESPACE_NAME"
+# Aufnehmen (hier in b1-demo-studio), Anmeldung über den Sitzungs-Cookie —
+# der Weg funktioniert unabhängig davon, welchen Auth-Server der Codespace
+# benutzt, während der API-Key-Handoff (tools/b1-auth-state.mjs) nur greift,
+# wenn AUTH_URL und Schlüssel zu genau diesem Codespace passen (dort z. B.
+# https://auth-develop.test.build.one mit
+# B1_USER_API_KEY__AUTH_DEVELOP_TEST_BUILD_ONE):
+#   CS=https://<codespace>-8080.app.github.dev
+#   # im Browser an $CS anmelden, Cookie __Secure-b1.session_token kopieren
+#   cd src/app-server-ts
+#   node demo-factory/tools/auth-from-session.mjs <token>
+#   export B1_AUTH_STATE=$PWD/demo-factory/playwright/.auth/b1-demo-user.json
+#   B1_TENDER_BASE_URL=$CS/ yarn demo:prepare tender-quote-no-quote
+#   B1_TENDER_BASE_URL=$CS/ yarn demo:record  tender-quote-no-quote
+# Drei Dinge, die einen Take kosten:
+#   - Der Codespace schläft nach Leerlauf ein und die URL stirbt mitten in der
+#     Aufnahme. Vor dem Dreh die Idle-Zeit hochsetzen oder ihn beschäftigen.
+#   - Der Stack läuft im Dev-Modus und kompiliert Routen beim ersten Aufruf.
+#     Die waitFor-Timeouts unten sind deshalb großzügig; trotzdem jede Route
+#     einmal von Hand aufrufen, bevor die Kamera läuft.
+#   - Ein öffentlicher Port ist öffentlich. Ohne Anmeldung kommt zwar nur 401,
+#     aber die Anmeldemaske steht im Netz. Nach dem Dreh wieder auf `private`.
+#
+# DOKUMENTE VORHER HOCHLADEN. Die Factory kennt keine Upload-Aktion
+# (goto, click, dblclick, fill, type, press, hover, highlight, waitFor,
+# screenshot) — ein Datei-Upload lässt sich weder in einer Szene noch im
+# setup-Block skripten. Szene 4 setzt deshalb voraus, dass die Ausschreibung
+# tender-2026-052 ("Modernisierung Leitstelle Verkehrsbetriebe Süd") ihre
+# Dokumente bereits verarbeitet hat. Einmal von Hand, vor der Aufnahme:
+#   /screens/SampleTenderDocumentsScreen?repositionTo=tender-2026-052
+#   → Reiter "Documents" → Dateien in die Upload-Zone ziehen
+#   → warten, bis alle Zeilen READY zeigen (gemessen 2,5–13,6 s je Datei)
+# Deshalb gibt es hier bewusst KEIN setup mit "Reset Repository": ein Reset
+# würde genau diese Dokumente wegräumen.
+#
+# LIVE, NICHT GESTELLT. Der Agent baut in Szene 2 wirklich, und die Bewertung
+# in Szene 4 läuft wirklich. Beide Wartezeiten sind timelapse-waitFor:
+# in Echtzeit aufgenommen, im Render auf das Budget der Narration gerafft.
+# Gemessene Laufzeiten auf dem Workspace-Stack (Docling auf b1-Demo,
+# OpenAI text-embedding-3-small):
+#   Quote/No-Quote-Bewertung  50 s und 153 s (zwei echte Läufe)
+#   Dokument → READY          2,5 s (Markdown) bis 13,6 s (8-Seiten-PDF)
+# NICHT die RFQ-Vollanalyse filmen (Schaltfläche "RFQ analysis" daneben):
+# gemessen 365 s bis über 25 min. Sie sprengt jedes Produktvideo.
+#
+# SZENENABHÄNGIGKEIT. Szene 3 zeigt den Entwurf, den Szene 2 anlegt — jede
+# Szene nimmt zwar in einem frischen Browser-Kontext auf, aber nicht in einer
+# frischen Umgebung. Ein Teil-Neudreh mit --scenes= funktioniert deshalb für
+# 1 und 4-6 immer, für 3 nur solange der Entwurf aus Szene 2 noch existiert.
+#
+# SELEKTOREN. Gegen die E2E-Suite von vanguard belegt (src/e2e, 9/9 grün am
+# 05.09.2026): document-ai.spec.ts, vibecode-home.spec.ts und
+# pipeline-then-links.spec.ts adressieren exakt diese Elemente. Zwei Hinweise:
+#   - Die Vibecode-Überschrift lautet in vanguard "What do you need to get
+#     done?" — b1-vibecode-governance zielt auf eine ältere Fassung
+#     ("What would you like to do?"). Hier steht die aktuelle.
+#   - Es gibt noch keine data-demo-id auf diesen Screens. Die Ziele nutzen
+#     daher role/name/text, wo möglich, und die stabilen
+#     data-repository-instance-name-Attribute des Rendering-Engines, wo nicht.
+#     Sobald B1 dort data-demo-id liefert, gehören sie hierher.
+# ============================================================================
+
+settings:
+  language: de
+  viewport:
+    width: 1920
+    height: 1080
+  fps: 30
+  baseUrl:
+    # Bewusst nicht B1_BASE_URL: der Workspace-Provisioner schreibt dort
+    # http://caddy:8080/ für die lokalen Demos, und diese Demo braucht ein
+    # vanguard mit dem Modul DocumentAI.
+    #
+    # Der Fallback zeigt dorthin, wo die Demo nach dem Merge von PR #2044
+    # hingehört. Bis dahin setzt der Aufnehmende B1_TENDER_BASE_URL auf die
+    # öffentliche 8080-URL eines vanguard-Codespace auf dem Branch (siehe
+    # Kopf). resolveDemoUrl baut `new URL(route, base)`, die Routen unten sind
+    # absolute Pfade — die Basis darf also einfach der nackte Host sein, ohne
+    # ?app=, und muss keinen Pfad tragen.
+    env: B1_TENDER_BASE_URL
+    fallback: https://vanguard-develop.test.build.one/
+  authStateEnv: B1_AUTH_STATE
+  headlessEnv: DEMO_HEADLESS
+  holdBeforeMs: 900
+  holdAfterMs: 1600
+  cursor:
+    enabled: true
+    moveDurationMs: 700
+    clickLeadMs: 120
+    clickEffectDurationMs: 560
+    sizePx: 30
+  narration:
+    provider: auto
+    voiceIdEnv: ELEVENLABS_VOICE_ID
+    apiKeyEnv: ELEVENLABS_API_KEY
+    modelIdEnv: ELEVENLABS_MODEL_ID
+    defaultModelId: eleven_multilingual_v2
+    languageCodeEnv: ELEVENLABS_LANGUAGE_CODE
+    defaultLanguageCode: de
+    wordsPerMinute: 132
+    # Der Punkt in "Build.One" wird sonst als Satzende gesprochen; "Quote"
+    # und "No-Quote" liest die deutsche Stimme sonst buchstabierend.
+    pronunciations:
+      Build.One: Build One
+      Quote/No-Quote: Kwoht - No-Kwoht
+      RFQ: Err-Eff-Kuh
+    # Lange Szenen mit geklonter Stimme driften; hohe Stabilität und style 0
+    # halten die Klangfarbe über zweieinhalb Minuten zusammen.
+    voiceSettings:
+      stability: 0.95
+      similarityBoost: 0.9
+      style: 0
+      speakerBoost: true
+  branding:
+    productName: Build.One
+    accentColor: "#1266f1"
+    backgroundColor: "#0b1020"
+    textColor: "#f7f8ff"
+    showCaptions: false
+    showSceneTitles: true
+
+scenes:
+  # --------------------------------------------------------------------------
+  # TEIL 1 — DER FACHANWENDER BAUT
+  # --------------------------------------------------------------------------
+  - id: entscheidung-nach-kriterien
+    title: Die Kriterien stehen. Das Lesen ist das Problem.
+    route: /screens/SampleEvaluationMatrixSearchScreen
+    narration: >
+      Ein Ingenieurdienstleister bekommt jede Woche Ausschreibungen ins Haus —
+      dicke PDF-Pakete, Lastenhefte, Preisblätter, Vertragsanlagen. Und jedes
+      Mal steht am Anfang dieselbe Frage: Bieten wir an, oder lassen wir es?
+      [cue:matrix] Beantwortet wird sie nach fünf Kriterien. Hier stehen sie:
+      technische Erfüllbarkeit, Wirtschaftlichkeit, Referenzen und
+      Zertifizierungen, Termin- und Lieferfähigkeit, Vertragsrisiko — jedes
+      mit seinem Gewicht, zusammen hundert Punkte. [cue:hardstop] Zwei davon
+      sind K.-o.-Kriterien: Fällt eines durch, ist die Entscheidung gefallen,
+      egal wie gut der Rest aussieht. Diese Matrix hat das Bid Board
+      beschlossen, sie hängt nicht von der Tagesform ab, und sie ist nicht
+      strittig. Strittig ist etwas ganz anderes. Bis ein Mensch achtzig Seiten
+      Ausschreibungsunterlagen gegen diese fünf Zeilen gelesen hat, vergehen
+      zwei Tage. Zwei Tage, in denen die Angebotsfrist weiterläuft und in
+      denen der Vertrieb nichts anderes tut, als zu lesen. Genau hier setzen
+      wir an.
+    actions:
+      - action: waitFor
+        target: { css: '[data-repository-instance-name="SampleEvaluationMatrixTable"] .p-datatable-tbody tr:not(.p-datatable-empty-message)' }
+        timeoutMs: 60000
+      - action: highlight
+        atCue: matrix
+        target: { css: '[data-repository-instance-name="SampleEvaluationMatrixTable"]' }
+        durationMs: 4200
+      - action: highlight
+        atCue: hardstop
+        target: { css: '[data-repository-instance-name="SampleEvaluationMatrixTable"] .p-datatable-tbody tr >> nth=0' }
+        durationMs: 3200
+    assertions:
+      - visible: { css: '[data-repository-instance-name="SampleEvaluationMatrixTable"] .p-datatable-tbody tr >> nth=0' }
+      - textContains:
+          target: { css: '[data-repository-instance-name="SampleEvaluationMatrixTable"]' }
+          value: Technische Anforderungen
+
+  - id: ein-satz-eine-app
+    title: Ein Absatz Umgangssprache, eine fertige Anwendung
+    route: /?app=b1-vibecode
+    narration: >
+      Der Mann, dem das Lesen bevorsteht, ist kein Entwickler. Er arbeitet im
+      Vertrieb. Und statt ein Ticket zu schreiben und auf den nächsten Sprint
+      zu warten, beschreibt er einfach, was er braucht. [cue:prompt] In seiner
+      eigenen Sprache: keine Spezifikation, keine Feldnamen, kein Datenmodell.
+      Er sagt, was hereinkommt, wogegen geprüft werden soll und was am Ende
+      herauskommen muss — eine Empfehlung, eine Punktzahl je Kriterium, und
+      die Belegstelle im Dokument. [cue:start] Ein Klick, und ein Agent
+      beginnt zu arbeiten. Was jetzt passiert, ist der eigentliche Punkt
+      dieser Demo. [cue:build] Der Agent bekommt keinen leeren Werkzeugkasten.
+      Er arbeitet in einer Umgebung, die die IT eingerichtet hat, und die
+      bestimmt, was er überhaupt sehen und erreichen kann: welche
+      Datenquellen, welche Bausteine, welche Modelle. Sehen Sie ihm zu, in
+      mehrfacher Geschwindigkeit. Als Erstes schlägt er in der
+      Plattform-Dokumentation dieses Unternehmens nach, wie Dokumente hier
+      verarbeitet werden. Das ist nicht selbstverständlich: Er denkt sich
+      nichts aus und erfindet keine eigene Lösung, er sucht die vorhandene.
+      Er findet die Verarbeitungs-Pipeline, die die IT betreibt — dieselbe,
+      die auch die anderen Anwendungen im Haus benutzen. Er findet die
+      Bewertungsmatrix, die wir gerade gesehen haben, und übernimmt ihre
+      Gewichte, statt eigene zu erfinden. Und dann setzt er zusammen, wonach
+      gefragt wurde: den Agenten, der die Unterlagen liest und gegen die
+      Kriterien prüft. Das Ergebnisformat, das jede Antwort einhalten muss,
+      damit aus einer Empfehlung kein Fließtext wird, dem man glauben muss.
+      Und die Oberfläche, auf der beides bedienbar wird — Upload,
+      Dokumentenliste, Bewertungspanel. [cue:fertig] Fertig. Aus einem Absatz
+      Umgangssprache ist eine laufende Anwendung geworden, in Minuten statt in
+      Wochen. Niemand hat dafür eine Zeile Code geschrieben, und niemand hat
+      dafür eine Anforderung übersetzt, die unterwegs hätte kaputtgehen
+      können.
+    actions:
+      - action: waitFor
+        target: { role: heading, name: What do you need to get done? }
+        timeoutMs: 60000
+      - action: type
+        atCue: prompt
+        target: { css: '.vibe-create-panel .p-form textarea' }
+        value: >-
+          Ich bekomme Ausschreibungen als PDF-Pakete und muss entscheiden, ob wir
+          anbieten. Bau mir dafür einen Agenten und eine Oberfläche dazu: Ich lade
+          die Dokumente einer Ausschreibung hoch, der Agent liest sie und bewertet
+          sie gegen unsere Bewertungsmatrix — fünf gewichtete Kriterien, zwei davon
+          K.-o.-Kriterien. Als Ergebnis will ich eine Empfehlung Quote oder
+          No-Quote, mit einer Punktzahl je Kriterium und der Belegstelle im
+          Dokument. Er soll alle Quellen nutzen, die wir zu der Ausschreibung
+          haben. Setz das vollständig um, ohne Rückfragen.
+        delayMs: 20
+      - action: click
+        atCue: start
+        target: { css: '.vibe-draft-submit-btn' }
+      # Der Build dauert Minuten und ist von Take zu Take verschieden lang.
+      # Die Sandbox meldet zwischen den Schritten kurz "bereit", deshalb zählt
+      # erst ein Zustand, der fünfzehn Sekunden am Stück hält — eine Pause
+      # zwischen zwei Agentenschritten übersteht das nicht, das Ende schon.
+      - action: waitFor
+        atCue: build
+        offsetMs: 2000
+        target: { css: '.agent-chat-status.status-awaiting_input' }
+        stableMs: 15000
+        timeoutMs: 900000
+        timelapse: true
+        retry:
+          target: { css: ':text("Retry")' }
+          everyMs: 45000
+      # Diese Aktion existiert für das Zeitraffer-Budget. Ohne eine an einen
+      # Cue gebundene Folge-Aktion rafft der Render den Build auf sechs
+      # Sekunden (AUTHORING.md) — der beste Moment des Videos wäre weg. So ist
+      # das Budget der gesprochene Abstand build → fertig, rund eine Minute.
+      - action: highlight
+        atCue: fertig
+        target: { css: '.agent-chat-status' }
+        durationMs: 3500
+    assertions:
+      - visible: { css: '.agent-chat-status' }
+
+  - id: entwurf-nicht-produktion
+    title: Gebaut heißt nicht ausgerollt
+    route: /?app=b1-vibecode
+    narration: >
+      Und hier ist der erste Punkt, an dem sich Build.One von einem
+      Code-Generator unterscheidet. Bei einem Generator hätten wir jetzt
+      Quelltext, den irgendwer prüfen, einchecken und ausrollen müsste.
+      [cue:drafts] Hier ist das Ergebnis stattdessen ein Objekt der Plattform
+      — und es liegt nicht im Unternehmen, sondern in den Entwürfen dieses
+      einen Anwenders. [cue:karte] Status: Entwurf. Besitzer: er selbst. Es
+      läuft, es ist bedienbar, aber es läuft für ihn. Ausgerollt ist es nicht.
+      Damit ein Kollege es überhaupt zu sehen bekommt, muss es veröffentlicht
+      und freigegeben werden — und genau an dieser Stelle schaut die IT
+      darauf, nicht früher und nicht später. Der Vertrieb war in Minuten
+      fertig. Die IT hat trotzdem nichts aus der Hand gegeben. Das ist keine
+      Bremse, das ist die Bedingung dafür, dass man Fachanwender überhaupt
+      bauen lassen kann.
+    actions:
+      - action: click
+        atCue: drafts
+        target: { role: tab, name: Drafts }
+        timeoutMs: 30000
+      - action: waitFor
+        target: { css: '.vibe-app-card' }
+        timeoutMs: 60000
+      - action: highlight
+        atCue: karte
+        target: { css: '.vibe-app-card >> nth=0' }
+        durationMs: 4000
+    assertions:
+      - visible: { css: '.vibe-app-card' }
+
+  # --------------------------------------------------------------------------
+  # TEIL 2 — ES TRÄGT, UND ES IST REGIERT
+  # --------------------------------------------------------------------------
+  - id: belegte-bewertung
+    title: Eine Empfehlung, die ihre Quelle nennt
+    route: /screens/SampleTenderDocumentsScreen?repositionTo=tender-2026-052
+    narration: >
+      Sehen wir uns an, was diese Bausteine leisten, wenn eine echte
+      Ausschreibung darin liegt. Das hier ist eine Modernisierung einer
+      Leitstelle, mit Lastenheft, Preisblatt und dem Schriftverkehr aus dem
+      Einkauf. [cue:dokumente] Die Unterlagen sind bereits eingelesen: Text
+      ausgelesen, in Passagen zerlegt, jede Passage als Vektor abgelegt und
+      indiziert. Vier Schritte, wenige Sekunden je Dokument. Merken Sie sich
+      diese vier Schritte — ich zeige Ihnen gleich, wer sie festgelegt hat.
+      [cue:bewerten] Und jetzt die Bewertung. Der Agent liest die Unterlagen
+      gegen dieselben fünf Kriterien vom Anfang, sucht sich zu jedem die
+      Stellen, die dazu etwas sagen, und wägt ab. [cue:warten] Das läuft
+      gerade wirklich, hier gerafft — kein vorbereitetes Ergebnis, kein
+      Schnitt. In der Realität dauert es etwa anderthalb Minuten — ungefähr
+      die Zeit, die ein Mensch braucht, um das Deckblatt zu lesen und das
+      Inhaltsverzeichnis zu überfliegen. Und während wir warten, lohnt der
+      Blick darauf, was da eigentlich passiert. Der Agent stellt zu jedem der
+      fünf Kriterien seine eigenen Suchanfragen an die Unterlagen, holt sich
+      die Passagen, die dazu etwas sagen, und liest sie im Zusammenhang. Das
+      ist nicht ein Prompt über achtzig Seiten, sondern eine Folge gezielter
+      Fragen an einen durchsuchbaren Bestand. [cue:ergebnis]
+      Und da steht sie: eine Empfehlung, eine Gesamtpunktzahl, und je
+      Kriterium eine eigene Bewertung mit eigener Begründung. [cue:zitat] Und
+      hier ist der Unterschied zu einer KI-Antwort, der man einfach glauben
+      muss: Jede Zeile nennt das Dokument und die Seite, aus der sie stammt.
+      Wer anderer Meinung ist, schlägt nach und widerspricht mit dem Beleg in
+      der Hand. Aus zwei Tagen Lesearbeit sind zwei Minuten geworden. Aber
+      entschieden wird weiterhin von dem Menschen, der hier draufschaut — die
+      Maschine hat gelesen, nicht beschlossen.
+    actions:
+      - action: waitFor
+        target: { css: '[data-repository-instance-name="SampleDocumentsTable"] .p-datatable-tbody tr:not(.p-datatable-empty-message)' }
+        timeoutMs: 90000
+      - action: highlight
+        atCue: dokumente
+        target: { css: '[data-repository-instance-name="SampleDocumentsTable"]' }
+        durationMs: 4000
+      - action: click
+        atCue: bewerten
+        target: { role: tab, name: Analysis }
+      - action: click
+        offsetMs: 1200
+        target: { css: 'button[data-menu-item-id="RunAssessment"]' }
+      # Gemessen 50 s und 153 s. Der Lauf schreibt sein Ergebnis in dieses
+      # Textfeld; auf die Empfehlungszeile zu warten ist eindeutiger, als auf
+      # ein Statusfeld zu warten, das es hier nicht gibt.
+      - action: waitFor
+        atCue: warten
+        target: { css: '[data-repository-instance-name="SampleAnalysisForm"] textarea:has-text("Recommendation")' }
+        timeoutMs: 600000
+        timelapse: true
+      - action: highlight
+        atCue: ergebnis
+        target: { css: '[data-repository-instance-name="SampleAnalysisForm"]' }
+        durationMs: 4000
+      - action: highlight
+        atCue: zitat
+        target: { css: '[data-repository-instance-name="SampleAnalysisForm"] textarea' }
+        durationMs: 4500
+    assertions:
+      - textContains:
+          target: { css: '[data-repository-instance-name="SampleAnalysisForm"] textarea' }
+          value: Recommendation
+
+  - id: die-pipeline-gehoert-der-it
+    title: Die vier Schritte gehören der IT
+    route: /screens/ObjectMaintenance?repositionTo=9d25967d-3329-4379-b495-a978a9e5eba0
+    narration: >
+      Jetzt die andere Seite derselben Plattform — dieselbe Anwendung,
+      gesehen von der IT. [cue:pipeline] Das hier sind die vier Schritte von
+      eben. Sie sind kein Code in irgendeinem Repository, sondern ein Objekt:
+      Auslesen, Zerlegen, Einbetten, Indizieren, verkettet in genau dieser
+      Reihenfolge, und diese Kette ist das, was zur Laufzeit ausgeführt wird.
+      Was Sie hier sehen, ist keine Dokumentation der Pipeline. Es ist die
+      Pipeline. [cue:schritte] Jeder Schritt ist selbst ein Objekt mit eigenem
+      Typ — der Extraktor, der die PDFs liest, das Modell, das die Vektoren
+      rechnet, der Index, der sie durchsuchbar macht. Wer den Extraktor
+      austauscht, weil ein besserer verfügbar ist, ändert das hier, an einer
+      Stelle, für jede Anwendung im Haus, die diese Pipeline benutzt. Ohne
+      Deployment, ohne Migration, ohne dass ein Fachbereich davon erfährt.
+      [cue:besitz] Und daneben steht das, was Governance im Alltag ausmacht:
+      Besitzer, Status, Gültigkeitszeitraum. Der Vertrieb hat diese Pipeline
+      nicht gebaut, und er kann sie auch nicht ändern. Sein Agent durfte sie
+      benutzen — mehr nicht, und das genügt.
+    actions:
+      - action: waitFor
+        target: { css: '[data-p-active="true"] .custom-node' }
+        timeoutMs: 90000
+      - action: highlight
+        atCue: pipeline
+        target: { css: '[data-p-active="true"] .vue-flow >> nth=0' }
+        durationMs: 4500
+      - action: highlight
+        atCue: schritte
+        target: { css: '[data-p-active="true"] .node-container:has(.iconify.i-lucide\:file-scan)' }
+        durationMs: 3500
+      - action: highlight
+        atCue: besitz
+        target: { css: '[data-testid="app-overview"]' }
+        durationMs: 3800
+    assertions:
+      - visible: { css: '[data-p-active="true"] .custom-node' }
+      - visible: { css: '[data-p-active="true"] .custom-edge-label' }
+
+  - id: grenzen-stehen-vorher-fest
+    title: Die Grenzen standen vor dem ersten Prompt
+    route: /screens/ObjectMaintenance?repositionTo=6f8f72bd-7ff8-4a7d-9515-dca3b838e8ab
+    narration: >
+      Und über der Pipeline liegt die Richtlinie. [cue:policy] Sie legt fest,
+      welche Dateitypen überhaupt hereindürfen — PDF, Word, Markdown, Text,
+      E-Mail und sonst nichts. Wie groß eine Datei sein darf: fünfundzwanzig
+      Megabyte. Wie viele Seiten: fünfhundert. Mit welchem Modell eingebettet
+      wird, und welche Pipeline läuft. Das ist die Stelle, an der ein
+      Unternehmen entscheidet, was seine KI überhaupt zu sehen bekommt.
+      [cue:punkt] Und all diese Grenzen standen fest, bevor der Vertrieb den
+      ersten Satz getippt hat. Er konnte sie nicht überschreiten — nicht,
+      weil ihn ein Freigabeprozess aufgehalten hätte, sondern weil es die
+      Bausteine gar nicht anders gibt. Das ist der ganze Gedanke hinter
+      Build.One. Ein Fachanwender hat sich in Minuten eine Anwendung gebaut,
+      die Dokumente versteht und begründet entscheidet. Er musste nichts über
+      Vektoren, Einbettungen oder Pipelines wissen. Und er konnte nichts tun,
+      was die IT nicht vorher erlaubt hat. Jeder baut. Die IT behält die
+      Regeln.
+    actions:
+      - action: waitFor
+        target: { css: '[data-testid="app-overview"]' }
+        timeoutMs: 90000
+      - action: highlight
+        atCue: policy
+        target: { css: '[data-testid="app-overview"]' }
+        durationMs: 5000
+      - action: highlight
+        atCue: punkt
+        target: { css: '[data-testid="app-overview-owner"]' }
+        durationMs: 3500
+    assertions:
+      - visible: { css: '[data-testid="app-overview"]' }
