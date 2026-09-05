@@ -4,7 +4,7 @@
  * goes through assertSafeId() and every path through safeChildPath().
  */
 import { spawn } from 'node:child_process';
-import { readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import { IServerEventsHandler } from '@buildone/app-server-tslib/utils';
@@ -256,15 +256,25 @@ export class DemoFactoryMaterializer implements IServerEventsHandler<DemoRow | S
       return { written: false, hash: hashDocument(previous) };
     }
 
+    // The shipped demos bring their directory with them in the image; one
+    // created or imported through the Studio exists only in the data sources
+    // until this line, so `demos/<id>/` has to be made before the file can be
+    // written. Without it every new demo failed here with ENOENT — including
+    // the import that is meant to be the transfer format.
+    const directory = path.dirname(file);
+    const directoryExisted = previous !== null || (await stat(directory).then(() => true, () => false));
+    await mkdir(directory, { recursive: true });
+
     const text = YAML.stringify(document, { lineWidth: 0 });
     await writeFile(file, text, 'utf8');
 
     const { code, output } = await this.runValidate(demoId);
     if (code !== 0) {
       // Put back what was there. A demo the Studio refuses to accept must not
-      // be the demo the next `yarn demo:record` picks up.
-      if (previous === null) await rm(file, { force: true });
-      else await writeFile(file, previous, 'utf8');
+      // be the demo the next `yarn demo:record` picks up — and a directory this
+      // call created for it goes with it, so a rejected import leaves nothing.
+      if (previous !== null) await writeFile(file, previous, 'utf8');
+      else await rm(directoryExisted ? file : directory, { recursive: true, force: true });
       throw new Error(`The demo no longer validates:\n${output.trim()}`);
     }
 
