@@ -285,7 +285,7 @@
             </p>
           </div>
 
-          <div v-else class="dfs-fields">
+          <div v-else-if="inspectorTab === 'Actions'" class="dfs-fields">
             <div class="dfs-json-head">
               <label>Actions (JSON)</label><span>{{ scene?.actions?.length || 0 }} actions</span>
             </div>
@@ -308,6 +308,92 @@
             />
             <p class="dfs-help" :class="{ 'dfs-bad': jsonError }">
               {{ jsonError || 'Prefer demoId targets; the demo is validated on save.' }}
+            </p>
+          </div>
+
+          <div v-else class="dfs-fields">
+            <p class="dfs-help">These belong to the demo, not to the scene in view — every scene records with them.</p>
+            <label
+              >Base URL variable<input
+                :value="demo?.settings?.baseUrl?.env"
+                :disabled="!demo"
+                placeholder="B1_BASE_URL"
+                @input="editSetting(['baseUrl', 'env'], $event)"
+            /></label>
+            <label
+              >Base URL fallback<input
+                :value="demo?.settings?.baseUrl?.fallback"
+                :disabled="!demo"
+                placeholder="https://host/"
+                @input="editSetting(['baseUrl', 'fallback'], $event)"
+            /></label>
+            <p class="dfs-help">
+              The recorder uses the variable when the host has it set, and the fallback otherwise. Point the fallback at
+              a branch deployment or a forwarded Codespace port to record a feature before it ships; only
+              <code>B1_BASE_URL</code> can be redirected from the Settings tab, so a demo naming its own variable is
+              governed by its fallback.
+            </p>
+            <div class="dfs-pair">
+              <label
+                >Viewport width<input
+                  type="number"
+                  :value="demo?.settings?.viewport?.width"
+                  :disabled="!demo"
+                  @input="editNumberSetting(['viewport', 'width'], $event)"
+              /></label>
+              <label
+                >Viewport height<input
+                  type="number"
+                  :value="demo?.settings?.viewport?.height"
+                  :disabled="!demo"
+                  @input="editNumberSetting(['viewport', 'height'], $event)"
+              /></label>
+            </div>
+            <div class="dfs-pair">
+              <label
+                >Frames per second<input
+                  type="number"
+                  :value="demo?.settings?.fps"
+                  :disabled="!demo"
+                  @input="editNumberSetting(['fps'], $event)"
+              /></label>
+              <label
+                >Language<input
+                  :value="demo?.settings?.language"
+                  :disabled="!demo"
+                  placeholder="de"
+                  @input="editSetting(['language'], $event)"
+              /></label>
+            </div>
+            <div class="dfs-pair">
+              <label
+                >Hold before (ms)<input
+                  type="number"
+                  :value="demo?.settings?.holdBeforeMs"
+                  :disabled="!demo"
+                  @input="editNumberSetting(['holdBeforeMs'], $event)"
+              /></label>
+              <label
+                >Hold after (ms)<input
+                  type="number"
+                  :value="demo?.settings?.holdAfterMs"
+                  :disabled="!demo"
+                  @input="editNumberSetting(['holdAfterMs'], $event)"
+              /></label>
+            </div>
+            <div class="dfs-json-head"><label>Settings (JSON)</label><span>the whole block</span></div>
+            <textarea
+              class="dfs-code"
+              rows="14"
+              :value="settingsText"
+              :disabled="!demo"
+              @input="editSettingsJson($event)"
+            />
+            <p class="dfs-help" :class="{ 'dfs-bad': jsonError }">
+              {{
+                jsonError ||
+                'The same object the fields above write to — for cursor timings, branding and narration details that have no field of their own.'
+              }}
             </p>
           </div>
 
@@ -659,7 +745,7 @@ const views = [
   { id: 'runs', label: 'Runs', icon: '↗' },
   { id: 'settings', label: 'Settings', icon: '⚙' }
 ];
-const tabs = ['Scene', 'Voice-over', 'Actions'];
+const tabs = ['Scene', 'Voice-over', 'Actions', 'Demo'];
 
 // ---- Data sources -----------------------------------------------------------
 
@@ -773,6 +859,7 @@ const validationLabel = computed(() =>
 );
 const actionsText = computed(() => JSON.stringify(scene.value?.actions ?? [], null, 2));
 const assertionsText = computed(() => JSON.stringify(scene.value?.assertions ?? [], null, 2));
+const settingsText = computed(() => JSON.stringify(demo.value?.settings ?? {}, null, 2));
 const sceneCues = computed(() => cuesIn(scene.value?.narration || ''));
 const allCues = computed(() => [
   ...new Set((demo.value?.scenes || []).flatMap((item) => cuesIn(item.narration || '')))
@@ -1086,12 +1173,53 @@ function editSetting(pathParts: string[], event: Event) {
   markDirty();
 }
 
+/**
+ * Same as {@link editSetting} for a field the schema types as a number.
+ *
+ * An empty or half-typed box is left alone rather than written as 0 or NaN: the
+ * demo is validated on save, and a viewport must not fail it between the first
+ * digit and the second.
+ */
+function editNumberSetting(pathParts: string[], event: Event) {
+  if (!demo.value) return;
+  const raw = (event.target as HTMLInputElement).value.trim();
+  if (raw === '') return;
+  const value = Number(raw);
+  if (!Number.isFinite(value)) return;
+  let node: Record<string, any> = demo.value.settings;
+  for (const key of pathParts.slice(0, -1)) node = node[key] ??= {};
+  node[pathParts[pathParts.length - 1] ?? ''] = value;
+  markDirty();
+}
+
 function editToggle(pathParts: string[], event: Event) {
   if (!demo.value) return;
   let node: Record<string, any> = demo.value.settings;
   for (const key of pathParts.slice(0, -1)) node = node[key] ??= {};
   node[pathParts[pathParts.length - 1] ?? ''] = (event.target as HTMLInputElement).checked;
   markDirty();
+}
+
+/**
+ * The demo's whole settings block, for the parts with no field of their own —
+ * cursor timings, branding colours, narration voice settings, pronunciations.
+ * Same rule as the scene JSON editors: invalid text stays visible and is not
+ * committed, so a stray comma cannot empty the object.
+ */
+function editSettingsJson(event: Event) {
+  if (!demo.value) return;
+  const text = (event.target as HTMLTextAreaElement).value;
+  try {
+    const parsed: unknown = JSON.parse(text || '{}');
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+      throw new TypeError('settings must be an object');
+    }
+    demo.value.settings = parsed as Record<string, any>;
+    jsonError.value = '';
+    markDirty();
+  } catch (parseError) {
+    jsonError.value = (parseError as Error).message;
+  }
 }
 
 /** Parse as you type, but only commit valid JSON — the textarea keeps invalid text visible. */
@@ -1866,6 +1994,13 @@ onBeforeUnmount(stopPolling);
   gap: 0.2rem;
   font-size: 0.75rem;
   opacity: 0.85;
+}
+/* Two numbers that belong together — a viewport, a pair of holds — read as one
+   control rather than two stacked rows. */
+.dfs-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
 }
 .dfs-fields input,
 .dfs-fields select,
