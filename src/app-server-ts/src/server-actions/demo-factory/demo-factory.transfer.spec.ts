@@ -26,10 +26,17 @@ class FakeStore {
     return [...(this.tables.get(name)?.values() ?? [])] as T[];
   }
 
+  /** Set to make the next commit against that data source throw — the materializer's job in production. */
+  failOn: string | null = null;
+
   async commit<T extends object>(
     name: string,
     changes: { createdRecords?: T[]; updatedRecords?: T[]; deletedRecords?: T[] }
   ): Promise<void> {
+    if (this.failOn === name) {
+      this.failOn = null;
+      throw new Error(`ENOENT: no such file or directory, open 'demos/x/demo.yaml' (${name})`);
+    }
     const table = this.tables.get(name) ?? new Map<string, Record<string, unknown>>();
     this.tables.set(name, table);
     this.commits.push({
@@ -146,6 +153,54 @@ describe('DemoFactoryTransfer', () => {
   it('rejects text that is not a demo document', async () => {
     const { transfer } = makeTransfer();
     await expect(transfer.importYaml('- just\n- a list\n')).rejects.toThrow(/YAML mapping/);
+  });
+
+  /**
+   * The demo row is committed before the scenes, so a scene commit that throws
+   * used to leave a demo with none. That row cannot validate or run, and
+   * `reconcileDemos` reads its `updatedAt` as a Studio edit — so it would go on
+   * hiding the demo.yaml it shares an id with. Observed on a deployment: an
+   * import failed inside the materializer and left exactly that behind.
+   */
+  it('leaves nothing behind when a new demo fails halfway through', async () => {
+    const { store, transfer } = makeTransfer();
+    store.failOn = 'DemoFactorySceneDSO';
+
+    await expect(transfer.saveDocument(document('demo', ['one']))).rejects.toThrow(/ENOENT/);
+
+    expect(await store.read<DemoRow>('DemoFactoryDemoDSO')).toEqual([]);
+    expect(await store.read<SceneRow>('DemoFactorySceneDSO')).toEqual([]);
+  });
+
+  it('restores the previous demo row when an update fails halfway through', async () => {
+    const { store, transfer } = makeTransfer();
+    await transfer.saveDocument({ ...document('demo', ['one']), title: 'As stored' });
+    store.failOn = 'DemoFactorySceneDSO';
+
+    await expect(transfer.saveDocument({ ...document('demo', ['one']), title: 'Half written' })).rejects.toThrow(
+      /ENOENT/
+    );
+
+    const [after] = await store.read<DemoRow>('DemoFactoryDemoDSO');
+    expect(after.title).toBe('As stored');
+  });
+
+  it('deletes a demo, and treats deleting an absent one as done', async () => {
+    const { store, transfer } = makeTransfer();
+    await transfer.saveDocument(document('demo', ['one']));
+
+    expect(await transfer.deleteDemo('demo')).toEqual({ demoId: 'demo', existed: true });
+    expect(await store.read<DemoRow>('DemoFactoryDemoDSO')).toEqual([]);
+
+    // The scene rows go with it through the materializer's delete hook, which
+    // this store does not run — so what is asserted here is the demo row and
+    // the answer, not the cascade.
+    expect(await transfer.deleteDemo('demo')).toEqual({ demoId: 'demo', existed: false });
+  });
+
+  it('refuses a demo id that would escape the demos directory', async () => {
+    const { transfer } = makeTransfer();
+    await expect(transfer.deleteDemo('../escape')).rejects.toThrow();
   });
 });
 

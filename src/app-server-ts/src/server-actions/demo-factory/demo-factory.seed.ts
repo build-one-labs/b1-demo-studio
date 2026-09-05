@@ -310,12 +310,21 @@ export class DemoFactorySeedService implements OnModuleInit {
 
       if (current && current.sourceHash === hash) continue;
 
-      if (current && current.updatedAt !== null) {
+      // A row with no scenes is not a Studio edit worth protecting — it is what
+      // an interrupted write leaves behind. It can never validate (the schema
+      // wants at least one scene) and never run, so letting it hold its ground
+      // would hide the file it shares an id with, permanently and silently.
+      const hasScenes = existingScenes.some((row) => row.demoId === id);
+
+      if (current && current.updatedAt !== null && hasScenes) {
         if (!current.driftedFromFile) {
           updatedDemos.push({ ...current, driftedFromFile: true });
           this.logger.warn(`${id} was edited in the Studio and its demo.yaml has changed — keeping the Studio version`);
         }
         continue;
+      }
+      if (current && current.updatedAt !== null && !hasScenes) {
+        this.logger.warn(`${id} has no scenes — refreshing it from demo.yaml`);
       }
 
       const rows = demoToRows(document, hash);

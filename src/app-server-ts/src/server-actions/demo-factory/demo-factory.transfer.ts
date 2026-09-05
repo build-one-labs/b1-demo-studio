@@ -142,15 +142,59 @@ export class DemoFactoryTransfer {
       : rows.demo;
     await this.store.commit(DSO.demo, existingDemo ? { updatedRecords: [demoRow] } : { createdRecords: [demoRow] });
 
-    await this.store.commit(DSO.scene, {
-      createdRecords: rows.scenes.filter((row) => !existingSceneIds.has(row.id)),
-      updatedRecords: rows.scenes.filter((row) => existingSceneIds.has(row.id))
-    });
-    const removed = existingScenes.filter((row) => !wantedSceneIds.has(row.id));
-    if (removed.length > 0) await this.store.commit(DSO.scene, { deletedRecords: removed });
+    // From here the demo row is already in the store, so a scene commit that
+    // throws would leave a demo without scenes behind. That is not merely
+    // incomplete: it can never validate or run, and `reconcileDemos` reads its
+    // `updatedAt` as a Studio edit and keeps it in front of the demo.yaml it
+    // shadows — so an import that failed once would go on hiding the file it
+    // was importing. Undo the row instead and let the caller see the error.
+    let removed: SceneRow[] = [];
+    try {
+      await this.store.commit(DSO.scene, {
+        createdRecords: rows.scenes.filter((row) => !existingSceneIds.has(row.id)),
+        updatedRecords: rows.scenes.filter((row) => existingSceneIds.has(row.id))
+      });
+      removed = existingScenes.filter((row) => !wantedSceneIds.has(row.id));
+      if (removed.length > 0) await this.store.commit(DSO.scene, { deletedRecords: removed });
+    } catch (error) {
+      await this.undoDemoRow(demoRow, existingDemo).catch((undoError: unknown) => {
+        // Reported, not thrown: the original failure is the one worth raising.
+        this.logger.error(`Could not undo the demo row for ${document.id}: ${String(undoError)}`);
+      });
+      throw error;
+    }
 
     this.logger.log(`Saved ${document.id}: ${rows.scenes.length} scene(s), ${removed.length} removed`);
     return { demoId: document.id, scenes: rows.scenes.length };
+  }
+
+  /**
+   * Put the demo row back the way it was before {@link saveDocument} touched it.
+   *
+   * Deleting is enough for a demo that did not exist: the materializer's delete
+   * hook takes any scene rows that did land, and the directory, with it.
+   */
+  private async undoDemoRow(written: DemoRow, previous: DemoRow | undefined): Promise<void> {
+    if (previous) await this.store.commit(DSO.demo, { updatedRecords: [previous] });
+    else await this.store.commit(DSO.demo, { deletedRecords: [written] });
+  }
+
+  /**
+   * Remove a demo with everything that belongs to it.
+   *
+   * One commit: the materializer's delete hook cascades to the scene rows and
+   * removes `demos/<id>/`, so there is no order here that could half-finish.
+   * Deleting a demo that is not there is not an error — the caller wanted it
+   * gone, and it is.
+   */
+  async deleteDemo(demoId: string): Promise<{ demoId: string; existed: boolean }> {
+    assertSafeId(demoId, 'demo id');
+    const demo = (await this.store.read<DemoRow>(DSO.demo)).find((row) => row.id === demoId);
+    if (!demo) return { demoId, existed: false };
+
+    await this.store.commit(DSO.demo, { deletedRecords: [demo] });
+    this.logger.log(`Deleted ${demoId}`);
+    return { demoId, existed: true };
   }
 
   private async assembleDocument(demoId: string): Promise<DemoDocument> {

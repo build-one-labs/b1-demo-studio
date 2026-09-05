@@ -62,6 +62,7 @@
         <button class="dfs-icon" title="Create demo" @click="newDemoOpen = true">＋</button>
         <button class="dfs-icon" title="Export demo.yaml" :disabled="!demo" @click="exportDemoYaml">⤓</button>
         <button class="dfs-icon" title="Import demo.yaml" @click="importOpen = true">⤒</button>
+        <button class="dfs-icon danger" title="Delete demo" :disabled="!demo || busy" @click="deleteDemo">🗑</button>
         <button class="dfs-icon" title="Ask the Demo Creator agent" @click="agentOpen = true">🗨</button>
         <span class="dfs-spacer" />
         <span class="dfs-badge" :class="validation">{{ validationLabel }}</span>
@@ -1291,6 +1292,29 @@ async function importDemoYaml() {
 }
 
 /**
+ * Delete the open demo, with its scenes and its directory.
+ *
+ * Confirmed because it cannot be undone, and reached from the toolbar rather
+ * than the scene list: this removes the whole demo, not the scene in view.
+ * It is also the way back from a demo an interrupted import left unusable.
+ */
+async function deleteDemo() {
+  const open = demo.value;
+  if (!open || busy.value) return;
+  if (!window.confirm(`Delete "${open.title}" with all its scenes? This cannot be undone.`)) return;
+
+  try {
+    await call<{ demoId: string; existed: boolean }>('delete-demo', { demoId: open.id });
+    await Promise.all([demoDso.value?.fetchRecords(), sceneDso.value?.fetchRecords()]);
+    const next = demos.value.find((entry) => entry.id !== open.id);
+    if (next) demoDso.value?.repositionTo(next.id);
+    notify(`Deleted ${open.id}.`);
+  } catch (error) {
+    notify((error as Error).message, true);
+  }
+}
+
+/**
  * Start a Demo Creator conversation against this environment and open it.
  *
  * The proxy resolves the agent's model, prompt, skills and MCP servers from
@@ -1971,6 +1995,14 @@ onBeforeUnmount(stopPolling);
   background: transparent;
   color: inherit;
   cursor: pointer;
+}
+/* Same red as .dfs-btn.danger — a destructive control reads as one wherever it sits. */
+.dfs-icon.danger {
+  color: #f04438;
+}
+.dfs-icon:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
 }
 
 .dfs-modal {
