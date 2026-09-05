@@ -262,7 +262,12 @@ export class DemoFactoryMaterializer implements IServerEventsHandler<DemoRow | S
     // written. Without it every new demo failed here with ENOENT — including
     // the import that is meant to be the transfer format.
     const directory = path.dirname(file);
-    const directoryExisted = previous !== null || (await stat(directory).then(() => true, () => false));
+    const directoryExisted =
+      previous !== null ||
+      (await stat(directory).then(
+        () => true,
+        () => false
+      ));
     await mkdir(directory, { recursive: true });
 
     const text = YAML.stringify(document, { lineWidth: 0 });
