@@ -358,6 +358,17 @@ export class DemoFactoryStudio {
   }
 
   /**
+   * Remove a demo entirely — the only way back from a demo that must not stay,
+   * including one an interrupted import left without scenes.
+   */
+  @B1Action({ description: 'Delete a demo with its scenes and its directory' })
+  async deleteDemo({ body: { demoId = '' } = {} }: B1ActionPayload<{ demoId?: string }> = {}) {
+    this.assertOperator();
+    if (!demoId.trim()) throw new Error('Pass the demo id as `demoId`');
+    return this.transfer.deleteDemo(demoId.trim());
+  }
+
+  /**
    * The newest run of a demo, so a remote renderer can find what to fetch.
    * Read-only; the run's files themselves come through the media routes.
    */
