@@ -22,7 +22,7 @@
       "objectMasterGuid": "2a34c785-bbd7-439f-aacd-c5e24927f26c",
       "objectSequence": 1,
       "attributes": {
-        "actionParameter": "DemoFactoryDemosScreen",
+        "actionParameter": "DemoFactoryDemoSearch",
         "actionType": "Launch",
         "label": "Demos",
         "smallImage": "i-lucide-layout-grid",
