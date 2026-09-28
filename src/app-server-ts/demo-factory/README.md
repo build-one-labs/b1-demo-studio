@@ -286,6 +286,20 @@ session is authenticated, with nothing to mint and nothing to paste. A
 fallback, so `http://localhost:8080` alone records the *default* app and the
 screen never appears. Use `http://localhost:8080/?app=sample-app`.
 
+**The render is standard limited-range video.** Remotion's JPEG frames made
+the encoder emit full-range `yuvj420p`, which most players (browsers,
+QuickTime, Teams) show as limited range: light greys — panel borders, card
+shadows, input frames — flattened into the background and the whole UI looked
+washed out. `render.mjs` pins `pixelFormat: 'yuv420p'`, `colorSpace: 'bt709'`
+and lossless PNG frames; `ffprobe` on a finished MP4 should report
+`pix_fmt=yuv420p` and `color_range=tv`.
+
+**Highlights draw inside the element.** B1 panels clip their content at the
+edge, and a card usually sits flush with its split pane, so a frame drawn
+outside the element lost its top (or every) edge. `highlight` now insets the
+outline and the pulse; highlight the card (`… .p-panel`) rather than the
+control inside it to frame the whole panel.
+
 **Rendering needs a capped frame cache.** On a 16 GB workspace an uncapped
 render dies partway with `Compositor exited with signal SIGTERM`:
 

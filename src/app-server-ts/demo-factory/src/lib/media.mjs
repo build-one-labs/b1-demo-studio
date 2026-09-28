@@ -24,7 +24,7 @@ export const normalizeVideo = async (source, target) => {
   if (!current) {
     await execFileAsync(ffmpeg, [
       '-y', '-v', 'error', '-i', source,
-      '-an', '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '18',
+      '-an', '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '12',
       '-pix_fmt', 'yuv420p', '-movflags', '+faststart', target,
     ], {maxBuffer: 4 * 1024 * 1024});
   }

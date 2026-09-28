@@ -97,7 +97,12 @@ export const renderDemo = async ({demo, manifest}) => {
     outputLocation: outputFile,
     inputProps,
     overwrite: true,
-    crf: 20,
+    crf: 12,
+    // Standard limited-range video: full-range yuvj420p is shown washed out by
+    // most players, which flattens light borders and shadows into the background.
+    pixelFormat: 'yuv420p',
+    colorSpace: 'bt709',
+    imageFormat: 'png',
     concurrency,
     onProgress: ({progress, renderedFrames, encodedFrames}) => {
       const percent = Math.floor(progress * 100);
