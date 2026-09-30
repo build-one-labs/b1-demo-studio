@@ -1,13 +1,6 @@
-
 import { DrizzleModule } from '@buildone/app-server-tslib/drizzle';
 import { FrameworkModule } from '@buildone/app-server-tslib/framework';
-import {
-  ApplicationSettingsModule,
-  ConnectorModule,
-  RepositoryModule,
-  RequestContextModule,
-  NotificationModule
-} from '@buildone/app-server-tslib/modules';
+import { ApplicationSettingsModule, ConnectorModule, RequestContextModule } from '@buildone/app-server-tslib/modules';
 import { HttpModule } from '@nestjs/axios';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
@@ -24,7 +17,6 @@ import { ServerActionsModule } from './server-actions/server-actions.module';
 
 @Module({
   imports: [
-    NotificationModule,
     ConfigModule.forRoot({ isGlobal: true }),
     ApplicationSettingsModule.forRoot({
       configs: [appSettingsConfig]
@@ -45,12 +37,13 @@ import { ServerActionsModule } from './server-actions/server-actions.module';
         { provide: 'salesforce', useClass: SalesforceConnector },
         { provide: 'spacex', useClass: SpaceXConnector }
       ],
-      imports: [HttpModule, RepositoryModule]
+      imports: [HttpModule]
     }),
     EventsModule,
     DiscoveryModule,
     ApiModule,
     ServerActionsModule,
     FrameworkModule
-  ]})
+  ]
+})
 export class AppModule {}
