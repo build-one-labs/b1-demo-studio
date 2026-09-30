@@ -37,6 +37,7 @@ runs:
           echo "ERROR: Failed to get CodeArtifact token"
           exit 1
         fi
+        echo "::add-mask::$TOKEN"
         echo "CODEARTIFACT_AUTH_TOKEN=$TOKEN" >> "$GITHUB_ENV"
 
     - name: Setup Node.js

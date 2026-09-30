@@ -1,0 +1,15 @@
+{
+  // Workspace watch path only, selected by nest-cli.dev.json. Keeps a .tsbuildinfo
+  // inside the gitignored dist/ so the build that start.sh needs for
+  // `node dist/migrate.js` and the `nest start --watch` compile that
+  // follows it do not each type-check the project from cold.
+  //
+  // Released builds use tsconfig.build.json via nest-cli.json, which stays
+  // non-incremental and deletes dist/ first.
+  "extends": "./tsconfig.build.json",
+
+  "compilerOptions": {
+    "incremental": true,
+    "tsBuildInfoFile": "./dist/.tsbuildinfo"
+  }
+}

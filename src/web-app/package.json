@@ -11,17 +11,17 @@
     "lint:fix": "([ -f .nuxt/eslint.config.mjs ] || nuxt prepare) && eslint . --fix"
   },
   "dependencies": {
-    "@buildone/web-framework-layer": "24.3.0-VG.420",
+    "@buildone/web-framework-layer": "24.3.0-VG.465",
     "@nuxt/image": "1.10.0",
-    "@nuxt/ui": "^4.5.1",
-    "@pinia/nuxt": "^0.11.1",
-    "@primevue/forms": "^4.3.6",
-    "@primevue/nuxt-module": "^4.3.6",
+    "@nuxt/ui": "^4.10.0",
+    "@pinia/nuxt": "^0.11.3",
+    "@primevue/forms": "^4.5.5",
+    "@primevue/nuxt-module": "^4.5.5",
     "leaflet": "^1.9.4",
-    "nuxt": "^4.0.0",
-    "pinia": "^3.0.3",
-    "vue": "^3.5.22",
-    "vue-router": "^4.5.0"
+    "nuxt": "^4.5.2",
+    "pinia": "^3.0.4",
+    "vue": "^3.5.41",
+    "vue-router": "^5.2.0"
   },
   "devDependencies": {
     "@nuxt/eslint": "^1.3.0",

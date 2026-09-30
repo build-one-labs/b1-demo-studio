@@ -1,12 +1,6 @@
 {
   "$schema": "deployment.config.schema.json",
   "services": {
-    "swat_app_server_ts": {
-      "environment": {
-        "B1_DEFAULT_APP": "${B1_DEFAULT_APP:-b1-demo-factory}",
-        "REPOSITORY": "build-one-labs/b1-demo-studio"
-      }
-    },
     "app_server_ts": {
       "environment": {
         "B1_BASE_URL": "${B1_BASE_URL:-https://${STACK}.${DOMAIN}}",
@@ -15,7 +9,9 @@
         "DEMO_CACHE_DIR": "/data/demo-factory/cache",
         "ELEVENLABS_API_KEY": "${ELEVENLABS_API_KEY:-}",
         "ELEVENLABS_VOICE_ID": "${ELEVENLABS_VOICE_ID:-}",
-        "DEMO_FACTORY_OPERATORS": "${DEMO_FACTORY_OPERATORS:-}"
+        "DEMO_FACTORY_OPERATORS": "${DEMO_FACTORY_OPERATORS:-}",
+        "B1_DEFAULT_APP": "${B1_DEFAULT_APP:-b1-demo-factory}",
+        "REPOSITORY": "build-one-labs/b1-demo-studio"
       },
       "volumes": {
         "/data/demo-factory": "demo_factory_data"

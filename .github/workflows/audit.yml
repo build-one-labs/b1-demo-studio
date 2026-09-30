@@ -13,7 +13,7 @@ jobs:
   audit:
     env:
       B1_ORG_API_KEY: ${{ secrets.B1_ORG_API_KEY }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v6
       # Provisioned secrets from the auth server's store, with one organization
@@ -45,7 +45,7 @@ jobs:
         id: audit
         if: always() && steps.collect-audit.outcome == 'success'
         run: |
-          node node_modules/@buildone/swat-cli/scripts/reports/audit-report.mjs \
+          yarn b1 report audit \
             --input audit-reports/audit.ndjson \
             --out-dir audit-reports \
             --fail-on critical \
@@ -62,7 +62,7 @@ jobs:
       - name: Report outdated dependencies
         if: always() && steps.collect-ncu.outcome == 'success'
         run: |
-          node node_modules/@buildone/swat-cli/scripts/reports/outdated-report.mjs \
+          yarn b1 report outdated \
             --input audit-reports/ncu.json \
             --out-dir audit-reports \
             --root .

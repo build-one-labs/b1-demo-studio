@@ -89,6 +89,10 @@ ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 \
 # they bundle at render time, and the demo storyboards. Its dependencies are
 # this server's own, already in /workspace/node_modules above.
 COPY --chown=node:node ./src/app-server-ts/demo-factory ./demo-factory
+COPY --chown=node:node ./node_modules/@buildone/swat-data /data/b1
+COPY --chown=node:node ./src/data /data/app
+
+RUN mkdir -p /app-data/uploads && chown -R node:node /app-data
 
 USER node
 CMD ["./start.sh"]

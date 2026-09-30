@@ -125,7 +125,7 @@ jobs:
   deploy:
     env:
       B1_ORG_API_KEY: ${{ secrets.B1_ORG_API_KEY }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v6
         with:
@@ -152,6 +152,25 @@ jobs:
             VERSION=$(git describe --tags --abbrev=0)
           fi
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+      # The release's own files. This run, its local actions and the CLI installed
+      # above come from the ref it was dispatched on — the default branch, because
+      # a release tagged before this workflow existed has neither the workflow nor
+      # the actions it calls. What is deployed must still be exactly what was
+      # released, so the working tree moves to the tag before anything reads it.
+      # node_modules is untracked and stays. The Release & Deploy screen dispatches
+      # on the default branch only when it finds this step, so keep its id.
+      - name: Check out the release
+        id: checkout-release
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          if ! TARGET=$(git rev-parse --verify --quiet "refs/tags/${VERSION}^{commit}"); then
+            echo "::error::There is no tag ${VERSION} in this repository to deploy."
+            exit 1
+          fi
+          if [ "$(git rev-parse HEAD)" != "${TARGET}" ]; then
+            git -c advice.detachedHead=false checkout "${TARGET}"
+          fi
       - name: Generate deployment files
         env:
           WORKSPACE_ROOT: .
