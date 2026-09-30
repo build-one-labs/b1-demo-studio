@@ -1,0 +1,80 @@
+{
+  "createdAt": "2026-09-05 15:27:07.793205",
+  "createdBy": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "howToUse": "",
+  "label": "",
+  "moduleGuid": "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4",
+  "objectDescription": "Scene list of a demo in the native Studio — the Scenes tab of DemoFactoryDemoMaintenance, bound to DemoFactorySceneDSO and filtered to the demo via the Join link. The title is a link that opens the modal DemoFactorySceneMaintenance positioned to the scene; the hidden id column carries the key. Replaces the dfs-scenes list of the former DemoFactoryStudio component (issue #17).",
+  "objectMasterGuid": "863ddab1-49cd-42dd-a78e-260969f25745",
+  "objectName": "DemoFactorySceneGrid",
+  "objectTypeGuid": "63d81ac2-8555-44e1-9032-7064448799c4",
+  "owner": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "status": "Active",
+  "templateObject": false,
+  "attributes": {
+    "filterMode": "global",
+    "headerLabel": "Scenes"
+  },
+  "instances": [
+    {
+      "instanceName": "sequence",
+      "objectInstanceGuid": "537e9f7c-b0dc-409c-b5f7-3294bb233713",
+      "objectMasterGuid": "11ba27c0-a259-4df5-8752-2a7fd4f08242",
+      "objectSequence": 1,
+      "attributes": {
+        "align": "right",
+        "dataType": "integer",
+        "label": "#"
+      },
+      "instances": []
+    },
+    {
+      "instanceName": "title",
+      "objectInstanceGuid": "66d921ec-f1c0-4c5c-b21d-07df95fa2e79",
+      "objectMasterGuid": "11ba27c0-a259-4df5-8752-2a7fd4f08242",
+      "objectSequence": 2,
+      "attributes": {
+        "action": "@8bc198e6-1afb-aebb-da14-48a39869c351{ \"containerName\": \"DemoFactorySceneMaintenance\", \"repositionTo\": eventSource.parent.selectedRecord.id }",
+        "label": "Title",
+        "visualizationType": "LINK"
+      },
+      "instances": []
+    },
+    {
+      "instanceName": "route",
+      "objectInstanceGuid": "f29dd22c-f858-4604-ba8f-9ad0c0045548",
+      "objectMasterGuid": "11ba27c0-a259-4df5-8752-2a7fd4f08242",
+      "objectSequence": 3,
+      "attributes": {
+        "label": "Route"
+      },
+      "instances": []
+    },
+    {
+      "instanceName": "sceneId",
+      "objectInstanceGuid": "df5620da-9371-4dc1-abd1-2c371062c554",
+      "objectMasterGuid": "11ba27c0-a259-4df5-8752-2a7fd4f08242",
+      "objectSequence": 4,
+      "attributes": {
+        "label": "Scene id"
+      },
+      "instances": []
+    },
+    {
+      "instanceName": "id",
+      "objectInstanceGuid": "326c820f-8829-4646-a795-db0a6b75c15e",
+      "objectMasterGuid": "11ba27c0-a259-4df5-8752-2a7fd4f08242",
+      "objectSequence": 5,
+      "attributes": {
+        "enabled": false,
+        "label": "Key"
+      },
+      "instances": []
+    }
+  ],
+  "links": [],
+  "tags": [],
+  "tenantId": null,
+  "validFrom": null,
+  "validUntil": null
+}

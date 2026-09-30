@@ -1,0 +1,102 @@
+{
+  "createdAt": "2026-09-05 16:00:29.750569",
+  "createdBy": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "howToUse": "",
+  "label": "",
+  "moduleGuid": "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4",
+  "objectDescription": "Form of the New demo dialog: the new demo's id and title, and which demo it starts from (the one selected in the search grid, else the blank starter). Not bound to a data source — Create hands a whole document to save-demo, the only write path that validates (issue #17, step 3).",
+  "objectMasterGuid": "8f2f075b-1826-484d-be42-a03427e165b7",
+  "objectName": "DemoFactoryDemoCreateForm",
+  "objectTypeGuid": "130726b3-7c42-4f22-a324-cc07f3d21feb",
+  "owner": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "status": "Active",
+  "templateObject": false,
+  "attributes": {
+    "headerLabel": "New demo"
+  },
+  "instances": [
+    {
+      "instanceName": "newDemoFieldset",
+      "objectInstanceGuid": "98ae0b79-cbc7-4ef1-9dd5-95979e349f0b",
+      "objectMasterGuid": "4002bae8-5bac-45f1-82b3-0d91f7381296",
+      "objectSequence": 1,
+      "attributes": {
+        "label": "New demo"
+      },
+      "instances": [
+        {
+          "instanceName": "id",
+          "objectInstanceGuid": "5eb11646-05eb-4707-a5c8-676e050d92a1",
+          "objectMasterGuid": "81756e31-509d-46ef-a774-1c52876e0a11",
+          "objectSequence": 1,
+          "attributes": {
+            "label": "Demo id — lowercase letters, digits and hyphens",
+            "required": true
+          },
+          "instances": []
+        },
+        {
+          "instanceName": "title",
+          "objectInstanceGuid": "9fa37f4b-398f-458a-a663-610d601a6570",
+          "objectMasterGuid": "81756e31-509d-46ef-a774-1c52876e0a11",
+          "objectSequence": 2,
+          "attributes": {
+            "label": "Title",
+            "required": true
+          },
+          "instances": []
+        },
+        {
+          "instanceName": "startFrom",
+          "objectInstanceGuid": "51ce7d34-22ba-4035-9933-ab47738af8a5",
+          "objectMasterGuid": "81756e31-509d-46ef-a774-1c52876e0a11",
+          "objectSequence": 3,
+          "attributes": {
+            "enabled": false,
+            "label": "Start from"
+          },
+          "instances": []
+        }
+      ]
+    },
+    {
+      "instanceName": "startFromHelp",
+      "objectInstanceGuid": "a15f3ea0-0b90-4da5-8934-a6d4898d6814",
+      "objectMasterGuid": "ec630cb7-644c-47e2-85a1-d8513048a915",
+      "objectSequence": 2,
+      "attributes": {
+        "text": "With a demo selected in the list, its settings and scene structure are copied — adapt narration, routes and actions before recording. Without one, the blank starter provides default settings and one opening scene.",
+        "variant": "caption"
+      },
+      "instances": []
+    },
+    {
+      "instanceName": "cancelButton",
+      "objectInstanceGuid": "2de501b4-4fc6-4e6b-b288-ae7f3dbf94d2",
+      "objectMasterGuid": "efc1a521-3c11-4af2-bfaa-83b1f9c07abf",
+      "objectSequence": 3,
+      "attributes": {
+        "eventClick": "b1.closeScreen(eventSource.screen)",
+        "htmlClass": "p-button-text",
+        "label": "Cancel"
+      },
+      "instances": []
+    },
+    {
+      "instanceName": "createButton",
+      "objectInstanceGuid": "f33310c7-b925-47f7-bb05-929d0bb0ad1f",
+      "objectMasterGuid": "efc1a521-3c11-4af2-bfaa-83b1f9c07abf",
+      "objectSequence": 4,
+      "attributes": {
+        "eventClick": "#.createDemo(eventSource)",
+        "label": "Create demo"
+      },
+      "instances": []
+    }
+  ],
+  "links": [],
+  "tags": [],
+  "tenantId": null,
+  "validFrom": null,
+  "validUntil": null
+}

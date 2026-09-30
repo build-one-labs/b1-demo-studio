@@ -1,0 +1,54 @@
+{
+  "abstractType": false,
+  "active": true,
+  "classTypeGuid": "31faedbd-5ca8-4e5a-b519-504cbd677b48",
+  "containerType": false,
+  "createdBy": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "extendsObjectTypeGuid": "292e60e6-4ab9-4f6c-abe5-122315020236",
+  "howToUse": "# b1_log_view\n\nShows what a running server-side process is doing: its status (idle, running, complete, failed), the current step and exit code, and the log tail — stderr in red — pinned to the newest line while Follow is on.\n\n## How it gets its data\nNo DATA link. The view polls the server action named in **logSource** — `service/class/method` in kebab-case, e.g. `demo-factory/demo-factory-studio/job-status` — every **pollIntervalMs** while the process runs and four times less often while it is idle. The action must answer `{ status, step, exitCode, logs: [{ stream, text }] }`.\n\n## Attributes\n- **logSource** — the action to poll (required).\n- **pollIntervalMs** — polling rate while running (default 1500).\n- **maxLines** — lines kept on screen, oldest dropped (default 500; 0 = all).\n- **autoScroll** — start with Follow on (default true).\n- **headerLabel** — the panel header.\n\n## Create with\nInstantiate the shared master `DemoFactoryJobLog` (already pointed at the demo factory's job-status) inside a panel or tab, or a new master of this type with its own logSource.",
+  "label": "Log View",
+  "maintenanceMenu": "",
+  "objectTypeDescription": "The live log of a running server-side process: a status line and the log tail, polled from a server action while the process runs. Project-owned type of the Demo Factory Studio (b1-demo-studio, issue #17); the demo factory's pipeline job is its first consumer, infrastructure deployments and agent runs are the obvious next ones.",
+  "objectTypeGuid": "74d84f76-10b9-4bd0-8ec4-335e48f8fc22",
+  "objectTypeName": "b1_log_view",
+  "owner": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "status": "Active",
+  "storeInstances": "",
+  "technicalClassName": "",
+  "vendor": "",
+  "attributes": {
+    "autoScroll": true,
+    "headerLabel": "Log",
+    "logSource": "",
+    "maxLines": 500,
+    "pollIntervalMs": 1500,
+    "uiComponentAlias": "logView"
+  },
+  "designSettings": {
+    "Log": [
+      "logSource",
+      "pollIntervalMs",
+      "maxLines",
+      "autoScroll",
+      "headerLabel",
+      "htmlClass"
+    ]
+  },
+  "supportedInstanceTypes": null,
+  "supportedLinkTypes": null,
+  "synonyms": [
+    "log",
+    "console",
+    "terminal",
+    "job log",
+    "pipeline log"
+  ],
+  "tags": [
+    "log",
+    "pipeline",
+    "demo-factory"
+  ],
+  "tenantId": null,
+  "validFrom": null,
+  "validUntil": null
+}

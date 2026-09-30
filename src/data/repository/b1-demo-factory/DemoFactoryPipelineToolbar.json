@@ -1,0 +1,109 @@
+{
+  "createdAt": "2026-09-05 16:02:15.655022",
+  "createdBy": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "howToUse": "",
+  "label": "",
+  "moduleGuid": "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4",
+  "objectDescription": "Pipeline toolbar of the demo maintenance screen: the four stages (validate, prepare, record the selected scene, render), the full run and cancel. Each action starts a job through start-job after checking the host's verdict in DemoFactoryStageDSO; the client logic then follows job-status until the job ends (issue #17, step 3).",
+  "objectMasterGuid": "c7176d34-6169-4d2c-9207-5a7339ccee0f",
+  "objectName": "DemoFactoryPipelineToolbar",
+  "objectTypeGuid": "c0f01216-5d6f-4923-b9ce-1f3049f9d2b5",
+  "owner": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "status": "Active",
+  "templateObject": false,
+  "attributes": {
+    "htmlClass": "regular",
+    "toolbarKey": "DemoFactoryPipelineToolbar"
+  },
+  "instances": [
+    {
+      "instanceName": "validate",
+      "objectInstanceGuid": "5e1e63f8-cda3-4156-8b2c-adc1b7ceb1cb",
+      "objectMasterGuid": "2a34c785-bbd7-439f-aacd-c5e24927f26c",
+      "objectSequence": 1,
+      "attributes": {
+        "actionParameter": "#.runStage(eventSource, 'validate')",
+        "actionType": "Run",
+        "label": "Validate",
+        "smallImage": "i-lucide-badge-check",
+        "tooltip": "Check the demo document against the schema"
+      },
+      "instances": []
+    },
+    {
+      "instanceName": "prepare",
+      "objectInstanceGuid": "559dcf42-02a4-440e-bbc1-bedf88bc586f",
+      "objectMasterGuid": "2a34c785-bbd7-439f-aacd-c5e24927f26c",
+      "objectSequence": 2,
+      "attributes": {
+        "actionParameter": "#.runStage(eventSource, 'prepare')",
+        "actionType": "Run",
+        "label": "Prepare",
+        "smallImage": "i-lucide-audio-lines",
+        "tooltip": "Generate the narration and captions"
+      },
+      "instances": []
+    },
+    {
+      "instanceName": "record",
+      "objectInstanceGuid": "fb291d8d-1473-4752-b722-2fe07ac86b7e",
+      "objectMasterGuid": "2a34c785-bbd7-439f-aacd-c5e24927f26c",
+      "objectSequence": 3,
+      "attributes": {
+        "actionParameter": "#.runStage(eventSource, 'record')",
+        "actionType": "Run",
+        "label": "Record scene",
+        "smallImage": "i-lucide-video",
+        "tooltip": "Record the selected scene in the browser (all scenes when none is selected)"
+      },
+      "instances": []
+    },
+    {
+      "instanceName": "render",
+      "objectInstanceGuid": "8aafc78e-ffdd-4e96-9189-f17112202c27",
+      "objectMasterGuid": "2a34c785-bbd7-439f-aacd-c5e24927f26c",
+      "objectSequence": 4,
+      "attributes": {
+        "actionParameter": "#.runStage(eventSource, 'render')",
+        "actionType": "Run",
+        "label": "Render",
+        "smallImage": "i-lucide-clapperboard",
+        "tooltip": "Cut the recorded clips into the video"
+      },
+      "instances": []
+    },
+    {
+      "instanceName": "runAll",
+      "objectInstanceGuid": "519d212c-1a6c-4f1a-89ab-b0e053c72256",
+      "objectMasterGuid": "2a34c785-bbd7-439f-aacd-c5e24927f26c",
+      "objectSequence": 5,
+      "attributes": {
+        "actionParameter": "#.runStage(eventSource, 'all')",
+        "actionType": "Run",
+        "label": "Run full demo",
+        "smallImage": "i-lucide-play",
+        "tooltip": "Validate, sign in, prepare, record and render"
+      },
+      "instances": []
+    },
+    {
+      "instanceName": "cancel",
+      "objectInstanceGuid": "66b069ea-48ec-4f76-a7b8-94303fb86261",
+      "objectMasterGuid": "2a34c785-bbd7-439f-aacd-c5e24927f26c",
+      "objectSequence": 6,
+      "attributes": {
+        "actionParameter": "#.cancelJob(eventSource)",
+        "actionType": "Run",
+        "label": "Cancel job",
+        "smallImage": "i-lucide-square",
+        "tooltip": "Stop the running pipeline job"
+      },
+      "instances": []
+    }
+  ],
+  "links": [],
+  "tags": [],
+  "tenantId": null,
+  "validFrom": null,
+  "validUntil": null
+}

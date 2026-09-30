@@ -1,0 +1,67 @@
+{
+  "createdAt": "2026-09-05 15:27:10.332877",
+  "createdBy": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "howToUse": "",
+  "label": "Demo Factory Studio",
+  "moduleGuid": "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4",
+  "objectDescription": "Home screen of the native Demo Factory Studio (issue #17): a sidebar rendering DemoFactoryMenu — Demos, Runs, Settings — beside the screen container the chosen screen opens in. Copied from the framework's sidebarMenuScreen; becomes the app's initialScreen once it replaces the DemoFactoryStudio native component.",
+  "objectMasterGuid": "a315e3c4-c7e0-41f0-8675-edfa2c3efc70",
+  "objectName": "DemoFactoryNativeScreen",
+  "objectTypeGuid": "d188099d-8548-49f0-86e4-c4b28dda9ecc",
+  "owner": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "status": "Active",
+  "templateObject": false,
+  "attributes": {
+    "htmlClass": "flex flex-row gap-2",
+    "icon": "i-lucide-clapperboard",
+    "title": "Demo Factory"
+  },
+  "instances": [
+    {
+      "instanceName": "a",
+      "objectInstanceGuid": "bb6f32f7-a51b-467e-a1fe-c6caeecbd45c",
+      "objectMasterGuid": "31572117-2fe3-4262-ba03-20a74c6b59ca",
+      "objectSequence": 1,
+      "attributes": {
+        "panelType": "structural"
+      },
+      "instances": [
+        {
+          "instanceName": "MainSidebar",
+          "objectInstanceGuid": "56a351ea-e436-4f02-adfb-63adf9aade06",
+          "objectMasterGuid": "f3b27810-4170-0a91-df14-2ced507cc8a3",
+          "objectSequence": 1,
+          "attributes": {
+            "description": "Demo Factory Studio",
+            "menuId": "DemoFactoryMenu"
+          },
+          "instances": []
+        }
+      ]
+    },
+    {
+      "instanceName": "b",
+      "objectInstanceGuid": "143ab4a9-32b7-437f-b250-c40bc4bc4f18",
+      "objectMasterGuid": "31572117-2fe3-4262-ba03-20a74c6b59ca",
+      "objectSequence": 2,
+      "attributes": {
+        "panelType": "structural"
+      },
+      "instances": [
+        {
+          "instanceName": "SidebarScreenContainer",
+          "objectInstanceGuid": "dbc99314-c51f-4660-bca2-3b4e430e799d",
+          "objectMasterGuid": "f3b27810-4170-0a91-df14-31ed8803ecf7",
+          "objectSequence": 3,
+          "attributes": {},
+          "instances": []
+        }
+      ]
+    }
+  ],
+  "links": [],
+  "tags": [],
+  "tenantId": null,
+  "validFrom": null,
+  "validUntil": null
+}

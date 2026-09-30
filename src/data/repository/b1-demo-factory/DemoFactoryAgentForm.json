@@ -1,0 +1,81 @@
+{
+  "createdAt": "2026-09-05 16:00:43.046438",
+  "createdBy": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "howToUse": "",
+  "label": "",
+  "moduleGuid": "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4",
+  "objectDescription": "Form of the Ask the Demo Creator dialog: what the agent should do. Start creates a conversation with the Demo Creator agent against this environment (the selected demo travels as context) and opens the chat (issue #17, step 3).",
+  "objectMasterGuid": "4ce79432-ebee-4acc-bb82-ef322f3a7185",
+  "objectName": "DemoFactoryAgentForm",
+  "objectTypeGuid": "130726b3-7c42-4f22-a324-cc07f3d21feb",
+  "owner": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "status": "Active",
+  "templateObject": false,
+  "attributes": {
+    "headerLabel": "Ask the Demo Creator"
+  },
+  "instances": [
+    {
+      "instanceName": "agentHelp",
+      "objectInstanceGuid": "e45a7c70-8b76-4cbc-894f-6f3869beb93c",
+      "objectMasterGuid": "ec630cb7-644c-47e2-85a1-d8513048a915",
+      "objectSequence": 1,
+      "attributes": {
+        "text": "Starts a conversation with the Demo Creator agent against this environment. It reads and writes demos through the same data sources and actions as this Studio — describe the video you want, or the change to an existing one.",
+        "variant": "caption"
+      },
+      "instances": []
+    },
+    {
+      "instanceName": "agentFieldset",
+      "objectInstanceGuid": "a223d8d5-ce03-479a-a188-38e2cbf495f6",
+      "objectMasterGuid": "4002bae8-5bac-45f1-82b3-0d91f7381296",
+      "objectSequence": 2,
+      "attributes": {
+        "label": "Demo Creator"
+      },
+      "instances": [
+        {
+          "instanceName": "prompt",
+          "objectInstanceGuid": "5101a2f6-075b-4dcb-b9a4-b0a3dea40cef",
+          "objectMasterGuid": "531100c8-2ec2-4e63-9195-1e2663071e94",
+          "objectSequence": 1,
+          "attributes": {
+            "label": "What should it do?",
+            "required": true,
+            "rows": 6
+          },
+          "instances": []
+        }
+      ]
+    },
+    {
+      "instanceName": "cancelButton",
+      "objectInstanceGuid": "b25c5832-f5d5-4540-98ca-0de4f82da388",
+      "objectMasterGuid": "efc1a521-3c11-4af2-bfaa-83b1f9c07abf",
+      "objectSequence": 3,
+      "attributes": {
+        "eventClick": "b1.closeScreen(eventSource.screen)",
+        "htmlClass": "p-button-text",
+        "label": "Cancel"
+      },
+      "instances": []
+    },
+    {
+      "instanceName": "startButton",
+      "objectInstanceGuid": "012414c0-f47b-490e-825c-99889803e324",
+      "objectMasterGuid": "efc1a521-3c11-4af2-bfaa-83b1f9c07abf",
+      "objectSequence": 4,
+      "attributes": {
+        "eventClick": "#.startConversation(eventSource)",
+        "label": "Start conversation"
+      },
+      "instances": []
+    }
+  ],
+  "links": [],
+  "tags": [],
+  "tenantId": null,
+  "validFrom": null,
+  "validUntil": null
+}

@@ -1,0 +1,45 @@
+{
+  "abstractType": false,
+  "active": true,
+  "classTypeGuid": "31faedbd-5ca8-4e5a-b519-504cbd677b48",
+  "containerType": false,
+  "createdBy": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "extendsObjectTypeGuid": "5a7c7922-15f2-4b9f-99d6-e18f3b6f229e",
+  "howToUse": "# b1_json_field\n\nA form field that edits a JSON value — the record keeps the parsed object or array, the editor shows it pretty-printed and reports a parse error under the text while the typed text is not valid JSON. Malformed text never reaches the record.\n\n## When to use\nStructured fields a person edits by hand: a scene's browser actions or assertions, a settings block. For plain multi-line text use `b1_textarea`.\n\n## Key attributes\n- **rows** — editor height (default 12).\n- **dataType** — `json` (the default; keep it).\n\n## Create with\nInstantiate the shared master `DemoFactoryJsonField` inside a `b1_form`; the `instanceName` is the record field (nested paths such as `settings.narration` work).",
+  "label": "JSON Field",
+  "maintenanceMenu": "",
+  "objectTypeDescription": "Form field for a structured (JSON) record value — an object or array edited as pretty-printed text with live parse feedback. Project-owned type of the Demo Factory Studio (b1-demo-studio, issue #17); renders through the app's jsonField component registered with registerNewFieldTypeComponent.",
+  "objectTypeGuid": "d4f7801c-f83a-4539-9ee9-8222c1d065c3",
+  "objectTypeName": "b1_json_field",
+  "owner": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "status": "Active",
+  "storeInstances": "",
+  "technicalClassName": "",
+  "vendor": "",
+  "attributes": {
+    "dataType": "json",
+    "rows": 12,
+    "uiComponentAlias": "jsonField"
+  },
+  "designSettings": {
+    "JSON": [
+      "rows",
+      "dataType",
+      "label",
+      "enabled",
+      "required",
+      "visible"
+    ]
+  },
+  "supportedInstanceTypes": null,
+  "supportedLinkTypes": null,
+  "synonyms": [],
+  "tags": [
+    "form-field",
+    "json",
+    "demo-factory"
+  ],
+  "tenantId": null,
+  "validFrom": null,
+  "validUntil": null
+}

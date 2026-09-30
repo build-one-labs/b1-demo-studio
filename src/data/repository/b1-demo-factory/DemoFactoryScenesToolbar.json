@@ -1,0 +1,68 @@
+{
+  "createdAt": "2026-09-05 16:02:23.456122",
+  "createdBy": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "howToUse": "",
+  "label": "",
+  "moduleGuid": "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4",
+  "objectDescription": "Toolbar of the Scenes tab of the demo maintenance screen: add a scene after the last one, duplicate the selected scene behind itself, delete the selected scene (removeSelectedRecord over TableIO — the grid commits the deletion). Editing a scene happens on the scene's own maintenance screen, opened by the title link (issue #17, step 3).",
+  "objectMasterGuid": "95908902-b0c2-4f6b-af0b-5b748e31bb67",
+  "objectName": "DemoFactoryScenesToolbar",
+  "objectTypeGuid": "c0f01216-5d6f-4923-b9ce-1f3049f9d2b5",
+  "owner": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "status": "Active",
+  "templateObject": false,
+  "attributes": {
+    "htmlClass": "regular",
+    "toolbarKey": "DemoFactoryScenesToolbar"
+  },
+  "instances": [
+    {
+      "instanceName": "addScene",
+      "objectInstanceGuid": "fc0842b9-dd4b-48fa-97e2-2f65e529fd8f",
+      "objectMasterGuid": "2a34c785-bbd7-439f-aacd-c5e24927f26c",
+      "objectSequence": 1,
+      "attributes": {
+        "actionParameter": "#.addScene(eventSource)",
+        "actionType": "Run",
+        "label": "Add scene",
+        "smallImage": "i-lucide-plus",
+        "tooltip": "Append a scene after the last one"
+      },
+      "instances": []
+    },
+    {
+      "instanceName": "duplicateScene",
+      "objectInstanceGuid": "2b30044f-60ad-467b-93eb-5b549f39db28",
+      "objectMasterGuid": "2a34c785-bbd7-439f-aacd-c5e24927f26c",
+      "objectSequence": 2,
+      "attributes": {
+        "actionParameter": "#.duplicateScene(eventSource)",
+        "actionType": "Run",
+        "label": "Duplicate",
+        "smallImage": "i-lucide-copy",
+        "tooltip": "Copy the selected scene right after itself"
+      },
+      "instances": []
+    },
+    {
+      "instanceName": "deleteScene",
+      "objectInstanceGuid": "6282b87f-27ec-4417-8cea-44b464d85e33",
+      "objectMasterGuid": "2a34c785-bbd7-439f-aacd-c5e24927f26c",
+      "objectSequence": 3,
+      "attributes": {
+        "actionParameter": "removeSelectedRecord",
+        "actionTarget": "TABLEIO",
+        "actionType": "PUBLISH",
+        "label": "Delete scene",
+        "smallImage": "i-lucide-trash-2",
+        "tooltip": "Delete the selected scene"
+      },
+      "instances": []
+    }
+  ],
+  "links": [],
+  "tags": [],
+  "tenantId": null,
+  "validFrom": null,
+  "validUntil": null
+}

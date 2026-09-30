@@ -1,0 +1,49 @@
+{
+  "createdAt": "2026-09-05 16:01:58.309227",
+  "createdBy": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "howToUse": "",
+  "label": "",
+  "moduleGuid": "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4",
+  "objectDescription": "New demo dialog of the native Studio, opened from the search toolbar through the grid's addRecordContainer. Creates the demo as one document via save-demo — a copy of the demo selected in the search grid, or the blank starter — then repositions the search list to it (issue #17, step 3).",
+  "objectMasterGuid": "f8bb9824-67b7-4bbb-95b6-f52c728ce4ec",
+  "objectName": "DemoFactoryDemoCreate",
+  "objectTypeGuid": "d188099d-8548-49f0-86e4-c4b28dda9ecc",
+  "owner": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "status": "Active",
+  "templateObject": false,
+  "attributes": {
+    "eventNamespace": "#",
+    "EventVueMounted": "#.onInitialize(eventSource)",
+    "icon": "i-lucide-plus",
+    "isModal": true,
+    "maximizable": false,
+    "title": "New demo"
+  },
+  "instances": [
+    {
+      "instanceName": "a",
+      "objectInstanceGuid": "af7af874-4518-4ca1-8f1a-daefdd499287",
+      "objectMasterGuid": "31572117-2fe3-4262-ba03-20a74c6b59ca",
+      "objectSequence": 1,
+      "attributes": {
+        "panelMenu": "",
+        "panelType": "visual"
+      },
+      "instances": [
+        {
+          "instanceName": "DemoFactoryDemoCreateForm",
+          "objectInstanceGuid": "7c3b6217-e6be-4133-8422-81ccd533cf89",
+          "objectMasterGuid": "8f2f075b-1826-484d-be42-a03427e165b7",
+          "objectSequence": 1,
+          "attributes": {},
+          "instances": []
+        }
+      ]
+    }
+  ],
+  "links": [],
+  "tags": [],
+  "tenantId": null,
+  "validFrom": null,
+  "validUntil": null
+}

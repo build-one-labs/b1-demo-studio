@@ -1,0 +1,219 @@
+{
+  "createdAt": "2026-09-05 16:21:09.851079",
+  "createdBy": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "howToUse": "",
+  "label": "",
+  "moduleGuid": "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4",
+  "objectDescription": "The facts of one run on the run maintenance screen, over DemoFactoryRunDSO, read-only: identity (run, demo, created, recorded), how it was made (narration provider, base URL, demo hash) and the artefacts (duration, video and captions URLs). Runs are written by the pipeline and never edited (issue #17, step 4).",
+  "objectMasterGuid": "bef869fd-1be2-4049-9d5c-991ade3dff67",
+  "objectName": "DemoFactoryRunForm",
+  "objectTypeGuid": "130726b3-7c42-4f22-a324-cc07f3d21feb",
+  "owner": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "status": "Active",
+  "templateObject": false,
+  "attributes": {
+    "headerLabel": "Run"
+  },
+  "instances": [
+    {
+      "instanceName": "identityBlock",
+      "objectInstanceGuid": "4118f04a-e493-42cf-b25e-d2034e839a24",
+      "objectMasterGuid": "c5c097d5-52c4-4b2d-8e1a-90d3e4af5626",
+      "objectSequence": 1,
+      "attributes": {},
+      "instances": [
+        {
+          "instanceName": "identityFieldset",
+          "objectInstanceGuid": "f4a6be51-6290-4de9-8247-1a3bf4cc273d",
+          "objectMasterGuid": "4002bae8-5bac-45f1-82b3-0d91f7381296",
+          "objectSequence": 1,
+          "attributes": {
+            "label": "Run"
+          },
+          "instances": [
+            {
+              "instanceName": "runId",
+              "objectInstanceGuid": "6df8080d-ea4f-4a00-b08b-c0b5ff67a8b4",
+              "objectMasterGuid": "81756e31-509d-46ef-a774-1c52876e0a11",
+              "objectSequence": 1,
+              "attributes": {
+                "enabled": false,
+                "label": "Run id"
+              },
+              "instances": []
+            },
+            {
+              "instanceName": "demoId",
+              "objectInstanceGuid": "3aaf3887-182e-4437-993a-790893f50956",
+              "objectMasterGuid": "81756e31-509d-46ef-a774-1c52876e0a11",
+              "objectSequence": 2,
+              "attributes": {
+                "enabled": false,
+                "label": "Demo"
+              },
+              "instances": []
+            },
+            {
+              "instanceName": "createdAt",
+              "objectInstanceGuid": "867d225c-b985-4bb8-896a-34f08aa28055",
+              "objectMasterGuid": "81756e31-509d-46ef-a774-1c52876e0a11",
+              "objectSequence": 3,
+              "attributes": {
+                "enabled": false,
+                "label": "Created"
+              },
+              "instances": []
+            },
+            {
+              "instanceName": "recordedAt",
+              "objectInstanceGuid": "65618fda-15ba-4ef3-8937-e2d7f3b79965",
+              "objectMasterGuid": "81756e31-509d-46ef-a774-1c52876e0a11",
+              "objectSequence": 4,
+              "attributes": {
+                "enabled": false,
+                "label": "Recorded"
+              },
+              "instances": []
+            }
+          ]
+        },
+        {
+          "instanceName": "productionFieldset",
+          "objectInstanceGuid": "7703f06e-dea8-4de8-ac13-9fd706012d27",
+          "objectMasterGuid": "4002bae8-5bac-45f1-82b3-0d91f7381296",
+          "objectSequence": 2,
+          "attributes": {
+            "label": "How it was made"
+          },
+          "instances": [
+            {
+              "instanceName": "provider",
+              "objectInstanceGuid": "6bd2afca-7473-4e26-bf61-c2e89a564c2a",
+              "objectMasterGuid": "81756e31-509d-46ef-a774-1c52876e0a11",
+              "objectSequence": 1,
+              "attributes": {
+                "enabled": false,
+                "label": "Narration provider"
+              },
+              "instances": []
+            },
+            {
+              "instanceName": "baseUrl",
+              "objectInstanceGuid": "0d0a5e68-fb8a-4fd1-864c-192698e2bf34",
+              "objectMasterGuid": "81756e31-509d-46ef-a774-1c52876e0a11",
+              "objectSequence": 2,
+              "attributes": {
+                "enabled": false,
+                "label": "Recorded against"
+              },
+              "instances": []
+            },
+            {
+              "instanceName": "demoHash",
+              "objectInstanceGuid": "5ce684cb-f71c-4d9f-bdac-b6596bf4d88b",
+              "objectMasterGuid": "81756e31-509d-46ef-a774-1c52876e0a11",
+              "objectSequence": 3,
+              "attributes": {
+                "enabled": false,
+                "label": "Demo document hash"
+              },
+              "instances": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "instanceName": "runColumnBreak",
+      "objectInstanceGuid": "b93a63f1-3b29-4b64-b768-be3ca1c623f5",
+      "objectMasterGuid": "4b2a1744-b061-4616-a5bd-ac8f9ebd5d01",
+      "objectSequence": 2,
+      "attributes": {},
+      "instances": []
+    },
+    {
+      "instanceName": "artefactBlock",
+      "objectInstanceGuid": "7207e093-b813-4372-90c8-f14b4762d880",
+      "objectMasterGuid": "c5c097d5-52c4-4b2d-8e1a-90d3e4af5626",
+      "objectSequence": 3,
+      "attributes": {},
+      "instances": [
+        {
+          "instanceName": "artefactFieldset",
+          "objectInstanceGuid": "76e1f913-3ac5-4bd7-b87c-59a682f6866c",
+          "objectMasterGuid": "4002bae8-5bac-45f1-82b3-0d91f7381296",
+          "objectSequence": 1,
+          "attributes": {
+            "label": "Artefacts"
+          },
+          "instances": [
+            {
+              "instanceName": "durationMs",
+              "objectInstanceGuid": "09a181f5-7d11-468b-9722-aa94ebda6b98",
+              "objectMasterGuid": "81756e31-509d-46ef-a774-1c52876e0a11",
+              "objectSequence": 1,
+              "attributes": {
+                "dataType": "integer",
+                "enabled": false,
+                "label": "Duration",
+                "suffix": " ms",
+                "useGrouping": false
+              },
+              "instances": []
+            },
+            {
+              "instanceName": "recordedScenes",
+              "objectInstanceGuid": "00e2f065-7533-4941-9944-c23d906495e6",
+              "objectMasterGuid": "81756e31-509d-46ef-a774-1c52876e0a11",
+              "objectSequence": 2,
+              "attributes": {
+                "dataType": "integer",
+                "enabled": false,
+                "label": "Scenes recorded"
+              },
+              "instances": []
+            },
+            {
+              "instanceName": "hasVideo",
+              "objectInstanceGuid": "1323562d-839c-4179-a798-a04eef9d9665",
+              "objectMasterGuid": "b1b73251-5116-37b7-e314-e22c70d3ce3c",
+              "objectSequence": 3,
+              "attributes": {
+                "enabled": false,
+                "label": "Video rendered"
+              },
+              "instances": []
+            },
+            {
+              "instanceName": "videoUrl",
+              "objectInstanceGuid": "8561584c-1b10-46b0-a97d-7113bd11dc6a",
+              "objectMasterGuid": "81756e31-509d-46ef-a774-1c52876e0a11",
+              "objectSequence": 4,
+              "attributes": {
+                "enabled": false,
+                "label": "Video (MP4)"
+              },
+              "instances": []
+            },
+            {
+              "instanceName": "srtUrl",
+              "objectInstanceGuid": "051c456f-5ab6-4755-b9c5-d8f563666de1",
+              "objectMasterGuid": "81756e31-509d-46ef-a774-1c52876e0a11",
+              "objectSequence": 5,
+              "attributes": {
+                "enabled": false,
+                "label": "Captions (SRT)"
+              },
+              "instances": []
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "links": [],
+  "tags": [],
+  "tenantId": null,
+  "validFrom": null,
+  "validUntil": null
+}

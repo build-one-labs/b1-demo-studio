@@ -1,0 +1,112 @@
+{
+  "createdAt": "2026-09-05 16:08:08.75958",
+  "createdBy": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "howToUse": "",
+  "label": "",
+  "moduleGuid": "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4",
+  "objectDescription": "What this host can do, on the Settings screen, over DemoFactoryHostDSO (one row, recomputed from the capability probes on every fetch): where the pipeline is, whether its dependencies are installed, and whether it can record, render and sign in. Read-only (issue #17, step 3).",
+  "objectMasterGuid": "e455469e-3f90-49fe-9d42-2a900cc91fdc",
+  "objectName": "DemoFactoryHostForm",
+  "objectTypeGuid": "130726b3-7c42-4f22-a324-cc07f3d21feb",
+  "owner": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "status": "Active",
+  "templateObject": false,
+  "attributes": {
+    "headerLabel": "This host"
+  },
+  "instances": [
+    {
+      "instanceName": "pipelineFieldset",
+      "objectInstanceGuid": "950c8954-02f9-4aa1-803d-cdcbef0c6e3a",
+      "objectMasterGuid": "4002bae8-5bac-45f1-82b3-0d91f7381296",
+      "objectSequence": 1,
+      "attributes": {
+        "label": "Pipeline"
+      },
+      "instances": [
+        {
+          "instanceName": "pipelineRoot",
+          "objectInstanceGuid": "a01fbc2d-24a5-4fc5-ba62-b2006ba8666b",
+          "objectMasterGuid": "81756e31-509d-46ef-a774-1c52876e0a11",
+          "objectSequence": 1,
+          "attributes": {
+            "enabled": false,
+            "label": "Pipeline directory"
+          },
+          "instances": []
+        },
+        {
+          "instanceName": "hasFactory",
+          "objectInstanceGuid": "0e76b24b-87fe-4eea-b77e-3ce322aaab71",
+          "objectMasterGuid": "b1b73251-5116-37b7-e314-e22c70d3ce3c",
+          "objectSequence": 2,
+          "attributes": {
+            "enabled": false,
+            "label": "Pipeline found"
+          },
+          "instances": []
+        },
+        {
+          "instanceName": "hasDependencies",
+          "objectInstanceGuid": "b206ee0d-f9d2-4b66-bd31-22636d6e8db2",
+          "objectMasterGuid": "b1b73251-5116-37b7-e314-e22c70d3ce3c",
+          "objectSequence": 3,
+          "attributes": {
+            "enabled": false,
+            "label": "Dependencies installed"
+          },
+          "instances": []
+        }
+      ]
+    },
+    {
+      "instanceName": "capabilityFieldset",
+      "objectInstanceGuid": "ec692700-5a08-48cf-aa83-d0a42c754f09",
+      "objectMasterGuid": "4002bae8-5bac-45f1-82b3-0d91f7381296",
+      "objectSequence": 2,
+      "attributes": {
+        "label": "Can run"
+      },
+      "instances": [
+        {
+          "instanceName": "canRecord",
+          "objectInstanceGuid": "b4501aee-487e-497a-b614-fc7d0206b5b0",
+          "objectMasterGuid": "b1b73251-5116-37b7-e314-e22c70d3ce3c",
+          "objectSequence": 1,
+          "attributes": {
+            "enabled": false,
+            "label": "Record (browser available)"
+          },
+          "instances": []
+        },
+        {
+          "instanceName": "canRender",
+          "objectInstanceGuid": "8da5f2cc-59f8-449e-802e-c38317af312c",
+          "objectMasterGuid": "b1b73251-5116-37b7-e314-e22c70d3ce3c",
+          "objectSequence": 2,
+          "attributes": {
+            "enabled": false,
+            "label": "Render (ffmpeg available)"
+          },
+          "instances": []
+        },
+        {
+          "instanceName": "canAuthenticate",
+          "objectInstanceGuid": "85195cd5-338f-4068-b7ad-b4f247f91eb1",
+          "objectMasterGuid": "b1b73251-5116-37b7-e314-e22c70d3ce3c",
+          "objectSequence": 3,
+          "attributes": {
+            "enabled": false,
+            "label": "Sign in (auth state minted)"
+          },
+          "instances": []
+        }
+      ]
+    }
+  ],
+  "links": [],
+  "tags": [],
+  "tenantId": null,
+  "validFrom": null,
+  "validUntil": null
+}

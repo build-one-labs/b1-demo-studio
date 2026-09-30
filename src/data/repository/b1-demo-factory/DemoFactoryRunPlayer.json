@@ -1,0 +1,25 @@
+{
+  "createdAt": "2026-09-05 16:32:52.384759",
+  "createdBy": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "howToUse": "",
+  "label": "",
+  "moduleGuid": "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4",
+  "objectDescription": "Shared master of the b1_media_player type for run rows: plays videoUrl and offers srtUrl of the current run. Instantiate it in a panel and link DemoFactoryRunDSO to it (issue #17, step 6).",
+  "objectMasterGuid": "30a3eb57-2b01-4ecd-80c9-cee7349ead52",
+  "objectName": "DemoFactoryRunPlayer",
+  "objectTypeGuid": "84cc3847-8b58-426d-aca9-8f88c6ca9ce8",
+  "owner": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "status": "Active",
+  "templateObject": false,
+  "attributes": {
+    "captionsField": "srtUrl",
+    "headerLabel": "Preview",
+    "srcField": "videoUrl"
+  },
+  "instances": [],
+  "links": [],
+  "tags": [],
+  "tenantId": null,
+  "validFrom": null,
+  "validUntil": null
+}

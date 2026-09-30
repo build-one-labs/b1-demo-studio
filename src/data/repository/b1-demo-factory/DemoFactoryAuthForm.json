@@ -1,0 +1,68 @@
+{
+  "createdAt": "2026-09-05 16:08:07.246437",
+  "createdBy": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "howToUse": "",
+  "label": "",
+  "moduleGuid": "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4",
+  "objectDescription": "Recording sign-in on the Settings screen: paste a b1.session_token cookie and mint the Playwright auth state from it, server-side (mint-auth-state). Not bound to a data source; the token never lands in a row (issue #17, step 3).",
+  "objectMasterGuid": "1dd86e7d-3703-45fe-8ca9-8fadf9ae5ece",
+  "objectName": "DemoFactoryAuthForm",
+  "objectTypeGuid": "130726b3-7c42-4f22-a324-cc07f3d21feb",
+  "owner": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "status": "Active",
+  "templateObject": false,
+  "attributes": {
+    "headerLabel": "Recording sign-in"
+  },
+  "instances": [
+    {
+      "instanceName": "authHelp",
+      "objectInstanceGuid": "dfe28d36-864f-43a7-8339-9300aac6169f",
+      "objectMasterGuid": "ec630cb7-644c-47e2-85a1-d8513048a915",
+      "objectSequence": 1,
+      "attributes": {
+        "text": "The recorder signs in with an auth state minted from a session of this environment. Sign in in a browser, copy the b1.session_token cookie and paste it here; the token is used once, server-side, and not stored.",
+        "variant": "caption"
+      },
+      "instances": []
+    },
+    {
+      "instanceName": "authFieldset",
+      "objectInstanceGuid": "cce5ab7b-f1e7-44ac-8cf1-d544800ee49f",
+      "objectMasterGuid": "4002bae8-5bac-45f1-82b3-0d91f7381296",
+      "objectSequence": 2,
+      "attributes": {
+        "label": "Session token"
+      },
+      "instances": [
+        {
+          "instanceName": "sessionToken",
+          "objectInstanceGuid": "d04e6ba4-09db-4470-b121-b234c77bf66c",
+          "objectMasterGuid": "531100c8-2ec2-4e63-9195-1e2663071e94",
+          "objectSequence": 1,
+          "attributes": {
+            "label": "b1.session_token",
+            "rows": 3
+          },
+          "instances": []
+        }
+      ]
+    },
+    {
+      "instanceName": "mintButton",
+      "objectInstanceGuid": "0c3eb4db-c273-40d9-9946-ad2abe3aa304",
+      "objectMasterGuid": "efc1a521-3c11-4af2-bfaa-83b1f9c07abf",
+      "objectSequence": 3,
+      "attributes": {
+        "eventClick": "#.mintAuthState(eventSource)",
+        "label": "Mint auth state"
+      },
+      "instances": []
+    }
+  ],
+  "links": [],
+  "tags": [],
+  "tenantId": null,
+  "validFrom": null,
+  "validUntil": null
+}

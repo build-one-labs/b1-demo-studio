@@ -42,15 +42,19 @@ Remotion cut.
 
 ## The b1-demo-factory app
 
-The blueprint app `b1-demo-factory` starts on `DemoFactoryScreen`, whose only
-content is the `b1_native_component` `DemoFactoryNativeComponent` →
-`DemoFactoryStudio` (`src/web-app/src/components/global/DemoFactoryStudio.vue`).
-
-That component is the Demo Factory's original standalone Studio ported onto a
-B1 screen: storyboard, scene inspector with cue
-markers, Voice-over and Actions tabs, the four pipeline stages, a timeline, the
-pipeline log, and a preview that streams whichever run you pick. Three
-deliberate differences from upstream:
+The blueprint app `b1-demo-factory` starts on `DemoFactoryNativeScreen`: a
+sidebar menu (`DemoFactoryMenu`) with Demos, Runs and Settings. Demos and runs
+follow the standard search → maintenance pattern — `DemoFactoryDemoSearch`
+opens `DemoFactoryDemoMaintenance` (settings, voice-over, scenes, runs and the
+pipeline log, with the toolbar that runs the stages), a scene opens the modal
+`DemoFactorySceneMaintenance`, `DemoFactoryRunSearch` opens
+`DemoFactoryRunMaintenance` (preview with video and scene timeline, facts,
+scenes, captions). Everything is standard blueprint objects over the module's
+data sources, plus three small project-owned object types (`b1_log_view`,
+`b1_media_player`, `b1_demo_timeline`) and one form field (`b1_json_field`),
+whose Vue components live in `src/web-app/src/components/`. The former
+`DemoFactoryStudio` Vue component is gone (issue #17). Three deliberate
+differences from the upstream standalone Studio remain:
 
 - **No second web server.** Every call goes to the `demo-factory` server actions
   in `src/app-server-ts`, so the dashboard is part of the application rather
@@ -93,7 +97,7 @@ stack:
 - `.env.app-server`, holding what the app server needs and a shell must not
   have: the container's binary paths, and `B1_BASE_URL=http://caddy:8080/`,
   which is how the container reaches the web app (`localhost:8080` there is the
-  app server itself). The Studio reads it as defaults beneath the Settings tab.
+  app server itself). The Studio reads it as defaults on the Settings screen.
 
 A demo also needs the screen it films to have data, and
 `.devcontainer/scripts/app-server-secrets.mjs` is the other half of the same
@@ -191,7 +195,7 @@ that make that true:
   backup and transfer format) and imports one back — validated exactly like a
   Studio edit — with overwrite/copy collision handling. Rendered MP4s and SRTs
   download from `demo-factory/media/<demo>/<run>/download/<file>`.
-- **Auth without a shell.** The Settings tab mints the Playwright auth state
+- **Auth without a shell.** The Settings screen mints the Playwright auth state
   from a pasted `b1.session_token` cookie (the `mint-auth-state` action) — the
   deployed replacement for `tools/auth-from-session.mjs`.
 - **Secrets and access from the stack environment.** `ELEVENLABS_API_KEY`,
@@ -388,4 +392,4 @@ Two recording constraints worth knowing before editing `demo.yaml`:
 Upstream extras not vendored (fetch from the source repo if needed): the local
 B1 fixture, the `payment-infrastructure` and `vibecode-sales-tour` reference
 demos, the source-video import tools, and the standalone Studio UI that edits
-demo YAMLs in a browser (superseded here by the `DemoFactoryStudio` screen).
+demo YAMLs in a browser (superseded here by the `b1-demo-factory` app).

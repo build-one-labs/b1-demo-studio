@@ -1,0 +1,25 @@
+{
+  "createdAt": "2026-09-05 15:44:47.609267",
+  "createdBy": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "howToUse": "",
+  "label": "",
+  "moduleGuid": "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4",
+  "objectDescription": "Shared master of the b1_json_field type — instantiate it inside a form and name the instance after the record field (a scene's actions or assertions, a settings block). Like SimpleB1Textarea for b1_textarea: one master, per-instance label and rows.",
+  "objectMasterGuid": "3d2ef757-6018-4f34-84b9-fbc9311f54f9",
+  "objectName": "DemoFactoryJsonField",
+  "objectTypeGuid": "d4f7801c-f83a-4539-9ee9-8222c1d065c3",
+  "owner": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "status": "Active",
+  "templateObject": false,
+  "attributes": {
+    "dataType": "json",
+    "label": "JSON",
+    "rows": 12
+  },
+  "instances": [],
+  "links": [],
+  "tags": [],
+  "tenantId": null,
+  "validFrom": null,
+  "validUntil": null
+}
