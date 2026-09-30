@@ -37,6 +37,11 @@
             "${DATABASE_SERVER_TYPE:-local}",
             "${DATABASE_SERVER_TYPE:-neon}"
           ]
+        },
+        "documentAiServices": {
+          "description": "Which optional Document AI containers to add: `none`, `all`, or a comma-separated list of `docling`, `ollama`, `tei`. Each named service applies its `custom/document-ai-<service>.*` layer, which adds the container and points the matching app_server_ts URL variable at it.",
+          "type": "string",
+          "pattern": "^(\\$\\{DOCUMENT_AI_SERVICES(:-[^}]*)?\\}|none|all|(docling|ollama|tei)(,(docling|ollama|tei))*)$"
         }
       }
     },
@@ -44,9 +49,6 @@
       "type": "object",
       "properties": {
         "authenticationUrl": {
-          "type": "string"
-        },
-        "dataImage": {
           "type": "string"
         },
         "appServerTsImage": {
@@ -113,6 +115,10 @@
           "additionalProperties": false,
           "properties": {
             "image": {
+              "type": "string"
+            },
+            "platform": {
+              "description": "Force the platform docker pulls for this service, e.g. linux/amd64. Only needed for an image published for a single architecture — a multi-arch manifest already resolves to the host's. Set it and the \"requested image's platform does not match the detected host platform\" warning goes away, because the choice is now deliberate.",
               "type": "string"
             },
             "user": {
@@ -190,24 +196,38 @@
             },
             "deploy": {
               "type": "object",
-              "resources": {
-                "type": "object",
-                "limits": {
+              "additionalProperties": false,
+              "properties": {
+                "resources": {
                   "type": "object",
-                  "cpus": {
-                    "type": "string"
-                  },
-                  "memory": {
-                    "type": "string"
-                  }
-                },
-                "reservations": {
-                  "type": "object",
-                  "cpus": {
-                    "type": "string"
-                  },
-                  "memory": {
-                    "type": "string"
+                  "additionalProperties": false,
+                  "properties": {
+                    "limits": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "cpus": {
+                          "type": "string"
+                        },
+                        "memory": {
+                          "type": "string",
+                          "pattern": "^\\$\\{[^}]+\\}$|^[0-9]+(b|k|m|g|kb|mb|gb)?$"
+                        }
+                      }
+                    },
+                    "reservations": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "cpus": {
+                          "type": "string"
+                        },
+                        "memory": {
+                          "type": "string",
+                          "pattern": "^\\$\\{[^}]+\\}$|^[0-9]+(b|k|m|g|kb|mb|gb)?$"
+                        }
+                      }
+                    }
                   }
                 }
               }

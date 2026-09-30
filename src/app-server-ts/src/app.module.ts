@@ -1,5 +1,6 @@
-import { B1AuthGuard } from '@buildone/app-server-tslib/auth';
+
 import { DrizzleModule } from '@buildone/app-server-tslib/drizzle';
+import { FrameworkModule } from '@buildone/app-server-tslib/framework';
 import {
   ApplicationSettingsModule,
   ConnectorModule,
@@ -10,7 +11,7 @@ import {
 import { HttpModule } from '@nestjs/axios';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { APP_GUARD, DiscoveryModule } from '@nestjs/core';
+import { DiscoveryModule } from '@nestjs/core';
 
 import { ApiModule } from './api/api.module';
 import appSettingsConfig from './app-settings.config';
@@ -49,13 +50,7 @@ import { ServerActionsModule } from './server-actions/server-actions.module';
     EventsModule,
     DiscoveryModule,
     ApiModule,
-    ServerActionsModule
-  ],
-  providers: [
-    {
-      provide: APP_GUARD,
-      useClass: B1AuthGuard
-    }
-  ]
-})
+    ServerActionsModule,
+    FrameworkModule
+  ]})
 export class AppModule {}

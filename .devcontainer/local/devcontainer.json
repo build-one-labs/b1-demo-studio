@@ -33,9 +33,6 @@
       "version": "latest",
       "dockerDashComposeVersion": "latest"
     },
-    "ghcr.io/devcontainers/features/aws-cli:1": {
-      "version": "latest"
-    },
     "ghcr.io/devcontainers/features/sshd:1": {
       "version": "latest"
     }
@@ -47,28 +44,21 @@
       "extensions": [
         "dbaeumer.vscode-eslint",
         "Vue.volar",
-        "Vue.vscode-typescript-vue-plugin",
-        "esbenp.prettier-vscode",
         "bradlc.vscode-tailwindcss",
-        "rvest.vs-code-prettier-eslint",
-        "ms-playwright.playwright",
         "yoavbls.pretty-ts-errors",
         "usernamehw.errorlens",
         "eamodio.gitlens",
         "mhutchie.git-graph",
-        "ms-vsliveshare.vsliveshare",
         "CircleCI.circleci",
         "Anthropic.claude-code"
       ],
       "settings": {
         "editor.formatOnSave": true,
-        "editor.defaultFormatter": "esbenp.prettier-vscode",
         "editor.codeActionsOnSave": {
           "source.fixAll.eslint": "explicit"
         },
         "eslint.validate": ["javascript", "typescript", "vue"],
-        "typescript.tsdk": "node_modules/typescript/lib",
-        "vue.server.hybridMode": true
+        "js/ts.tsdk.path": "node_modules/typescript/lib"
       }
     }
   },
@@ -142,7 +132,6 @@
 
   // Environment variables
   "remoteEnv": {
-    "NODE_OPTIONS": "--max-old-space-size=8192",
     "WORKSPACE_ROOT": "${containerWorkspaceFolder}",
     "PATH": "${containerWorkspaceFolder}/node_modules/.bin:${containerEnv:HOME}/.local/bin:${containerEnv:PATH}",
     "COREPACK_ENABLE_DOWNLOAD_PROMPT": "0",

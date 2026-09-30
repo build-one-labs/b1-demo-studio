@@ -550,7 +550,7 @@ if [[ "${PREBUILD_CHECK:-}" != "true" ]]; then
     yarn install
 
     log INFO "Clearing yarn cache"
-    yarn cache clear
+    yarn cache clean --all
 else
     log INFO "Skipping package install during prebuild check"
 fi

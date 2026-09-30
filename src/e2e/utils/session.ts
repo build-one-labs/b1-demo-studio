@@ -133,24 +133,46 @@ export async function issueHandoffCode(
   return { code: body.code, keyVar: resolved.name, dedicated: resolved.dedicated };
 }
 
+/** The user a session belongs to, as the auth server describes them. */
+export interface SignedInUser {
+  /** The auth user id — what `owner` columns and org memberships refer to. */
+  id: string;
+  email: string;
+  /** Display name; what a screen shows where it resolves an owner id. */
+  name: string;
+}
+
 /**
- * The e-mail of the user the current session belongs to.
+ * The user the current session belongs to.
  *
  * Ask, never assume. Which user the suite runs as now depends on how it signed
  * in: the API-key path authenticates as the key's *owner*, the password path as
  * the system user. A test that grants a role to one identity and then asserts
  * against the other's session passes or fails for reasons that have nothing to
  * do with what it is testing.
+ *
+ * The id matters as much as the e-mail: it is a row in ONE auth server's
+ * database, so the same `e2e_test@build.one` has a different id on every auth
+ * server (and after a server's users are re-created). Nothing in the suite may
+ * hard-code it — fixtures that need the user's id ask for it here at setup.
  */
-export async function getSignedInEmail(request: import('@playwright/test').APIRequestContext): Promise<string> {
+export async function getSignedInUser(request: import('@playwright/test').APIRequestContext): Promise<SignedInUser> {
   const response = await request.get('/api/auth/get-session');
   if (!response.ok()) throw new Error(`could not read the current session (HTTP ${response.status()})`);
 
-  const body = (await response.json()) as { user?: { email?: string } } | null;
-  const email = body?.user?.email;
+  const body = (await response.json()) as {
+    user?: { id?: string; email?: string; name?: string; username?: string };
+  } | null;
+  const { id, email, name, username } = body?.user ?? {};
   if (!email) throw new Error('the current session carries no user e-mail');
+  if (!id) throw new Error('the current session carries no user id');
 
-  return email;
+  return { id, email, name: name || username || email };
+}
+
+/** The e-mail of the user the current session belongs to. See `getSignedInUser`. */
+export async function getSignedInEmail(request: import('@playwright/test').APIRequestContext): Promise<string> {
+  return (await getSignedInUser(request)).email;
 }
 
 /**

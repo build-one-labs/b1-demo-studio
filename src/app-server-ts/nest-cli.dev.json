@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json.schemastore.org/nest-cli",
+  "collection": "@nestjs/schematics",
+  "sourceRoot": "src",
+  "compilerOptions": {
+    "deleteOutDir": false,
+    "assets": [
+      "assets/**/*"
+    ],
+    "plugins": [],
+    "tsConfigPath": "tsconfig.dev.json",
+    "builder": "swc",
+    "typeCheck": false
+  }
+}

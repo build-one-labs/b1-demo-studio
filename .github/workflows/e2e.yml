@@ -39,7 +39,7 @@ jobs:
   # read the `secrets` context, which is why this is a job with an output
   # rather than a condition on each step below.
   preflight:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       ready: ${{ steps.check.outputs.ready }}
     env:
@@ -70,7 +70,7 @@ jobs:
   test-e2e:
     needs: preflight
     if: needs.preflight.outputs.ready == 'true'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 120
     env:
       WORKSPACE_ROOT: ${{ github.workspace }}
@@ -113,24 +113,20 @@ jobs:
 
       - name: Prepare the runner
         run: |
-          B1_SYSTEM_USER_PASSWORD="${B1_SYSTEM_USER_PASSWORD:-unused-by-remote-auth}" \
-            node_modules/@buildone/swat-cli/scripts/openhands/preflight-checks.sh
-      - name: Validate stack environment
-        run: node_modules/@buildone/swat-cli/scripts/openhands/validate-env.sh
+          yarn b1 prepare-runner
       - name: Bootstrap the test database
-        run: node_modules/@buildone/swat-cli/scripts/openhands/bootstrap-neon.sh
+        run: yarn b1 database checkout
       - name: Start the application stack
-        run: node_modules/@buildone/swat-cli/scripts/openhands/start-stack.sh
+        run: yarn b1 up
       - name: Wait for the application stack
-        run: node_modules/@buildone/swat-cli/scripts/openhands/wait-for-services.sh
-
+        run: yarn b1 wait-for-stack
       # --clear both times: this database branch is the suite's, and a run that
       # inherits the last one's rows is a run whose failures are somebody
       # else's.
       - name: Import test data
         run: |
-          node_modules/@buildone/swat-cli/scripts/openhands/import-data.sh
-          node_modules/@buildone/swat-cli/bin/build-one import-app --clear
+          yarn b1 import --clear
+          yarn b1 import-app --clear
 
       # Split, rather than the single `--with-deps` this used to be. That form
       # does two unrelated things — `sudo apt-get install` for ~30 system
@@ -169,9 +165,8 @@ jobs:
         if: always()
         continue-on-error: true
         run: |
-          docker compose -p gitpod ps --all > src/e2e/stack-ps.txt
-          docker compose -p gitpod logs --no-color > src/e2e/stack.log
-          node_modules/@buildone/swat-cli/bin/build-one status --json > src/e2e/stack-status.json
+          yarn b1 logs --out src/e2e/stack.log
+          yarn b1 status --json > src/e2e/stack-status.json
 
       # Puts the answer on the run page: the verdict, every failure with its
       # error and its location, the flaky tests — which pass, so nothing else
@@ -186,12 +181,11 @@ jobs:
       - name: Summarise the E2E results
         if: always()
         run: |
-          summariser=node_modules/@buildone/swat-cli/scripts/reports/e2e-report.mjs
-          if [[ ! -f "$summariser" ]]; then
+          if ! yarn b1 report --help > /dev/null 2>&1; then
             echo "::notice title=E2E summary::Skipped: the install did not complete, so there is no summariser."
             exit 0
           fi
-          node "$summariser" \
+          yarn b1 report e2e \
             --input src/e2e/test-results/e2e-results.json \
             --out-dir src/e2e/test-results
 
@@ -207,7 +201,6 @@ jobs:
             src/e2e/playwright-report
             src/e2e/test-results
             src/e2e/stack.log
-            src/e2e/stack-ps.txt
             src/e2e/stack-status.json
           if-no-files-found: warn
           retention-days: 7
@@ -215,4 +208,4 @@ jobs:
       - name: Stop the application stack
         if: always()
         continue-on-error: true
-        run: node_modules/@buildone/swat-cli/bin/build-one down
+        run: yarn b1 down

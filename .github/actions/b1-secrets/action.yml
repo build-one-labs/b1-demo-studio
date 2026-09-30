@@ -40,9 +40,9 @@ inputs:
       without masking. Either form works — the store's key or the variable name.
       Setting this REPLACES the default list below rather than adding to it.
 
-      The default is the framework's deployment coordinates: names, hostnames and
-      identifiers that live in the secret store only because that is where
-      provisioning puts them. Masking one protects nothing (the credential beside
+      The default is the framework's deployment coordinates, plus the name of the
+      issue tracker: names, hostnames and identifiers that live in the secret
+      store only because that is where provisioning puts them. Masking one protects nothing (the credential beside
       it is what matters) and costs a global search-and-replace over the run's
       whole output — `portainer-account` holds "b1", and masking it once redacted
       "b1" from image names, package names and branch names across an entire
@@ -59,6 +59,7 @@ inputs:
     required: false
     default: >-
       auth-url
+      issue-tracker
       neon-project-id
       portainer-account
       portainer-environment
