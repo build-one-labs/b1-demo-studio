@@ -10,7 +10,7 @@ async function runMigrations() {
 
   console.log('Running B1 framework migrations...');
   await runFrameworkMigrations(process.env.B1_DATABASE_URL as string);
-  console.log("Framework migrations completed");
+  console.log('Framework migrations completed');
 
   console.log('Running database migrations...');
   await migrate(db, { migrationsFolder: './drizzle' });

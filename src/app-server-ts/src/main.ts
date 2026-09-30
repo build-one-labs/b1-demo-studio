@@ -1,8 +1,6 @@
-
-
+import { createB1App } from '@buildone/app-server-tslib/framework';
 import cookieParser from 'cookie-parser';
 
-import { createB1App } from '@buildone/app-server-tslib/framework';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
