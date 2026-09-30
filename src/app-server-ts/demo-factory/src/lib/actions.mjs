@@ -149,11 +149,11 @@ const highlight = async (locator, durationMs) => {
     element.dataset.b1DemoPreviousOutline = element.style.outline || '';
     element.dataset.b1DemoPreviousOutlineOffset = element.style.outlineOffset || '';
     element.style.outline = '6px solid #8b7cff';
-    element.style.outlineOffset = '6px';
+    element.style.outlineOffset = '-6px';
     element.style.borderRadius = element.style.borderRadius || '8px';
     element.animate([
-      {boxShadow: '0 0 0 0 rgba(109,93,252,.8)'},
-      {boxShadow: '0 0 0 22px rgba(109,93,252,0)'},
+      {boxShadow: 'inset 0 0 0 0 rgba(109,93,252,.8)'},
+      {boxShadow: 'inset 0 0 0 22px rgba(109,93,252,0)'},
     ], {duration: 900, iterations: 2});
   });
   await new Promise((resolve) => setTimeout(resolve, durationMs));
