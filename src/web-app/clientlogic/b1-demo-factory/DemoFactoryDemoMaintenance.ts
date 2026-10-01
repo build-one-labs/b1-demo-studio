@@ -16,6 +16,7 @@ import {
   displayInfo,
   displaySuccess,
   displayWarning,
+  launchScreen,
   type Form,
   type ObjectInstance
 } from '@buildone/web-core';
@@ -36,10 +37,40 @@ import {
   type StageRow
 } from '../shared/demoFactoryStudio';
 
+import { createDemoConversation } from './DemoFactoryAgentScreen';
+
 /** How often the job is asked how it is doing while a stage runs. */
 const JOB_POLL_MS = 1500;
 
 // ---- Demo ---------------------------------------------------------------------
+
+/** Open an editing chat for the current demo and the selected scene. */
+export async function editWithAgent(eventSource: ObjectInstance): Promise<void> {
+  const screen = screenOf(eventSource);
+  const demo = selectedDemo(screen);
+  if (!demo) return;
+  const scene = selectedScene(screen);
+  try {
+    if (!(await savePendingChanges(eventSource))) return;
+    const conversationId = await createDemoConversation(
+      'I want to edit the video currently open in Demo Factory Studio. Use the supplied demo and scene context, and ask what I would like to change. Wait for my instructions before modifying the definition.',
+      {
+        demoId: demo.id,
+        demoTitle: demo.title,
+        ...(scene && scene.demoId === demo.id
+          ? {
+              sceneId: scene.sceneId,
+              sceneTitle: scene.title,
+              sceneSequence: scene.sequence
+            }
+          : {})
+      }
+    );
+    await launchScreen('agentChatScreen', { repositionTo: conversationId, data: { conversationId } });
+  } catch (error) {
+    displayError(errorMessage(error));
+  }
+}
 
 /** Export the open demo as demo.yaml — the backup and transfer format — as a download. */
 export async function exportDemo(eventSource: ObjectInstance): Promise<void> {

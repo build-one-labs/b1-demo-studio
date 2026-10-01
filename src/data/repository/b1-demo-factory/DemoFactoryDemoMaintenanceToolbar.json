@@ -4,7 +4,7 @@
   "howToUse": "",
   "label": "",
   "moduleGuid": "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4",
-  "objectDescription": "Primary demo actions: Save, Run full demo (save pending edits first), Close. Stage actions live in the corresponding tabs.",
+  "objectDescription": "Primary demo actions: Save, Run full demo, Edit with Demo Agent (current demo and selected scene context), Close. Stage actions live in the corresponding tabs.",
   "objectMasterGuid": "3bec2751-cd4e-4e1e-8d27-f95791bd7d50",
   "objectName": "DemoFactoryDemoMaintenanceToolbar",
   "objectTypeGuid": "c0f01216-5d6f-4923-b9ce-1f3049f9d2b5",
@@ -26,7 +26,7 @@
         "actionType": "PUBLISH",
         "label": "Save",
         "smallImage": "i-lucide-save",
-        "tooltip": "Save the demo — the server validates the document before anything lands"
+        "tooltip": "Save the demo \u2014 the server validates the document before anything lands"
       },
       "instances": []
     },
@@ -45,10 +45,38 @@
       "instances": []
     },
     {
+      "instanceName": "editWithAgent",
+      "objectInstanceGuid": "cd3547f4-ea0d-4a6b-9bd5-65bfddff3667",
+      "objectMasterGuid": "2a34c785-bbd7-439f-aacd-c5e24927f26c",
+      "objectSequence": 3,
+      "attributes": {
+        "actionParameter": "#.editWithAgent(eventSource)",
+        "actionType": "Run",
+        "label": "Edit with Demo Agent",
+        "smallImage": "i-lucide-message-square",
+        "tooltip": "Save demo settings and open a chat with this demo and the selected scene as context"
+      },
+      "instances": []
+    },
+    {
+      "instanceName": "helpAction",
+      "objectInstanceGuid": "c0fd6608-14ee-464b-9e1c-eff8f84459d5",
+      "objectMasterGuid": "2a34c785-bbd7-439f-aacd-c5e24927f26c",
+      "objectSequence": 4,
+      "attributes": {
+        "actionType": "Launch",
+        "actionParameter": "DemoFactoryHelpScreen",
+        "label": "Hilfe",
+        "smallImage": "i-lucide-circle-help",
+        "tooltip": "Anleitung und Mein erstes Video \u00f6ffnen"
+      },
+      "instances": []
+    },
+    {
       "instanceName": "closeAction",
       "objectInstanceGuid": "ce091963-4523-4b98-8d39-b909498a2125",
       "objectMasterGuid": "2a34c785-bbd7-439f-aacd-c5e24927f26c",
-      "objectSequence": 3,
+      "objectSequence": 5,
       "attributes": {
         "actionParameter": "b1.closeScreen(eventSource.screen)",
         "actionType": "Run",

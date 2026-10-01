@@ -4,7 +4,7 @@
   "howToUse": "",
   "label": "",
   "moduleGuid": "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4",
-  "objectDescription": "Toolbar of the demo search screen: New opens the create dialog through the grid (createNewRecord over TableIO → the grid's addRecordContainer), Import opens the demo.yaml import dialog, Ask the Demo Creator starts an agent conversation. Editing, export and the pipeline live on the demo's maintenance screen (issue #17, step 3).",
+  "objectDescription": "Toolbar of the demo search screen: New opens the create dialog through the grid (createNewRecord over TableIO \u2192 the grid's addRecordContainer), Import opens the demo.yaml import dialog, Ask the Demo Creator starts an agent conversation. Editing, export and the pipeline live on the demo's maintenance screen (issue #17, step 3).",
   "objectMasterGuid": "544d6900-f904-4cf0-b5d5-f83ae61f4815",
   "objectName": "DemoFactoryDemoSearchToolbar",
   "objectTypeGuid": "c0f01216-5d6f-4923-b9ce-1f3049f9d2b5",
@@ -26,7 +26,7 @@
         "actionType": "PUBLISH",
         "label": "New demo",
         "smallImage": "i-lucide-plus",
-        "tooltip": "Create a demo — as a copy of the selected one, or from the blank starter"
+        "tooltip": "Create a demo \u2014 as a copy of the selected one, or from the blank starter"
       },
       "instances": []
     },
@@ -55,6 +55,20 @@
         "label": "Ask the Demo Creator",
         "smallImage": "i-lucide-message-square-text",
         "tooltip": "Start a conversation with the Demo Creator agent"
+      },
+      "instances": []
+    },
+    {
+      "instanceName": "helpAction",
+      "objectInstanceGuid": "0d42f4e1-e4f7-4e5a-a690-951df8b60242",
+      "objectMasterGuid": "2a34c785-bbd7-439f-aacd-c5e24927f26c",
+      "objectSequence": 4,
+      "attributes": {
+        "actionType": "Launch",
+        "actionParameter": "DemoFactoryHelpScreen",
+        "label": "Hilfe",
+        "smallImage": "i-lucide-circle-help",
+        "tooltip": "Anleitung und Mein erstes Video \u00f6ffnen"
       },
       "instances": []
     }

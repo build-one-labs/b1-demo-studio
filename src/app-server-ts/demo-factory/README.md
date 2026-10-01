@@ -55,8 +55,20 @@ data sources, plus three small project-owned object types (`b1_log_view`,
 whose Vue components live in `src/web-app/src/components/`. The former
 `DemoFactoryStudio` Vue component is gone (issue #17).
 
-The demo screen's main toolbar contains **Save**, **Run full demo**, and
-**Close**. Pipeline actions validate and await pending demo/voice-over form
+The demo screen's main toolbar contains **Save**, **Run full demo**,
+**Edit with Demo Agent**, **Hilfe**, and **Close**. The editing chat carries the
+current demo ID/title and selected scene ID/title/sequence as explicit context;
+it waits for the user's instructions before changing the definition. Pending
+demo/voice-over edits are saved first. A new scene selection does not change an
+already-open conversation's context.
+
+**Hilfe** is also available in the app menu and demo search toolbar. It opens
+`DemoFactoryHelpScreen`, a B1 window using `b1_native_component` with the global
+`DemoFactoryHelp.vue` component. The self-contained German HTML guide lives at
+`src/web-app/public/help/demo-factory.html`; its nine chapters include the
+eight-step **Mein erstes Video** walkthrough.
+
+Pipeline actions validate and await pending demo/voice-over form
 changes before starting; invalid or failed saves prevent a run. **Validate**
 and **More actions** (Export/Delete) live in Demo, **Generate voiceover** in
 Voice-over, and explicit **Record selected scene** / **Record all scenes**

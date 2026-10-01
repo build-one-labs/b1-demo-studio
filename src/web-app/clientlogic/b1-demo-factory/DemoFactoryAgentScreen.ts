@@ -22,6 +22,34 @@ import { DEMO_CREATOR_AGENT_GUID, errorMessage, formOf, screenOfObject } from '.
 interface AgentPayload {
   demoId?: string;
   demoTitle?: string;
+  sceneId?: string;
+  sceneTitle?: string;
+  sceneSequence?: number;
+}
+
+/** Create a chat with explicit record context; the agent reads the saved definition through its tools. */
+export async function createDemoConversation(prompt: string, payload: AgentPayload): Promise<string> {
+  const result = (await invokeServerTask({
+    name: 'agent-proxy',
+    methodName: 'agent-server-proxy-actions/create-conversation',
+    methodType: 'coreServerAction',
+    paramObj: {
+      environmentUrl: window.location.origin,
+      agentObjectMasterGuid: DEMO_CREATOR_AGENT_GUID,
+      prompt,
+      ...(payload.demoId
+        ? {
+            systemPromptSuffix: `Demo Factory Studio editing context: ${JSON.stringify(payload)}. Read this demo's current definition before editing. "This demo" refers to demoId; "this scene", "after this scene" and "here" refer to sceneId when supplied. If no sceneId is supplied, ask which scene the user means before making scene-specific changes.`
+          }
+        : {})
+    }
+  })) as Record<string, unknown>;
+  const conversationId = String(result?.conversationId ?? result?.conversation_id ?? result?.id ?? '').replaceAll(
+    '-',
+    ''
+  );
+  if (!conversationId) throw new Error('The conversation was created but its id was not returned');
+  return conversationId;
 }
 
 export async function startConversation(eventSource: ObjectInstance): Promise<void> {
@@ -38,24 +66,7 @@ export async function startConversation(eventSource: ObjectInstance): Promise<vo
   }
   const payload = (screen.payload?.data ?? eventSource.screen?.payload?.data ?? {}) as AgentPayload;
   try {
-    const result = (await invokeServerTask({
-      name: 'agent-proxy',
-      methodName: 'agent-server-proxy-actions/create-conversation',
-      methodType: 'coreServerAction',
-      paramObj: {
-        environmentUrl: window.location.origin,
-        agentObjectMasterGuid: DEMO_CREATOR_AGENT_GUID,
-        prompt,
-        ...(payload.demoId
-          ? { systemPromptSuffix: `The user has the demo "${payload.demoId}" open in the Demo Factory Studio.` }
-          : {})
-      }
-    })) as Record<string, unknown>;
-    const conversationId = String(result?.conversationId ?? result?.conversation_id ?? result?.id ?? '').replaceAll(
-      '-',
-      ''
-    );
-    if (!conversationId) throw new Error('The conversation was created but its id was not returned');
+    const conversationId = await createDemoConversation(prompt, payload);
     closeScreen(screen);
     await launchScreen('agentChatScreen', { repositionTo: conversationId, data: { conversationId } });
   } catch (error) {
