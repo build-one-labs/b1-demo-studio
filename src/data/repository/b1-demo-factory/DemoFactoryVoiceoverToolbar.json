@@ -1,0 +1,38 @@
+{
+  "createdAt": "2026-09-05 16:02:15.655022",
+  "createdBy": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "howToUse": "",
+  "label": "",
+  "moduleGuid": "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4",
+  "objectDescription": "Voice-over tab: generate narration and timing from the saved definition.",
+  "objectMasterGuid": "1096132c-a077-4b90-b4e3-93dccfa87546",
+  "objectName": "DemoFactoryVoiceoverToolbar",
+  "objectTypeGuid": "c0f01216-5d6f-4923-b9ce-1f3049f9d2b5",
+  "owner": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "status": "Active",
+  "templateObject": false,
+  "attributes": {
+    "htmlClass": "regular"
+  },
+  "instances": [
+    {
+      "instanceName": "prepare",
+      "objectInstanceGuid": "735ac239-f52f-4e8b-bf36-28da2007a28f",
+      "objectMasterGuid": "2a34c785-bbd7-439f-aacd-c5e24927f26c",
+      "objectSequence": 1,
+      "attributes": {
+        "actionParameter": "#.runStage(eventSource, 'prepare')",
+        "actionType": "Run",
+        "label": "Generate voiceover",
+        "smallImage": "i-lucide-audio-lines",
+        "tooltip": "Save changes and generate narration, captions and cue timings"
+      },
+      "instances": []
+    }
+  ],
+  "links": [],
+  "tags": [],
+  "tenantId": null,
+  "validFrom": null,
+  "validUntil": null
+}

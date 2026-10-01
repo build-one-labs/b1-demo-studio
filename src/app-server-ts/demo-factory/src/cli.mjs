@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import path from 'node:path';
 import {loadDotEnv} from './lib/env.mjs';
-import {createRun, loadDemo, rehomeManifest, loadLatestRun, readJson, sha256, writeJson} from './lib/files.mjs';
+import {createRun, loadDemo, rehomeManifest, loadLatestRun, loadSelectedRun, readJson, sha256, writeJson} from './lib/files.mjs';
 import {prepareNarration} from './lib/narration.mjs';
 import {recordScenes} from './lib/record.mjs';
 import {renderDemo} from './lib/render.mjs';
@@ -11,6 +11,7 @@ await loadDotEnv();
 const [command = 'help', demoId = 'payment-infrastructure', ...flags] = process.argv.slice(2);
 const voiceFlag = flags.find((flag) => flag.startsWith('--voice='));
 const providerOverride = voiceFlag?.split('=')[1];
+const runId = flags.find((flag) => flag.startsWith('--run='))?.slice('--run='.length);
 const scenesFlag = flags.find((flag) => flag.startsWith('--scenes='));
 const sceneFilter = scenesFlag ? new Set(scenesFlag.split('=')[1].split(',').map((value) => value.trim()).filter(Boolean)) : null;
 
@@ -26,6 +27,7 @@ const prepare = async () => {
   const manifest = {
     schemaVersion: 1,
     demoId: demo.id,
+    demoTitle: demo.title,
     demoFile: file,
     demoHash: `sha256:${sha256(JSON.stringify(demo))}`,
     runId,
@@ -51,6 +53,12 @@ const record = async () => {
 
 const render = async () => {
   const {demo} = await loadDemo(demoId);
+  if (runId) {
+    const {manifest} = await loadSelectedRun(demoId, runId);
+    const result = await renderDemo({demo: {...demo, title: manifest.demoTitle || demo.title, settings: manifest.settings}, manifest});
+    console.log(`Rendered ${result.outputFile}`);
+    return;
+  }
   const {runDir} = await loadLatestRun(demoId);
   const manifest = rehomeManifest(await readJson(path.join(runDir, 'run-manifest.json')), runDir);
   const result = await renderDemo({demo, manifest});
@@ -63,6 +71,6 @@ switch (command) {
   case 'record': await record(); break;
   case 'render': await render(); break;
   default:
-    console.log('Usage: node src/cli.mjs <validate|prepare|record|render> <demo-id> [--voice=elevenlabs|silent] [--scenes=id-1,id-2]');
+    console.log('Usage: node src/cli.mjs <validate|prepare|record|render> <demo-id> [--voice=elevenlabs|silent] [--scenes=id-1,id-2] [--run=run-id (render)]');
     process.exitCode = command === 'help' ? 0 : 1;
 }

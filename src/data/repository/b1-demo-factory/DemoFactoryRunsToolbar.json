@@ -1,0 +1,64 @@
+{
+  "createdAt": "2026-09-05 16:02:15.655022",
+  "createdBy": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "howToUse": "",
+  "label": "",
+  "moduleGuid": "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4",
+  "objectDescription": "Runs tab actions operate on the selected run: render, open video and captions.",
+  "objectMasterGuid": "4f464dee-ec34-4c34-ad0a-a67fe52ccf18",
+  "objectName": "DemoFactoryRunsToolbar",
+  "objectTypeGuid": "c0f01216-5d6f-4923-b9ce-1f3049f9d2b5",
+  "owner": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "status": "Active",
+  "templateObject": false,
+  "attributes": {
+    "htmlClass": "regular"
+  },
+  "instances": [
+    {
+      "instanceName": "render",
+      "objectInstanceGuid": "baca10a8-cb80-42ed-bc88-fe52c36a29e5",
+      "objectMasterGuid": "2a34c785-bbd7-439f-aacd-c5e24927f26c",
+      "objectSequence": 1,
+      "attributes": {
+        "actionParameter": "#.renderSelectedRun(eventSource)",
+        "actionType": "Run",
+        "label": "Render selected run",
+        "smallImage": "i-lucide-clapperboard",
+        "tooltip": "Render the selected recorded run into MP4"
+      },
+      "instances": []
+    },
+    {
+      "instanceName": "openVideo",
+      "objectInstanceGuid": "5d4fe69d-fd70-484d-9502-7058be0092fc",
+      "objectMasterGuid": "2a34c785-bbd7-439f-aacd-c5e24927f26c",
+      "objectSequence": 2,
+      "attributes": {
+        "actionType": "Run",
+        "actionParameter": "#.openRunArtefact(eventSource, 'videoUrl')",
+        "label": "Open video",
+        "smallImage": "i-lucide-film"
+      },
+      "instances": []
+    },
+    {
+      "instanceName": "openCaptions",
+      "objectInstanceGuid": "42eeb0c3-6997-49ef-a631-a0145396cce8",
+      "objectMasterGuid": "2a34c785-bbd7-439f-aacd-c5e24927f26c",
+      "objectSequence": 3,
+      "attributes": {
+        "actionType": "Run",
+        "actionParameter": "#.openRunArtefact(eventSource, 'srtUrl')",
+        "label": "Open captions",
+        "smallImage": "i-lucide-captions"
+      },
+      "instances": []
+    }
+  ],
+  "links": [],
+  "tags": [],
+  "tenantId": null,
+  "validFrom": null,
+  "validUntil": null
+}

@@ -4,7 +4,7 @@
   "howToUse": "",
   "label": "",
   "moduleGuid": "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4",
-  "objectDescription": "Maintenance screen of one demo in the native Demo Factory Studio (issue #17), opened from the search grid's title link and positioned by repositionTo on DemoFactoryDemoDSO (keyFields id). Toolbars: Save / Export / Delete / Close, and the pipeline stages. Tabs: Demo (settings form), Voice-over (narration form), Scenes (toolbar and the scene grid, whose title link opens the modal DemoFactorySceneMaintenance) and Runs (this demo's runs via Join, link to the run maintenance). DemoFactoryStageDSO carries the host's verdict per stage for the pipeline toolbar. Timeline and log join in later steps.",
+  "objectDescription": "Demo editor with Save / Run full demo / Close, a persistent pipeline status bar, and contextual actions in Demo, Voice-over, Scenes and Runs tabs. Log shows detailed pipeline output.",
   "objectMasterGuid": "8df76e07-743f-4a1b-910d-4bb41f7126fb",
   "objectName": "DemoFactoryDemoMaintenance",
   "objectTypeGuid": "d188099d-8548-49f0-86e4-c4b28dda9ecc",
@@ -49,14 +49,6 @@
       "instances": []
     },
     {
-      "instanceName": "DemoFactoryPipelineToolbar",
-      "objectInstanceGuid": "c5c86642-88d9-4af2-9d78-1633af1e4d76",
-      "objectMasterGuid": "c7176d34-6169-4d2c-9207-5a7339ccee0f",
-      "objectSequence": 2,
-      "attributes": {},
-      "instances": []
-    },
-    {
       "instanceName": "a",
       "objectInstanceGuid": "8e77d596-a0a8-4687-8715-2f91e960d8e5",
       "objectMasterGuid": "31572117-2fe3-4262-ba03-20a74c6b59ca",
@@ -95,10 +87,18 @@
                   },
                   "instances": [
                     {
+                      "instanceName": "DemoFactoryDemoActionsToolbar",
+                      "objectInstanceGuid": "693f5dde-298d-45da-8a85-a532e0434f72",
+                      "objectMasterGuid": "e95bfdad-ee9e-4769-9b37-f90983d9cf13",
+                      "objectSequence": 1,
+                      "attributes": {},
+                      "instances": []
+                    },
+                    {
                       "instanceName": "DemoFactoryDemoForm",
                       "objectInstanceGuid": "f62112c9-6596-4873-b297-c93f60e63f49",
                       "objectMasterGuid": "aff98969-906d-4c91-950f-e2f270a9b619",
-                      "objectSequence": 1,
+                      "objectSequence": 2,
                       "attributes": {},
                       "instances": []
                     }
@@ -128,10 +128,18 @@
                   },
                   "instances": [
                     {
+                      "instanceName": "DemoFactoryVoiceoverToolbar",
+                      "objectInstanceGuid": "e95d1d60-118d-4596-80b5-4aa74cd784a1",
+                      "objectMasterGuid": "1096132c-a077-4b90-b4e3-93dccfa87546",
+                      "objectSequence": 1,
+                      "attributes": {},
+                      "instances": []
+                    },
+                    {
                       "instanceName": "DemoFactoryVoiceoverForm",
                       "objectInstanceGuid": "fa06b235-bfba-4d49-9189-7e1f63663865",
                       "objectMasterGuid": "9073d022-86c4-465b-8eef-6365eac87788",
-                      "objectSequence": 1,
+                      "objectSequence": 2,
                       "attributes": {},
                       "instances": []
                     }
@@ -202,10 +210,18 @@
                   },
                   "instances": [
                     {
+                      "instanceName": "DemoFactoryRunsToolbar",
+                      "objectInstanceGuid": "6e56450b-961e-4656-964e-caf34033f435",
+                      "objectMasterGuid": "4f464dee-ec34-4c34-ad0a-a67fe52ccf18",
+                      "objectSequence": 1,
+                      "attributes": {},
+                      "instances": []
+                    },
+                    {
                       "instanceName": "DemoFactoryRunGrid",
                       "objectInstanceGuid": "36fe073f-eb5d-49cc-bf07-0b571fa4a928",
                       "objectMasterGuid": "48343e20-b19a-4027-ad5f-846cc3dc2017",
-                      "objectSequence": 1,
+                      "objectSequence": 2,
                       "attributes": {},
                       "instances": []
                     }
@@ -257,6 +273,16 @@
       "attributes": {
         "initialFetch": "",
         "maintenanceScreen": "DemoFactoryRunMaintenance"
+      },
+      "instances": []
+    },
+    {
+      "instanceName": "DemoFactoryJobStatus",
+      "objectInstanceGuid": "54a0ccfc-4f03-41ef-9571-6bd42ce5ed59",
+      "objectMasterGuid": "0aee09af-e45a-4f5c-a685-b4664cc675d5",
+      "objectSequence": 2,
+      "attributes": {
+        "htmlClass": "demo-job-status"
       },
       "instances": []
     }

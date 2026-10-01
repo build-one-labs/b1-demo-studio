@@ -1,0 +1,10 @@
+/* The framework renders submenu labels in a slot. PrimeVue otherwise treats
+   these buttons as icon-only and clips the label to a square button. */
+.demo-actions-toolbar .p-button-icon-only {
+  width: auto;
+  padding-inline: 0.75rem;
+}
+
+.demo-actions-toolbar .p-button-icon-only > span {
+  white-space: nowrap;
+}

@@ -1,0 +1,53 @@
+{
+  "createdAt": "2026-09-05 16:02:15.655022",
+  "createdBy": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "howToUse": "",
+  "label": "",
+  "moduleGuid": "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4",
+  "objectDescription": "Less frequent demo actions in a dropdown: export and delete.",
+  "objectMasterGuid": "abf1cf15-ebbf-49f5-a5ac-a6ab64cb1fba",
+  "objectName": "DemoFactoryMoreActions",
+  "objectTypeGuid": "090cccbf-30df-43f5-88de-bc848a07c43d",
+  "owner": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "status": "Active",
+  "templateObject": false,
+  "attributes": {
+    "label": "More actions",
+    "smallImage": "i-lucide-ellipsis"
+  },
+  "instances": [
+    {
+      "instanceName": "exportAction",
+      "objectInstanceGuid": "48a22864-c98f-4788-a96c-5266d4796095",
+      "objectMasterGuid": "2a34c785-bbd7-439f-aacd-c5e24927f26c",
+      "objectSequence": 2,
+      "attributes": {
+        "actionParameter": "#.exportDemo(eventSource)",
+        "actionType": "Run",
+        "label": "Export",
+        "smallImage": "i-lucide-download",
+        "tooltip": "Download the demo as demo.yaml"
+      },
+      "instances": []
+    },
+    {
+      "instanceName": "deleteAction",
+      "objectInstanceGuid": "64cdd848-4c74-4d8e-a492-14b2f0095325",
+      "objectMasterGuid": "2a34c785-bbd7-439f-aacd-c5e24927f26c",
+      "objectSequence": 3,
+      "attributes": {
+        "actionParameter": "#.deleteDemo(eventSource)",
+        "actionType": "Run",
+        "label": "Delete",
+        "smallImage": "i-lucide-trash-2",
+        "tooltip": "Delete the demo with its scenes and its directory"
+      },
+      "instances": []
+    }
+  ],
+  "links": [],
+  "tags": [],
+  "tenantId": null,
+  "validFrom": null,
+  "validUntil": null
+}

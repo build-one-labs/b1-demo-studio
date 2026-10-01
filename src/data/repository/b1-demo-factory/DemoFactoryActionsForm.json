@@ -4,7 +4,7 @@
   "howToUse": "",
   "label": "",
   "moduleGuid": "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4",
-  "objectDescription": "Actions tab of the native Studio inspector, over DemoFactorySceneDSO: the scene's browser actions and its assertions, each a JSON array edited in a b1_json_field (DemoFactoryJsonField master) with live parse feedback, side by side. Replaces the Actions tab of the former DemoFactoryStudio component (issue #17, step 2).",
+  "objectDescription": "Actions tab of the scene dialog: browser actions and assertions are structured JSON arrays edited side by side with standard b1_textarea fields in JSON mode. Values remain arrays; malformed input is marked invalid and does not overwrite the record.",
   "objectMasterGuid": "a468fadb-2933-44ce-aeaf-c96902941d01",
   "objectName": "DemoFactoryActionsForm",
   "objectTypeGuid": "130726b3-7c42-4f22-a324-cc07f3d21feb",
@@ -34,11 +34,12 @@
             {
               "instanceName": "actions",
               "objectInstanceGuid": "63f68201-03d2-4911-aa9f-8f31bfc394b0",
-              "objectMasterGuid": "3d2ef757-6018-4f34-84b9-fbc9311f54f9",
+              "objectMasterGuid": "531100c8-2ec2-4e63-9195-1e2663071e94",
               "objectSequence": 1,
               "attributes": {
                 "label": "Browser actions (JSON array)",
-                "rows": 20
+                "rows": 20,
+                "dataType": "json"
               },
               "instances": []
             }
@@ -73,11 +74,12 @@
             {
               "instanceName": "assertions",
               "objectInstanceGuid": "13cb03c4-f030-459e-aad2-21b2d6aab2d3",
-              "objectMasterGuid": "3d2ef757-6018-4f34-84b9-fbc9311f54f9",
+              "objectMasterGuid": "531100c8-2ec2-4e63-9195-1e2663071e94",
               "objectSequence": 1,
               "attributes": {
                 "label": "Assertions (JSON array)",
-                "rows": 20
+                "rows": 20,
+                "dataType": "json"
               },
               "instances": []
             }

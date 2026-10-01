@@ -222,11 +222,11 @@ export class DemoFactoryStudio {
 
   @B1Action({ description: 'Start a pipeline stage (validate, prepare, record, render or all)' })
   async startJob({
-    body: { action = 'validate', demoId = '', scenes = [], voice } = {}
-  }: B1ActionPayload<{ action?: JobAction; demoId?: string; scenes?: string[]; voice?: string }> = {}) {
+    body: { action = 'validate', demoId = '', scenes = [], voice, runId } = {}
+  }: B1ActionPayload<{ action?: JobAction; demoId?: string; scenes?: string[]; voice?: string; runId?: string }> = {}) {
     this.assertOperator();
     if (this.job.status === 'running') throw new Error('Another job is already running');
-    const command = buildJobCommand({ action, demoId, scenes, voice });
+    const command = buildJobCommand({ action, demoId, scenes, voice, runId });
 
     // The screen disables what this host cannot do, but it is not the only
     // caller and its capability snapshot is as old as its last fetch. Refuse

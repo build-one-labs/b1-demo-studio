@@ -46,15 +46,27 @@ The blueprint app `b1-demo-factory` starts on `DemoFactoryNativeScreen`: a
 sidebar menu (`DemoFactoryMenu`) with Demos, Runs and Settings. Demos and runs
 follow the standard search → maintenance pattern — `DemoFactoryDemoSearch`
 opens `DemoFactoryDemoMaintenance` (settings, voice-over, scenes, runs and the
-pipeline log, with the toolbar that runs the stages), a scene opens the modal
+pipeline log, with contextual actions in each tab), a scene opens the modal
 `DemoFactorySceneMaintenance`, `DemoFactoryRunSearch` opens
 `DemoFactoryRunMaintenance` (preview with video and scene timeline, facts,
 scenes, captions). Everything is standard blueprint objects over the module's
 data sources, plus three small project-owned object types (`b1_log_view`,
 `b1_media_player`, `b1_demo_timeline`) and one form field (`b1_json_field`),
 whose Vue components live in `src/web-app/src/components/`. The former
-`DemoFactoryStudio` Vue component is gone (issue #17). Three deliberate
-differences from the upstream standalone Studio remain:
+`DemoFactoryStudio` Vue component is gone (issue #17).
+
+The demo screen's main toolbar contains **Save**, **Run full demo**, and
+**Close**. Pipeline actions validate and await pending demo/voice-over form
+changes before starting; invalid or failed saves prevent a run. **Validate**
+and **More actions** (Export/Delete) live in Demo, **Generate voiceover** in
+Voice-over, and explicit **Record selected scene** / **Record all scenes**
+actions in Scenes. Runs offers **Render selected run**, **Open video**, and
+**Open captions**. Selected-run rendering passes `--run=<run-id>` and uses
+the run's recorded settings rather than the latest-run pointer. A status bar
+above the tabs keeps progress, **View log**, and the running job's **Cancel
+job** available across tabs.
+
+Three deliberate differences from the upstream standalone Studio remain:
 
 - **No second web server.** Every call goes to the `demo-factory` server actions
   in `src/app-server-ts`, so the dashboard is part of the application rather
@@ -380,6 +392,19 @@ ends on `Selecting composition B1Demo…` with no error at all is the watcher
 restart — both are above.
 
 ## Authoring
+
+### Eleven v4 voice-over
+
+Set **Voice-over → ElevenLabs model** to `eleven_v4`, save, then prepare
+and re-record before rendering: the new voice changes the action timing.
+`ELEVENLABS_MODEL_ID`, when set on the server, overrides this field.
+The factory uses the [Text-to-Dialogue timing API](https://elevenlabs.io/docs/api-reference/text-to-dialogue/convert-with-timestamps)
+for v4 and keeps character timestamps for cues and captions. Existing models
+continue using Text-to-Speech. Stability and similarityBoost map to dialogue
+settings; style and speakerBoost are only sent to the legacy TTS API.
+V4 requests are capped at 2,000 characters even when chunkChars is 0;
+continuity text is capped at 100 characters and uses future_text for v4.
+An ElevenLabs key and voice with access to the model are required.
 
 See `TUTORIAL.md` (the full walkthrough from empty project to finished MP4),
 `AUTHORING.md` (scene rules, actions, cue markers, timelapse, setup block,

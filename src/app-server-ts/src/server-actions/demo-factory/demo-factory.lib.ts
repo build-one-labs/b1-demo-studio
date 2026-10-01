@@ -278,16 +278,21 @@ export const buildJobCommand = ({
   action,
   demoId,
   scenes = [],
-  voice
+  voice,
+  runId
 }: {
   action: JobAction;
   demoId: string;
   scenes?: string[];
   voice?: string;
+  runId?: string;
 }): JobCommand => {
   assertSafeId(demoId, 'demo id');
   const sceneIds = scenes.map((scene) => assertSafeId(scene, 'scene id'));
   if (voice && !['auto', 'elevenlabs', 'silent'].includes(voice)) throw new Error('Invalid voice provider');
+  if (runId && (action !== 'render' || !/^[\dA-Za-z][\w-]*$/.test(runId))) {
+    throw new Error('Invalid render run id');
+  }
 
   switch (action) {
     case 'validate':
@@ -303,7 +308,7 @@ export const buildJobCommand = ({
       return { script: 'src/cli.mjs', args, step: 'record' };
     }
     case 'render':
-      return { script: 'src/cli.mjs', args: ['render', demoId], step: 'render' };
+      return { script: 'src/cli.mjs', args: ['render', demoId, ...(runId ? [`--run=${runId}`] : [])], step: 'render' };
     case 'all':
       return { script: 'tools/run-demo.mjs', args: [demoId], step: 'all' };
     default:

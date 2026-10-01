@@ -4,7 +4,7 @@
   "howToUse": "",
   "label": "",
   "moduleGuid": "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4",
-  "objectDescription": "Toolbar of the demo maintenance screen: Save publishes saveChanges over the TableIO links to the Demo and Voice-over forms (the server-side materializer validates the document before anything lands); Export downloads demo.yaml; Delete removes the demo and closes; Close leaves without saving. toolbarKey names this object because a toolbar renders the instances of the object its key points at (issue #17, step 3).",
+  "objectDescription": "Primary demo actions: Save, Run full demo (save pending edits first), Close. Stage actions live in the corresponding tabs.",
   "objectMasterGuid": "3bec2751-cd4e-4e1e-8d27-f95791bd7d50",
   "objectName": "DemoFactoryDemoMaintenanceToolbar",
   "objectTypeGuid": "c0f01216-5d6f-4923-b9ce-1f3049f9d2b5",
@@ -31,30 +31,16 @@
       "instances": []
     },
     {
-      "instanceName": "exportAction",
-      "objectInstanceGuid": "48a22864-c98f-4788-a96c-5266d4796095",
+      "instanceName": "runAll",
+      "objectInstanceGuid": "d0600545-957f-4fa3-b798-1a97935410c8",
       "objectMasterGuid": "2a34c785-bbd7-439f-aacd-c5e24927f26c",
       "objectSequence": 2,
       "attributes": {
-        "actionParameter": "#.exportDemo(eventSource)",
+        "actionParameter": "#.runStage(eventSource, 'all')",
         "actionType": "Run",
-        "label": "Export",
-        "smallImage": "i-lucide-download",
-        "tooltip": "Download the demo as demo.yaml"
-      },
-      "instances": []
-    },
-    {
-      "instanceName": "deleteAction",
-      "objectInstanceGuid": "64cdd848-4c74-4d8e-a492-14b2f0095325",
-      "objectMasterGuid": "2a34c785-bbd7-439f-aacd-c5e24927f26c",
-      "objectSequence": 3,
-      "attributes": {
-        "actionParameter": "#.deleteDemo(eventSource)",
-        "actionType": "Run",
-        "label": "Delete",
-        "smallImage": "i-lucide-trash-2",
-        "tooltip": "Delete the demo with its scenes and its directory"
+        "label": "Run full demo",
+        "smallImage": "i-lucide-play",
+        "tooltip": "Save changes, validate, sign in, generate voiceover, record all scenes and render"
       },
       "instances": []
     },
@@ -62,7 +48,7 @@
       "instanceName": "closeAction",
       "objectInstanceGuid": "ce091963-4523-4b98-8d39-b909498a2125",
       "objectMasterGuid": "2a34c785-bbd7-439f-aacd-c5e24927f26c",
-      "objectSequence": 4,
+      "objectSequence": 3,
       "attributes": {
         "actionParameter": "b1.closeScreen(eventSource.screen)",
         "actionType": "Run",
