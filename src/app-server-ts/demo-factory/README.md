@@ -68,6 +68,13 @@ already-open conversation's context.
 `src/web-app/public/help/demo-factory.html`; its nine chapters include the
 eight-step **Mein erstes Video** walkthrough.
 
+The Codespace pins `B1_AGENT_SERVER_URL` to the framework's current endpoint,
+`https://adorable.test.build.one`, in `.devcontainer/devcontainer.json`.
+The retired `try-adorable.test.build.one` endpoint returns a plain 404 even at
+its root and cannot create conversations. Deployments with an explicit
+`B1_AGENT_SERVER_URL` must also use a reachable agent server; changing this
+variable requires restarting/recreating the app server.
+
 Pipeline actions validate and await pending demo/voice-over form
 changes before starting; invalid or failed saves prevent a run. **Validate**
 and **More actions** (Export/Delete) live in Demo, **Generate voiceover** in
