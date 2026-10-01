@@ -57,6 +57,33 @@
         "tooltip": "Delete the selected scene"
       },
       "instances": []
+    },
+    {
+      "instanceName": "record",
+      "objectInstanceGuid": "dcd82d58-4758-41cf-8e08-92341edaa3ad",
+      "objectMasterGuid": "2a34c785-bbd7-439f-aacd-c5e24927f26c",
+      "objectSequence": 4,
+      "attributes": {
+        "actionParameter": "#.runStage(eventSource, 'record')",
+        "actionType": "Run",
+        "label": "Record selected scene",
+        "smallImage": "i-lucide-video",
+        "tooltip": "Save changes and record only the selected scene"
+      },
+      "instances": []
+    },
+    {
+      "instanceName": "recordAll",
+      "objectInstanceGuid": "a4526974-a8b5-48f4-93b6-348ebd005c71",
+      "objectMasterGuid": "2a34c785-bbd7-439f-aacd-c5e24927f26c",
+      "objectSequence": 5,
+      "attributes": {
+        "actionType": "Run",
+        "actionParameter": "#.runStage(eventSource, 'record', true)",
+        "label": "Record all scenes",
+        "smallImage": "i-lucide-video"
+      },
+      "instances": []
     }
   ],
   "links": [],

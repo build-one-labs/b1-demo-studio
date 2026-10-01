@@ -17,6 +17,7 @@ import type { FormElement } from '@buildone/web-core';
 export default defineNuxtPlugin(() => {
   registerNewFieldTypeComponent(
     () => import('~/components/B1JsonField.vue'),
-    (element: FormElement) => element.blueprint?.objectType === 'jsonField'
+    (element: FormElement) =>
+      element.attributes.uiComponentAlias === 'jsonField' || element.blueprint?.objectType === 'jsonField'
   );
 });

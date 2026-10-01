@@ -12,6 +12,7 @@
   "status": "Active",
   "templateObject": false,
   "attributes": {
+    "uiComponentAlias": "jsonField",
     "dataType": "json",
     "label": "JSON",
     "rows": 12

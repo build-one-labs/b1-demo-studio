@@ -141,6 +141,9 @@
     "COREPACK_ENABLE_DOWNLOAD_PROMPT": "0",
     "CLEAR_PREBUILD_CACHE": "true",
     "B1_WORKSPACE": "true",
+    // Use the framework's current agent endpoint rather than the retired
+    // try-adorable endpoint inherited from older Codespaces secrets.
+    "B1_AGENT_SERVER_URL": "https://adorable.test.build.one",
     "AWS_REGION": "eu-central-1"
   },
 

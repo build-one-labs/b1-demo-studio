@@ -6,7 +6,8 @@
  * Every action calls a server action of the demo factory
  * (`demo-factory/demo-factory-studio/*`) — the same actions the former Vue
  * component called by URL — or commits through the data sources the forms
- * already edit. Saving needs no code: the Save toolbar commits the forms.
+ * already edit. The Save toolbar commits the forms; pipeline actions await
+ * validation and pending form commits before reading the saved definition.
  */
 import {
   closeScreen,
@@ -15,6 +16,8 @@ import {
   displayInfo,
   displaySuccess,
   displayWarning,
+  launchScreen,
+  type Form,
   type ObjectInstance
 } from '@buildone/web-core';
 
@@ -34,10 +37,40 @@ import {
   type StageRow
 } from '../shared/demoFactoryStudio';
 
+import { createDemoConversation } from './DemoFactoryAgentScreen';
+
 /** How often the job is asked how it is doing while a stage runs. */
 const JOB_POLL_MS = 1500;
 
 // ---- Demo ---------------------------------------------------------------------
+
+/** Open an editing chat for the current demo and the selected scene. */
+export async function editWithAgent(eventSource: ObjectInstance): Promise<void> {
+  const screen = screenOf(eventSource);
+  const demo = selectedDemo(screen);
+  if (!demo) return;
+  const scene = selectedScene(screen);
+  try {
+    if (!(await savePendingChanges(eventSource))) return;
+    const conversationId = await createDemoConversation(
+      'I want to edit the video currently open in Demo Factory Studio. Use the supplied demo and scene context, and ask what I would like to change. Wait for my instructions before modifying the definition.',
+      {
+        demoId: demo.id,
+        demoTitle: demo.title,
+        ...(scene && scene.demoId === demo.id
+          ? {
+              sceneId: scene.sceneId,
+              sceneTitle: scene.title,
+              sceneSequence: scene.sequence
+            }
+          : {})
+      }
+    );
+    await launchScreen('agentChatScreen', { repositionTo: conversationId, data: { conversationId } });
+  } catch (error) {
+    displayError(errorMessage(error));
+  }
+}
 
 /** Export the open demo as demo.yaml — the backup and transfer format — as a download. */
 export async function exportDemo(eventSource: ObjectInstance): Promise<void> {
@@ -158,13 +191,36 @@ function freshSceneId(rows: SceneRow[], base: string): string {
 
 /**
  * Start a pipeline stage for the open demo. `record` films only the selected
- * scene when one is selected — a full take is what "Run full demo" is for.
+ * scene, unless Record all scenes explicitly requests the whole take.
  *
  * The host's verdict on each stage lives in DemoFactoryStageDSO; the rule is
  * server-side (demo-factory.lib.ts) and this only relays it, so a stage is
  * never started on a guess.
  */
-export async function runStage(eventSource: ObjectInstance, stage: string): Promise<void> {
+/** Validate and await form commits before starting any stage that reads the definition. */
+async function savePendingChanges(eventSource: ObjectInstance): Promise<boolean> {
+  const screen = screenOf(eventSource);
+  const forms = ['DemoFactoryDemoForm', 'DemoFactoryVoiceoverForm']
+    .map((name) => screen?.getObject<Form>(name))
+    .filter((form): form is Form => !!form);
+  for (const form of forms) {
+    if (!(await form.validate())) {
+      displayWarning('Please correct the demo settings before starting the pipeline.');
+      return false;
+    }
+  }
+  for (const form of forms) {
+    if (!form.hasPendingChanges()) continue;
+    await form.saveChanges();
+    if (form.hasPendingChanges()) {
+      displayWarning('Changes could not be saved. The pipeline has not been started.');
+      return false;
+    }
+  }
+  return true;
+}
+
+export async function runStage(eventSource: ObjectInstance, stage: string, allScenes = false): Promise<void> {
   const screen = screenOf(eventSource);
   const demo = selectedDemo(screen);
   if (!demo) return;
@@ -174,14 +230,57 @@ export async function runStage(eventSource: ObjectInstance, stage: string): Prom
     return;
   }
   const scene = selectedScene(screen);
-  const scenes = stage === 'record' && scene ? [scene.sceneId] : [];
+  if (stage === 'record' && !allScenes && !scene) {
+    displayWarning('Select a scene, or use Record all scenes.');
+    return;
+  }
+  const scenes = stage === 'record' && !allScenes && scene ? [scene.sceneId] : [];
   try {
+    if (!(await savePendingChanges(eventSource))) return;
     await callStudio('start-job', { action: stage, demoId: demo.id, scenes });
     displayInfo(`${verdict?.label ?? stage} started for ${demo.id}.`, { life: 2500 });
     await watchJob(eventSource);
   } catch (error) {
     displayError(errorMessage(error));
   }
+}
+
+interface SelectedRun {
+  runId: string;
+  demoId: string;
+  recordedAt: string | null;
+  videoUrl: string;
+  srtUrl: string;
+}
+
+export async function renderSelectedRun(eventSource: ObjectInstance): Promise<void> {
+  const screen = screenOf(eventSource);
+  const run = dsoOf<SelectedRun>(screen, DSO.run)?.selectedRecord.value;
+  if (!run || run.demoId !== selectedDemo(screen)?.id) {
+    displayWarning('Select the run to render.');
+    return;
+  }
+  if (!run.recordedAt) {
+    displayWarning('Record the scenes before rendering this run.');
+    return;
+  }
+  try {
+    await callStudio('start-job', { action: 'render', demoId: run.demoId, runId: run.runId });
+    displayInfo('Rendering the selected run.', { life: 2500 });
+    await watchJob(eventSource);
+  } catch (error) {
+    displayError(errorMessage(error));
+  }
+}
+
+export function openRunArtefact(eventSource: ObjectInstance, field: 'videoUrl' | 'srtUrl'): void {
+  const screen = screenOf(eventSource);
+  const run = dsoOf<SelectedRun>(screen, DSO.run)?.selectedRecord.value;
+  if (!run || run.demoId !== selectedDemo(screen)?.id || !run[field]) {
+    displayWarning('Select a run with a rendered video.');
+    return;
+  }
+  window.open(run[field], '_blank', 'noopener');
 }
 
 export async function cancelJob(): Promise<void> {

@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Demo Factory – Vom ersten Entwurf zum fertigen Video</title>
+<style>
+:root { color-scheme: light; --ink: #203047; --muted: #53657c; --blue: #175cd3; --line: #dce4ef; }
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 24px; }
+body { margin: 0; color: var(--ink); background: #f7f9fc; font: 16px/1.65 system-ui, sans-serif; }
+a { color: var(--blue); text-underline-offset: 3px; }
+a:focus-visible { outline: 3px solid var(--blue); outline-offset: 4px; }
+header { padding: 42px 32px 30px; background: #eaf2ff; border-bottom: 1px solid var(--line); }
+header > div { max-width: 1000px; margin: auto; }
+.eyebrow { font-size: .8rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--blue); }
+h1 { max-width: 780px; font-size: clamp(1.8rem, 4vw, 2.6rem); line-height: 1.2; margin: 12px 0; }
+header p { max-width: 740px; margin: 0; color: var(--muted); }
+.layout { display: grid; grid-template-columns: 225px minmax(0, 1fr); gap: 32px; max-width: 1064px; margin: auto; padding: 32px; }
+nav { position: sticky; top: 24px; align-self: start; }
+nav strong { display: block; margin-bottom: 12px; }
+nav a { display: block; padding: 7px 0; text-decoration: none; font-size: .92rem; }
+nav a:hover { text-decoration: underline; }
+main { min-width: 0; }
+section { margin-bottom: 28px; padding: 26px; border: 1px solid var(--line); border-radius: 14px; background: white; }
+h2 { margin: 0 0 14px; font-size: 1.45rem; line-height: 1.35; }
+h3 { font-size: 1.08rem; margin: 24px 0 6px; }
+p { margin: 8px 0 14px; }
+ul, ol { padding-left: 24px; }
+li { margin-bottom: 8px; }
+.steps { list-style: none; padding: 0; counter-reset: step; }
+.steps > li { counter-increment: step; margin: 24px 0; padding-left: 42px; position: relative; }
+.steps > li::before { content: counter(step); position: absolute; left: 0; top: 0; width: 29px; height: 29px; display: grid; place-items: center; background: #eaf2ff; color: var(--blue); border-radius: 50%; font-weight: 700; }
+.steps h3 { margin-top: 0; }
+.note { padding: 14px 18px; border-left: 3px solid var(--blue); background: #eff5ff; border-radius: 0 8px 8px 0; }
+.example { border-left: 3px solid #7c9abf; padding: 10px 16px; background: #f7f9fc; margin: 12px 0; }
+code { font: .9em ui-monospace, monospace; background: #edf2f8; padding: 2px 5px; border-radius: 4px; overflow-wrap: anywhere; }
+pre { overflow-x: auto; padding: 16px; background: #edf2f8; border-radius: 8px; font-size: .85rem; line-height: 1.5; }
+pre code { padding: 0; }
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: .92rem; }
+th, td { text-align: left; vertical-align: top; padding: 10px 8px; border-bottom: 1px solid var(--line); }
+th { background: #f7f9fc; }
+footer { color: var(--muted); font-size: .85rem; padding: 0 0 24px; }
+@media (max-width: 760px) { .layout { grid-template-columns: 1fr; padding: 20px; gap: 20px; } nav { position: static; } nav a { display: inline-block; margin-right: 14px; } header { padding: 28px 20px; } section { padding: 20px; } }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+@media print { body { background: white; font-size: 11pt; } header { padding: 0 0 20px; background: white; } .layout { display: block; padding: 0; } nav { display: none; } section { border: 0; padding: 0; } h2, h3 { break-after: avoid; } pre, tr { break-inside: avoid; } }
+</style>
+</head>
+<body>
+<header><div><span class="eyebrow">B1 Demo Factory · Hilfe</span><h1>Vom ersten Entwurf<br>zum fertigen Demo-Video</h1><p>Du beschreibst, was gezeigt und gesagt werden soll. Die Factory spricht den Text, bedient die App und setzt daraus ein Video zusammen. Hier findest du die Schritte und die Bedeutung der wichtigsten Buttons.</p></div></header>
+<div class="layout">
+<nav aria-label="Kapitel"><strong>Inhalt</strong>
+<a href="#grundidee">1 · So funktioniert es</a>
+<a href="#vorbereitung">2 · Einmal vorbereiten</a>
+<a href="#erstes-video">3 · Mein erstes Video</a>
+<a href="#oberflaeche">4 · Buttons und Tabs</a>
+<a href="#szenen">5 · Szenen und Klicks</a>
+<a href="#agent">6 · Mit dem Agent bearbeiten</a>
+<a href="#stimme">7 · Stimme und Timing</a>
+<a href="#dateien">8 · Ergebnisse und Ablage</a>
+<a href="#probleme">9 · Wenn etwas nicht klappt</a>
+</nav>
+<main>
+<section id="grundidee"><h2>1 · So funktioniert es</h2>
+<p>Eine <strong>Demo</strong> ist der Bauplan für dein Video. Sie enthält Einstellungen und eine geordnete Liste von <strong>Szenen</strong>. Jede Szene hat eine Startseite, einen gesprochenen Text und Aktionen wie Klicks oder Texteingaben.</p>
+<ol><li><strong>Prüfen:</strong> Ist der Bauplan vollständig und gültig?</li><li><strong>Voiceover erstellen:</strong> Den Text sprechen lassen und die Zeitpunkte der Wörter bestimmen.</li><li><strong>Aufnehmen:</strong> Die App im Browser öffnen und die Aktionen ausführen.</li><li><strong>Rendern:</strong> Aufnahmen, Stimme und Untertitel zum fertigen MP4 zusammensetzen.</li></ol>
+<p><strong>Run full demo</strong> führt diese Schritte zusammen aus, einschließlich der Vorbereitung der Anmeldung. Ein <strong>Run</strong> ist ein einzelner Durchlauf. Eine Demo kann viele Runs haben – etwa einen ersten Versuch und eine verbesserte Version.</p>
+<p class="note">Du bearbeitest den Bauplan. Die Factory schneidet daraus automatisch das Video. Änderungen an der Demo ändern eine bereits erzeugte MP4 nicht rückwirkend.</p>
+</section>
+<section id="vorbereitung"><h2>2 · Einmal vorbereiten</h2>
+<p>Öffne im linken Menü <strong>Settings</strong>. Hier stehen die Einstellungen für die laufende Factory und die verfügbaren Arbeitsschritte.</p>
+<h3>Die richtige App erreichen</h3><p><code>B1_BASE_URL</code> ist die Adresse der App, die aufgenommen werden soll. Verwende die richtige Umgebung und bei Bedarf die App-Auswahl, zum Beispiel <code>https://meine-umgebung.example/?app=b1-labs</code>. Der Aufnahme-Browser muss diese Adresse erreichen können.</p>
+<h3>Die Anmeldung vorbereiten</h3><p>Falls die Ziel-App eine Anmeldung verlangt, braucht auch der Aufnahme-Browser eine gültige Sitzung. Die Factory kann diese mit dem konfigurierten API-Schlüssel vorbereiten. Alternativ kannst du in Settings aus einer Sitzung der Ziel-App einen <strong>Auth state</strong> erstellen: in der Ziel-App anmelden, den Wert des Cookies <code>b1.session_token</code> aus den Browser-Entwicklertools übernehmen und die dort angebotene Aktion zum Erstellen des Auth state ausführen.</p>
+<p>Die Adresse in Settings und die Sitzung müssen zur gleichen Ziel-Umgebung gehören. „Auth state minted“ bedeutet, dass eine Anmeldedatei erstellt wurde. Prüfe trotzdem, ob sie für die tatsächlich aufgenommene Adresse erstellt wurde.</p>
+<h3>Die Stimme einrichten</h3><p>Für gesprochene Videos müssen auf dem Server ein ElevenLabs API-Schlüssel und eine Voice-ID verfügbar sein, normalerweise als <code>ELEVENLABS_API_KEY</code> und <code>ELEVENLABS_VOICE_ID</code>. Falls sie fehlen, lass sie von der Person einrichten, die die Umgebung betreibt. Für einen ersten Test kannst du den Provider <code>silent</code> verwenden: Das Video hat dann keine Stimme.</p>
+<p>Settings zeigt außerdem, welche Schritte auf diesem Server möglich sind. Wenn Aufnahme oder Rendern nicht verfügbar sind, muss die Umgebung dafür eingerichtet werden.</p>
+</section>
+<section id="erstes-video"><h2>3 · Mein erstes Video</h2>
+<p>Starte mit einem kurzen Video: eine App öffnen, eine Funktion zeigen, fertig. Eine oder zwei Szenen reichen für den ersten Versuch.</p>
+<ol class="steps">
+<li><h3>Eine Demo anlegen</h3><p>Öffne <strong>Demos</strong> und klicke <strong>New demo</strong>. Wähle eine eindeutige ID wie <code>mein-erstes-video</code> und den Titel „Mein erstes Video“. Die ID darf Kleinbuchstaben, Zahlen und Bindestriche enthalten.</p><p>Unter <strong>Start from</strong> siehst du, ob eine ausgewählte Demo kopiert wird oder du mit einer leeren Vorlage startest. Eine passende vorhandene Demo ist oft der schnellste Einstieg. Klicke <strong>Create demo</strong> und öffne die neue Demo über ihren Titel.</p></li>
+<li><h3>Aufnahme-Einstellungen prüfen</h3><p>Im Tab <strong>Demo</strong> prüfst du die Zieladresse. <strong>Base URL fallback</strong> wird verwendet, wenn die angegebene Umgebungsvariable keinen Wert liefert. Wenn etwa <code>B1_BASE_URL</code> gesetzt ist, hat dieser Wert Vorrang.</p><p>Für den Einstieg sind <strong>1920 × 1080</strong> als Viewport und <strong>30 Frames per second</strong> sinnvoll. Der Viewport ist die Größe des aufgenommenen Browserfensters. Klicke <strong>Save</strong>.</p></li>
+<li><h3>Die erste Szene beschreiben</h3><p>Öffne <strong>Scenes</strong>. Öffne eine vorhandene Szene über ihren Titel oder lege mit <strong>Add scene</strong> eine an. Gib ihr einen klaren Titel, eine passende Start-Route und einen kurzen Sprechertext. Beispiel: „Hier sehen wir unsere Kunden auf der Karte. Ein Klick auf die Gruppe zeigt die einzelnen Adressen.“</p><p>Eine Route wie <code>/screens/MeineKarte?app=meine-app</code> bezeichnet die Seite innerhalb der Ziel-App. Ersetze sie durch eine wirklich vorhandene Seite. Speichere die Szene über den Save-Button im Szenenfenster.</p></li>
+<li><h3>Die Aktionen ergänzen</h3><p>Im Szenenfenster stehen im Tab <strong>Actions</strong> die auszuführenden Aktionen und die Prüfungen als JSON. Wenn du sie nicht selbst schreiben möchtest, speichere und schließe die Szene, wähle ihre Zeile aus und klicke oben <strong>Edit with Demo Agent</strong>.</p><div class="example">„Zeige in dieser Szene die Kundenkarte. Klicke auf die Gruppe mit 12 Adressen, damit die Karte hineinzoomt. Stimme den Klick auf den Sprechertext ab.“</div><p>Prüfe den Vorschlag des Agents und die geänderte Demo, bevor du aufnimmst. Weitere Beispiele findest du in Kapitel 5 und 6.</p></li>
+<li><h3>Die Stimme auswählen</h3><p>Im Tab <strong>Voice-over</strong> wählst du <code>elevenlabs</code> für eine Stimme oder <code>silent</code> für einen stummen Test. Setze als Modell zum Beispiel <code>eleven_v4</code>, wenn dein ElevenLabs-Zugang es unterstützt. Für deutschsprachige Texte ist der Language code <code>de</code>. Speichere.</p></li>
+<li><h3>Den Bauplan prüfen</h3><p>Klicke im Tab <strong>Demo</strong> auf <strong>Validate</strong>. Behebe gemeldete Fehler, etwa eine fehlende Route oder einen falsch geschriebenen Cue. Die Prüfung kontrolliert den Bauplan; ob ein Button in der Ziel-App wirklich vorhanden ist, zeigt erst die Aufnahme.</p></li>
+<li><h3>Das vollständige Video erzeugen</h3><p>Klicke oben <strong>Run full demo</strong>. Die Factory speichert offene Demo-Einstellungen und startet den Durchlauf. In der Statusleiste siehst du den Fortschritt; <strong>View log</strong> öffnet die Details. Während des Laufs kannst du mit <strong>Cancel job</strong> abbrechen.</p><p>Die Aufnahme und besonders das Rendern können dauern. Warte auf „Job complete“. Die Factory führt die Aktionen tatsächlich in der Ziel-App aus – verwende dafür passende Demo-Daten.</p></li>
+<li><h3>Das Ergebnis ansehen</h3><p>Öffne den Tab <strong>Runs</strong>, wähle den fertigen Durchlauf und klicke <strong>Open video</strong>. Prüfe Bild, Stimme, Klicks und Untertitel. Mit <strong>Open captions</strong> öffnest du die separate Untertiteldatei. Über den Run-Titel kommst du zu den Details und zur Vorschau.</p><p>Wenn du etwas ändern möchtest, passe die Demo an und starte einen neuen vollständigen Durchlauf. Dein erstes Demo-Video ist fertig, sobald die MP4 so aussieht und klingt, wie du es möchtest.</p></li>
+</ol>
+</section>
+<section id="oberflaeche"><h2>4 · Buttons und Tabs</h2>
+<p>Die Buttons oben gelten für die aktuelle Demo. Die Buttons in den Tabs gehören zum jeweiligen Arbeitsschritt.</p>
+<div class="table-wrap"><table><thead><tr><th>Ort</th><th>Button</th><th>Bedeutung</th></tr></thead><tbody>
+<tr><td>Oben</td><td>Save</td><td>Änderungen an den Demo-Einstellungen speichern.</td></tr>
+<tr><td>Oben</td><td>Run full demo</td><td>Die komplette Demo mit Voiceover, Aufnahme und Rendern erzeugen.</td></tr>
+<tr><td>Oben</td><td>Edit with Demo Agent</td><td>Chat für diese Demo und die ausgewählte Szene öffnen.</td></tr>
+<tr><td>Oben</td><td>Hilfe / Close</td><td>Diese Anleitung öffnen / das Demo-Fenster schließen.</td></tr>
+<tr><td>Demo</td><td>Validate</td><td>Den Bauplan auf gültige Angaben prüfen.</td></tr>
+<tr><td>Demo</td><td>More actions</td><td>Den Bauplan exportieren oder die Demo löschen. Löschen braucht eine Bestätigung.</td></tr>
+<tr><td>Voice-over</td><td>Generate voiceover</td><td>Stimme und Zeitpunkte vorbereiten; erzeugt noch kein fertiges Video.</td></tr>
+<tr><td>Scenes</td><td>Add / Duplicate / Delete</td><td>Eine Szene ergänzen, die ausgewählte kopieren oder löschen.</td></tr>
+<tr><td>Scenes</td><td>Record selected scene</td><td>Nur die ausgewählte Szene erneut aufnehmen. Für gezielte Korrekturen nach einer erfolgreichen Gesamtaufnahme.</td></tr>
+<tr><td>Scenes</td><td>Record all scenes</td><td>Alle Szenen aufnehmen. Die Stimme muss vorher vorbereitet sein.</td></tr>
+<tr><td>Runs</td><td>Render selected run</td><td>Den ausgewählten aufgenommenen Durchlauf zur MP4 zusammensetzen. Verwendet die in diesem Run gespeicherten Einstellungen.</td></tr>
+<tr><td>Runs</td><td>Open video / Open captions</td><td>Die fertige MP4 / die SRT-Untertitel öffnen.</td></tr>
+<tr><td>Statusleiste</td><td>View log / Cancel job</td><td>Details anzeigen / den laufenden Job abbrechen.</td></tr>
+</tbody></table></div>
+<p>Im Menü <strong>Runs</strong> findest du die Durchläufe aller Demos. <strong>Settings</strong> enthält die Einstellungen der Factory. <strong>Import</strong> auf der Demo-Liste lädt einen vorhandenen <code>demo.yaml</code>-Bauplan.</p>
+</section>
+<section id="szenen"><h2>5 · Szenen und Klicks verstehen</h2>
+<p>Jede Szene startet mit einem frischen Browserzustand. Sie muss ihre Seite selbst öffnen und alles vorbereiten, was sie benötigt. Sie darf sich nicht darauf verlassen, dass eine vorige Szene bereits einen Tab geöffnet hat.</p>
+<h3>Sprechertext und Cue</h3><p>Ein <strong>Cue</strong> ist eine Marke im Sprechertext, zum Beispiel <code>[cue:karte]</code>. Sie wird nicht mitgesprochen. Eine Aktion mit <code>atCue: "karte"</code> wird an diesem Punkt ausgeführt.</p>
+<div class="example">„Hier sehen wir die Kundenkarte. <code>[cue:karte]</code> Jetzt öffnen wir die Kartenansicht.“</div>
+<h3>Eine Aktion als JSON</h3><p>Actions ist eine Liste in eckigen Klammern. Dieses Beispiel klickt zum Cue auf einen Button mit dem sichtbaren Namen „Karte“. Name und Rolle müssen zur echten App passen.</p>
+<pre><code>[
+  {
+    "action": "click",
+    "atCue": "karte",
+    "target": { "role": "button", "name": "Karte" }
+  }
+]</code></pre>
+<p><strong>target</strong> beschreibt das gesuchte Element. <code>role</code> und <code>name</code> bezeichnen etwa einen Button und seine Beschriftung. <code>text</code> sucht nach sichtbarem Text; <code>css</code> ist ein technischer Selektor. Kartenmarker brauchen häufig einen passenden Selektor – „12“ allein kann mehrere Elemente treffen. Lass den Agent die tatsächliche Oberfläche prüfen.</p>
+<p><code>click</code> klickt, <code>fill</code> setzt einen Feldwert, <code>type</code> tippt ihn, <code>press</code> drückt eine Taste, <code>highlight</code> hebt ein Element hervor. <code>waitFor</code> wartet, bis ein Element sichtbar ist. Lange Wartezeiten lassen sich mit <code>timelapse</code> im fertigen Video verkürzen.</p>
+<h3>Assertions: Was muss zu sehen sein?</h3><p>Assertions sind Prüfungen nach den Aktionen. Dieses Beispiel verlangt, dass der Text „Kundenkarte“ sichtbar ist:</p>
+<pre><code>[
+  { "visible": { "text": "Kundenkarte" } }
+]</code></pre>
+<p>Ohne Aktionen oder Prüfungen steht im jeweiligen Feld <code>[]</code>. Ungültiges JSON wird als Fehler markiert. Korrigiere den Text vor dem Speichern; der ungültige Text ersetzt die strukturierten Daten nicht.</p>
+</section>
+<section id="agent"><h2>6 · Mit dem Demo-Agent bearbeiten</h2>
+<ol><li>Öffne die gewünschte Demo.</li><li>Wähle unter <strong>Scenes</strong> die Szene aus, auf die sich dein Wunsch bezieht. Öffne Szenen zum Bearbeiten über ihren Titel; speichere und schließe das Szenenfenster vor dem Chat.</li><li>Klicke <strong>Edit with Demo Agent</strong> in der oberen Toolbar.</li><li>Schreibe im Chat, was du ändern möchtest.</li></ol>
+<p>Der Chat bekommt die Demo-ID, den Titel und – falls ausgewählt – die Szenen-ID, den Szenentitel und die Position mit. Der Agent soll die aktuelle Definition lesen und zunächst auf deinen Änderungswunsch warten.</p>
+<div class="example">„Füge nach dieser Szene eine weitere Szene ein, die zeigt, wie ich einen neuen Kunden anlege. Verwende einen kurzen deutschen Sprechertext.“</div>
+<div class="example">„Füge hier noch einen Klick auf den Kartencluster mit 12 Adressen ein, damit die Karte hineinzoomt. Der Klick soll stattfinden, wenn die Stimme ‚einzelne Adressen‘ sagt.“</div>
+<div class="example">„Kürze den Sprechertext dieser Szene auf ungefähr 20 Sekunden, aber behalte die Cue-Marken für die Klicks bei.“</div>
+<p class="note">Der Kontext wird beim Öffnen des Chats festgelegt. Wenn du später im Studio eine andere Szene auswählst, wechselt ein bereits offener Chat nicht automatisch den Bezug. Nenne dann die neue Szenen-ID oder öffne einen neuen Chat über den Button.</p>
+<p>Ohne ausgewählte Szene wird nur die Demo übergeben. Der Agent soll bei „hier“ oder „nach dieser Szene“ nachfragen. Prüfe seine Änderungen anschließend im Studio; lade die Demo bei Bedarf neu. Starte danach eine neue Aufnahme – für den Einstieg am besten wieder mit <strong>Run full demo</strong>.</p>
+</section>
+<section id="stimme"><h2>7 · Stimme, Untertitel und Timing</h2>
+<p><strong>Provider</strong> bestimmt, ob gesprochen wird: <code>elevenlabs</code> erzeugt Sprache, <code>silent</code> bleibt stumm und <code>auto</code> verwendet ElevenLabs, wenn Schlüssel und Stimme vorhanden sind.</p>
+<p>Der Modellname für v4 lautet <code>eleven_v4</code>. <code>eleven_multilingual_v4</code> ist kein gültiger Modellname. Das bereits verwendete <code>eleven_multilingual_v2</code> bleibt möglich. Eine serverseitig gesetzte Variable <code>ELEVENLABS_MODEL_ID</code> hat Vorrang vor dem Modellfeld. Stimme und Modell müssen im ElevenLabs-Zugang verfügbar sein.</p>
+<p>Längere Texte werden in Stücke aufgeteilt und zusammengefügt. Gleichbleibende Texte und Stimmeinstellungen können aus dem Cache wiederverwendet werden. Das spart erneute Sprachgenerierung.</p>
+<p>Ändert sich der Sprechertext oder die Stimme, können sich die Zeitpunkte der Aktionen ändern. Erzeuge das Voiceover neu, nimm danach die Szenen auf und rendere anschließend – oder starte den vollständigen Durchlauf.</p>
+<p><strong>Show the cursor overlay</strong> blendet den Demo-Mauszeiger ein. <strong>Burn captions into the video</strong> macht Untertitel direkt im Bild sichtbar. Zusätzlich entsteht eine separate SRT-Datei.</p>
+<p><strong>30 fps</strong> bedeutet 30 Bilder pro Sekunde und ist ein guter Standard für App-Demos. 60 fps erzeugt mehr Bilder und erhöht den Renderaufwand. Für Tabellen, Formulare und normale Klickabläufe genügt meist 30 fps.</p>
+</section>
+<section id="dateien"><h2>8 · Ergebnisse und Ablage</h2>
+<p>Der Bauplan lässt sich über <strong>Demo → More actions → Export</strong> als <code>demo.yaml</code> sichern und später importieren. Diese Datei beschreibt das Video; sie ist selbst kein Video.</p>
+<p>Jeder Durchlauf hat einen eigenen Ordner mit einer Run-ID. Nach dem Rendern findest du dort die <strong>MP4</strong>, die <strong>SRT-Untertitel</strong> und Angaben zum Durchlauf. Öffne das Ergebnis am einfachsten über den ausgewählten Run in der App.</p>
+<p>Den Ausgabeordner bestimmt <code>DEMO_OUTPUT_DIR</code>, den Sprach-Cache <code>DEMO_CACHE_DIR</code>. Ohne Konfiguration liegt die Ausgabe im <code>output</code>-Ordner der Factory. Deshalb kann im Workspace ein Pfad unter <code>/workspace/src/app-server-ts/demo-factory/output</code> erscheinen.</p>
+<p>Die Standalone-Deployment-Konfiguration dieses Projekts verwendet <code>/data/demo-factory/output</code> und <code>/data/demo-factory/cache</code> auf einem dauerhaften Volume. Falls du eine andere Ablage möchtest, ändere die Laufzeitkonfiguration über Settings beziehungsweise die Server-Umgebung. Vorhandene Ergebnisse werden dadurch nicht automatisch verschoben.</p>
+</section>
+<section id="probleme"><h2>9 · Wenn etwas nicht klappt</h2>
+<h3>Der Agent-Chat meldet beim Öffnen „404 page not found“</h3><p>Die Adresse des Agent-Servers ist möglicherweise falsch. Sie steht in der Server-Variable <code>B1_AGENT_SERVER_URL</code>. Der aktuelle Standard ist <code>https://adorable.test.build.one</code>; die alte Adresse <code>https://try-adorable.test.build.one</code> ist nicht mehr erreichbar. Lass die Laufzeitkonfiguration korrigieren und den App-Server neu starten. Die Zieladresse deiner Videoaufnahme ist davon unabhängig.</p>
+<h3>Das Log zeigt die Anmeldeseite</h3><p>Prüfe die Zieladresse und den Auth state. Eine Sitzung für eine andere Domain hilft nicht. Melde dich in der Ziel-App an und erstelle einen neuen Auth state für genau diese Umgebung. Ein Fehler beim API-Schlüssel kann dazu führen, dass die Factory einen alten gespeicherten Zustand verwendet.</p>
+<h3>„Model not found“ bei ElevenLabs</h3><p>Prüfe den Modellnamen. Für v4 verwende <code>eleven_v4</code>. Prüfe auch, ob eine Server-Variable das Feld überschreibt und ob dein Zugang das Modell unterstützt.</p>
+<h3>Ein Klick läuft in einen Timeout</h3><p>Die Factory findet das gesuchte Element nicht rechtzeitig. Öffne die Zielseite selbst: Ist die richtige App geladen? Bist du angemeldet? Stimmt der Text des Buttons? Muss vorher ein anderer Tab geöffnet oder auf Daten gewartet werden? Das Log nennt das gesuchte Element; bei fehlgeschlagenen Aufnahmen wird auch ein Screenshot-Pfad ausgegeben.</p>
+<h3>Kein formatiertes JSON oder Speichern klappt nicht</h3><p>Actions und Assertions müssen Listen sein, zum Beispiel <code>[]</code> oder die Beispiele in Kapitel 5. Prüfe Anführungszeichen, Kommas und Klammern. Auch fehlende Titel, ungültige Routen oder ein unbekannter Cue können das Speichern verhindern.</p>
+<h3>Kein fertiges Video trotz Voiceover</h3><p>Voiceover ist nur der erste Produktionsschritt. Danach brauchst du Aufnahme und Rendern. Wähle einen erfolgreich aufgenommenen Run zum Rendern oder starte <strong>Run full demo</strong>.</p>
+<h3>Das Rendern dauert lange oder bricht ab</h3><p>Rendern ist der aufwendigste Schritt. Öffne <strong>View log</strong>, um den Fortschritt und den Fehler zu sehen. Bei einem Speicher- oder Browserfehler muss die Server-Konfiguration geprüft werden. Für eine gezielte Meldung notiere Demo-ID, Run-ID und die letzte Fehlermeldung.</p>
+</section>
+<footer>Diese Anleitung gehört zur B1 Demo Factory. Die Button-Namen entsprechen der englischen App-Oberfläche.</footer>
+</main></div>
+</body>
+</html>

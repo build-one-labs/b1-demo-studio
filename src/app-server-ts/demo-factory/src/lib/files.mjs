@@ -46,6 +46,17 @@ export const validateDemoSemantics = (demo) => {
 
 export const resolveOutputRoot = () => path.resolve(projectRoot, process.env.DEMO_OUTPUT_DIR || 'output');
 
+/** Explicit selection must never resolve outside the demo's output directory. */
+export const loadSelectedRun = async (demoId, runId) => {
+  if (!/^[a-z0-9][a-z0-9-]*$/.test(demoId) || !/^[A-Za-z0-9][A-Za-z0-9_-]*$/.test(runId)) {
+    throw new Error('Invalid demo or run id');
+  }
+  const runDir = path.join(resolveOutputRoot(), demoId, runId);
+  const manifest = rehomeManifest(await readJson(path.join(runDir, 'run-manifest.json')), runDir);
+  if (manifest.demoId !== demoId || manifest.runId !== runId) throw new Error('Selected run does not belong to this demo');
+  return {runDir, manifest};
+};
+
 /**
  * Where the narration cache lives. Configurable for the same reason as the
  * output root: on a deployment both point into a persistent volume, so a
@@ -108,4 +119,3 @@ export const loadLatestRun = async (demoId) => {
   const pointer = await readJson(path.join(resolveOutputRoot(), demoId, 'latest-run.json'));
   return {...pointer, runDir: path.join(resolveOutputRoot(), demoId, pointer.runId)};
 };
-

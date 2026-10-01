@@ -16,25 +16,30 @@ const selectProvider = (demo, override) => {
   return apiKey && voiceId ? 'elevenlabs' : 'silent';
 };
 
-const callElevenLabs = async ({text, apiKey, voiceId, modelId, languageCode, voiceSettings, previousText, nextText, previousRequestIds}) => {
-  const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${encodeURIComponent(voiceId)}/with-timestamps?output_format=mp3_44100_128`, {
+const usesDialogue = (modelId) => modelId === 'eleven_v4';
+
+export const callElevenLabs = async ({text, apiKey, voiceId, modelId, languageCode, voiceSettings, previousText, nextText, previousRequestIds}) => {
+  const dialogue = usesDialogue(modelId);
+  const endpoint = dialogue ? 'text-to-dialogue' : `text-to-speech/${encodeURIComponent(voiceId)}`;
+  const response = await fetch(`https://api.elevenlabs.io/v1/${endpoint}/with-timestamps?output_format=mp3_44100_128`, {
     method: 'POST',
     headers: {'content-type': 'application/json', 'xi-api-key': apiKey},
     body: JSON.stringify({
-      text,
+      ...(dialogue ? {inputs: [{text, voice_id: voiceId}]} : {text}),
       model_id: modelId,
       language_code: languageCode,
       seed: 424242,
       apply_text_normalization: 'auto',
-      ...(previousText ? {previous_text: previousText} : {}),
-      ...(nextText ? {next_text: nextText} : {}),
+      // Dialogue accepts either audio history or text history, never both.
+      ...(previousText && !(dialogue && previousRequestIds?.length) ? {previous_text: dialogue ? previousText.slice(-100) : previousText} : {}),
+      ...(nextText ? (dialogue ? {future_text: nextText.slice(0, 100)} : {next_text: nextText}) : {}),
       ...(previousRequestIds?.length ? {previous_request_ids: previousRequestIds.slice(-3)} : {}),
-      voice_settings: {
+      ...(dialogue ? {settings: {stability: voiceSettings.stability, similarity: voiceSettings.similarityBoost}} : {voice_settings: {
         stability: voiceSettings.stability,
         similarity_boost: voiceSettings.similarityBoost,
         style: voiceSettings.style,
         use_speaker_boost: voiceSettings.speakerBoost,
-      },
+      }}),
     }),
   });
   if (!response.ok) {
@@ -67,6 +72,10 @@ export const splitNarration = (text, maxChars) => {
   if (current) chunks.push(current);
   return chunks;
 };
+
+export const splitNarrationForModel = (text, chunkChars, modelId) =>
+  splitNarration(text, usesDialogue(modelId) ? Math.min(chunkChars || 2000, 2000) : chunkChars)
+    .flatMap((chunk) => usesDialogue(modelId) ? (chunk.match(/[\s\S]{1,2000}/gu) || []) : [chunk]);
 
 /**
  * Synthesize long narration as stitched chunks and merge the results.
@@ -172,7 +181,9 @@ const buildNarration = async ({demo, scene, provider, cacheDirectory}) => {
       throw new Error(`ElevenLabs mode requires ${narration.apiKeyEnv} and ${narration.voiceIdEnv}`);
     }
     const callArgs = {apiKey, voiceId, modelId, languageCode, voiceSettings: narration.voiceSettings};
-    const chunks = splitNarration(text, narration.chunkChars);
+    // Dialogue requests have a smaller reliable text budget than legacy TTS.
+    // Hard-split oversized sentences too, preserving every character for cues.
+    const chunks = splitNarrationForModel(text, narration.chunkChars, modelId);
     audioFile = path.join(cacheDirectory, `${cacheKey}.mp3`);
 
     if (chunks.length > 1) {
@@ -247,4 +258,3 @@ export const prepareNarration = async ({demo, runDir, providerOverride}) => {
 
   return {provider, scenes};
 };
-
