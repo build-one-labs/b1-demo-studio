@@ -37,7 +37,7 @@ export const validateDemoSemantics = (demo) => {
       if (action.atCue && !cueIds.has(action.atCue)) {
         throw new Error(`Scene ${scene.id}: action references unknown cue ${action.atCue}`);
       }
-      if (!['goto'].includes(action.action) && !action.target && !['screenshot'].includes(action.action)) {
+      if (!['goto', 'screenshot', 'callout'].includes(action.action) && !action.target) {
         throw new Error(`Scene ${scene.id}: action ${action.action} requires a target`);
       }
     }

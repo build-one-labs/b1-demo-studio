@@ -12,6 +12,29 @@ const CURSOR_ID = '__b1-demo-synthetic-cursor';
 const POINTER_ACTIONS = new Set(['click', 'dblclick', 'fill', 'type', 'press', 'hover', 'highlight']);
 const CLICK_ACTIONS = new Set(['click', 'dblclick', 'fill', 'type']);
 
+/** Editable lower-third text, captured with the browser footage. Empty text clears it. */
+export const showCallout = async (page, value, durationMs) => {
+  await page.evaluate(({value, durationMs}) => {
+    const id = '__b1-demo-callout';
+    document.getElementById(id)?.remove();
+    if (!value) return;
+    const element = document.createElement('div');
+    element.id = id;
+    element.textContent = value;
+    Object.assign(element.style, {
+      position: 'fixed', left: '0', right: '0', bottom: '0',
+      minHeight: '64px', padding: '12px 32px', boxSizing: 'border-box',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      background: 'rgba(11, 16, 32, .96)', color: '#fff',
+      font: '700 30px/1.3 Arial, sans-serif', textAlign: 'center',
+      zIndex: '2147483645', pointerEvents: 'none',
+    });
+    document.body.appendChild(element);
+    // Remove this element only: a later callout must survive an earlier timer.
+    if (durationMs) setTimeout(() => element.remove(), durationMs);
+  }, {value, durationMs});
+};
+
 export const resolveDemoUrl = (route, baseUrl) => {
   const base = new URL(baseUrl);
   const target = new URL(route, base);
@@ -230,6 +253,9 @@ export const executeSceneActions = async ({page, scene, baseUrl, narrationStartT
         break;
       case 'highlight':
         await highlight(locator, action.durationMs || 1200);
+        break;
+      case 'callout':
+        await showCallout(page, action.value, action.durationMs);
         break;
       case 'waitFor': {
         const waitStartedMs = Date.now() - narrationStartTime;

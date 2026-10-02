@@ -10,7 +10,7 @@ const targetSchema = z.object({
 }).refine((target) => Object.values(target).some(Boolean), 'A target selector is required');
 
 const actionSchema = z.object({
-  action: z.enum(['goto', 'click', 'dblclick', 'fill', 'type', 'press', 'hover', 'highlight', 'waitFor', 'screenshot']),
+  action: z.enum(['goto', 'click', 'dblclick', 'fill', 'type', 'press', 'hover', 'highlight', 'callout', 'waitFor', 'screenshot']),
   atCue: z.string().optional(),
   atMs: z.number().int().nonnegative().optional(),
   offsetMs: z.number().int().optional(),
@@ -47,7 +47,8 @@ const actionSchema = z.object({
     everyMs: z.number().int().positive().optional(),
   }).optional(),
   name: z.string().optional(),
-}).refine((action) => (!action.timelapse && !action.stableMs && !action.retry) || action.action === 'waitFor', {message: 'timelapse, stableMs and retry are only valid on waitFor actions'});
+}).refine((action) => (!action.timelapse && !action.stableMs && !action.retry) || action.action === 'waitFor', {message: 'timelapse, stableMs and retry are only valid on waitFor actions'})
+  .refine((action) => action.action !== 'callout' || typeof action.value === 'string', {message: 'callout requires value (empty string clears the banner)'});
 
 const assertionSchema = z.union([
   z.object({visible: targetSchema}),

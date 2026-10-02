@@ -1159,11 +1159,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@buildone/app-server-tslib@npm:24.3.0-VG.465":
-  version: 24.3.0-VG.465
-  resolution: "@buildone/app-server-tslib@npm:24.3.0-VG.465"
+"@buildone/app-server-tslib@npm:24.3.0-VG.468":
+  version: 24.3.0-VG.468
+  resolution: "@buildone/app-server-tslib@npm:24.3.0-VG.468"
   dependencies:
-    "@buildone/swat-cli": "npm:24.3.0-VG.465"
+    "@buildone/swat-cli": "npm:24.3.0-VG.468"
     "@modelcontextprotocol/ext-apps": "npm:^1.7.5"
     "@modelcontextprotocol/sdk": "npm:^1.30.0"
     "@nestjs/platform-socket.io": "npm:^11.2.1"
@@ -1204,17 +1204,17 @@ __metadata:
     pg: ^8.23.0
     reflect-metadata: ^0.2.2
     rxjs: ^7.8.2
-  checksum: 10c0/1fed8a135f565f64c6689341901b33fb8220b8891a72f2fb3fbea8444424c1f7bcdca7bd35dc18cd49f832645511b5ff07d90ae594f9e89f921f2ed6904ad2e0
+  checksum: 10c0/6a68f864bdca7468dd74a8d5cc2c64ace783c278bf8ddf8caac31f5d938ae27cf15bf03cdcbae84fc3af1650ffa6e5b40516aa66de29d81dcdfeba0f128864de
   languageName: node
   linkType: hard
 
-"@buildone/swat-cli@npm:24.3.0-VG.465":
-  version: 24.3.0-VG.465
-  resolution: "@buildone/swat-cli@npm:24.3.0-VG.465"
+"@buildone/swat-cli@npm:24.3.0-VG.468":
+  version: 24.3.0-VG.468
+  resolution: "@buildone/swat-cli@npm:24.3.0-VG.468"
   dependencies:
     "@anthropic-ai/claude-agent-sdk": "npm:0.3.220"
     "@anthropic-ai/sdk": "npm:^0.122.0"
-    "@buildone/app-server-tslib": "npm:24.3.0-VG.465"
+    "@buildone/app-server-tslib": "npm:24.3.0-VG.468"
     "@modelcontextprotocol/sdk": "npm:^1.30.0"
     d3-force: "npm:3.0.0"
     js-yaml: "npm:^4.3.1"
@@ -1227,27 +1227,27 @@ __metadata:
   bin:
     b1: bin/build-one.mjs
     build-one: bin/build-one.mjs
-  checksum: 10c0/640c94608c9bb8b9ca23cf7673a38ec739a862d124023631157b58274a46f63bd9c8496fcee9be8584b6884d43c6b8e1314d4c805c374c8a92a74529ff2fad35
+  checksum: 10c0/d027df0a184d5b009d9798b35611a259a193508f2d47525af35222a751bd0ab6a956bcdd35b5388e64c451c7a7a9181dc79ff0013afd92e3e183cf0e2b8f7f26
   languageName: node
   linkType: hard
 
-"@buildone/swat-data@npm:24.3.0-VG.465":
-  version: 24.3.0-VG.465
-  resolution: "@buildone/swat-data@npm:24.3.0-VG.465"
-  checksum: 10c0/a56d57e46a4f034f1b1e73c6b82bad3be8e9b25a870c0f6f32ef9bfa38004e6db4be6fdb55ed6aa7f402e1accef62537a7605619f847316d852786249e7e1682
+"@buildone/swat-data@npm:24.3.0-VG.468":
+  version: 24.3.0-VG.468
+  resolution: "@buildone/swat-data@npm:24.3.0-VG.468"
+  checksum: 10c0/fb5e36f72707c1633ec27ce3f89c845c4dc24b656c03e83b03cc4bb812065f70746d1b8ab3bcd7bc015077c8b6dd9472f25b97baae83abed1cbf293655cd3877
   languageName: node
   linkType: hard
 
-"@buildone/swat-vscode@npm:24.3.0-VG.465":
-  version: 24.3.0-VG.465
-  resolution: "@buildone/swat-vscode@npm:24.3.0-VG.465"
-  checksum: 10c0/16986c4074ffcbcda0bee97ad6b5895ce872d1141a1d073b7faa592fc21effce6b8eac975176d17c3417c4add335a5cef5fb0c07269bfb2e198abd932e239627
+"@buildone/swat-vscode@npm:24.3.0-VG.468":
+  version: 24.3.0-VG.468
+  resolution: "@buildone/swat-vscode@npm:24.3.0-VG.468"
+  checksum: 10c0/7b43394b24587dca7e7286c3b1e72ac813f943188121d0610f47b0ccbdbc94d69ff6b51694ee6f9338e60b1831cf429a9e00fbce368c592b6885b8cd76f28874
   languageName: node
   linkType: hard
 
-"@buildone/web-framework-layer@npm:24.3.0-VG.465":
-  version: 24.3.0-VG.465
-  resolution: "@buildone/web-framework-layer@npm:24.3.0-VG.465"
+"@buildone/web-framework-layer@npm:24.3.0-VG.468":
+  version: 24.3.0-VG.468
+  resolution: "@buildone/web-framework-layer@npm:24.3.0-VG.468"
   dependencies:
     "@dagrejs/dagre": "npm:^1.1.8"
     "@egjs/hammerjs": "npm:^2.0.17"
@@ -1335,7 +1335,7 @@ __metadata:
     pinia: ^3.0.4
     vue: ^3.5.41
     vue-router: ^5.2.0
-  checksum: 10c0/a60b2a5237a2e7af6c28a5b67a03cc7fcbcfb50289d6ed6072a480cf91c09672eddd32fd3fb034be369ec58a86bb3550b8404fb3cc6ad4e2fe568bbd7dee64d6
+  checksum: 10c0/30517a47d4c64e3c94e108fedf20ba77521b533279afd366e941199234ddf88f537b5d7b0d80c8d0c0a356eb0d49c28449f39acb331d136c12f7c0951976cdd6
   languageName: node
   linkType: hard
 
@@ -10807,8 +10807,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "app-server-ts@workspace:src/app-server-ts"
   dependencies:
-    "@buildone/app-server-tslib": "npm:24.3.0-VG.465"
-    "@buildone/swat-data": "npm:24.3.0-VG.465"
+    "@buildone/app-server-tslib": "npm:24.3.0-VG.468"
+    "@buildone/swat-data": "npm:24.3.0-VG.468"
     "@nestjs/axios": "npm:^4.0.1"
     "@nestjs/cli": "npm:^11.0.0"
     "@nestjs/common": "npm:^11.2.1"
@@ -10877,8 +10877,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "app@workspace:."
   dependencies:
-    "@buildone/swat-cli": "npm:24.3.0-VG.465"
-    "@buildone/swat-vscode": "npm:24.3.0-VG.465"
+    "@buildone/swat-cli": "npm:24.3.0-VG.468"
+    "@buildone/swat-vscode": "npm:24.3.0-VG.468"
     "@eslint/js": "npm:^9.14.0"
     eslint: "npm:^9.19.0"
     eslint-config-prettier: "npm:^10.0.1"
@@ -13356,7 +13356,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "data@workspace:src/data"
   dependencies:
-    "@buildone/swat-data": "npm:24.3.0-VG.465"
+    "@buildone/swat-data": "npm:24.3.0-VG.468"
   languageName: unknown
   linkType: soft
 
@@ -28410,7 +28410,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "web-app@workspace:src/web-app"
   dependencies:
-    "@buildone/web-framework-layer": "npm:24.3.0-VG.465"
+    "@buildone/web-framework-layer": "npm:24.3.0-VG.468"
     "@nuxt/eslint": "npm:^1.3.0"
     "@nuxt/image": "npm:1.10.0"
     "@nuxt/ui": "npm:^4.10.0"

@@ -1,0 +1,272 @@
+schemaVersion: 1
+id: build-with-jev-apps-mike-v7-enterprise
+title: Build with Jev — Enterprise (Mike v7)
+description: Editable reconstruction of build-with-jev-apps-mike-v7-enterprise.mp4 (165.434s). English narration transcribed from the embedded subtitle track; scene order, cue-bound actions, highlights and editable callout banners reconstructed from the video. Uses a dedicated generated Salesforce demo screen for opening/closing. The 477ms statement is the reference run measurement, not a guarantee for new generations; review scene generation-breakdown before publishing a new recording.
+settings:
+  language: en
+  viewport:
+    width: 1920
+    height: 1080
+  fps: 30
+  baseUrl:
+    env: JEV_DEMO_BASE_URL
+    fallback: https://enterprise-ai.demo.build.one/
+  authStateEnv: B1_AUTH_STATE
+  headlessEnv: DEMO_HEADLESS
+  holdBeforeMs: 300
+  holdAfterMs: 300
+  cursor:
+    enabled: true
+    moveDurationMs: 700
+    clickLeadMs: 120
+    clickEffectDurationMs: 560
+    sizePx: 30
+  narration:
+    provider: elevenlabs
+    voiceIdEnv: ELEVENLABS_VOICE_ID
+    apiKeyEnv: ELEVENLABS_API_KEY
+    modelIdEnv: ELEVENLABS_MODEL_ID
+    defaultModelId: eleven_v4
+    languageCodeEnv: ELEVENLABS_LANGUAGE_CODE
+    defaultLanguageCode: en
+    wordsPerMinute: 140
+    pronunciations:
+      Build.One: Build One
+      B1: B One
+      LLM: L L M
+    voiceSettings:
+      stability: 0.9
+      similarityBoost: 0.88
+      style: 0
+      speakerBoost: true
+    chunkChars: 550
+  branding:
+    productName: Build.One
+    accentColor: "#1266f1"
+    backgroundColor: "#0b1020"
+    textColor: "#f7f8ff"
+    showCaptions: false
+    showSceneTitles: false
+scenes:
+  - id: built-on-demand
+    title: Built on demand. Generation under one second.
+    route: /screens/JevSalesforceOpportunityScreen20261001154650?app=b1-labs
+    narration: A business app built on demand, right in front of you. In this demo, generation takes less than a second, using existing building blocks connected to Salesforce and the access I already have.
+    actions:
+      - action: waitFor
+        target:
+          css: '[data-repository-instance-name="SalesforceOpportunityGrid"] .p-datatable-tbody tr >> nth=1'
+        timeoutMs: 60000
+      - action: click
+        target:
+          css: '[data-repository-instance-name="SalesforceOpportunityGrid"] .p-datatable-tbody tr >> nth=1'
+      - action: waitFor
+        target:
+          css: '[data-repository-instance-name="ProductRevenueChart"] canvas'
+        timeoutMs: 60000
+      - action: callout
+        atMs: 0
+        value: Built on demand. Generation under one second.
+      - action: highlight
+        target:
+          css: '[data-repository-instance-name="pane_chart"] .p-panel >> nth=0'
+        durationMs: 1000
+    assertions:
+      - visible:
+          css: '[data-repository-instance-name="SalesforceOpportunitiesMap"]'
+      - visible:
+          css: '[data-repository-instance-name="ProductRevenueChart"]'
+  - id: prompt-to-enterprise-app
+    title: Describe the task. Use it with your account and permissions.
+    route: /?app=b1-labs
+    narration: "This is Build.One, [cue:open] powered here by Jev. I’m signed in with my own account. [cue:type] I describe what I need: my sales opportunities, their locations on a map, and product revenue for the corresponding customers. [cue:generate] Click Generate. Build.One builds the app right now, assembling the layout, data connections, and interactions from approved building blocks. The new app opens, ready to use. [cue:map] These are opportunities from Salesforce. [cue:select] I select a customer, and the chart shows their product revenue. The list, map, and chart work together, so I can explore the data straight away. [cue:permissions] The app runs in my authenticated user context, with my existing permissions. Creating an app doesn’t give me access to data I’m not authorized to see. [cue:team] That’s the idea: employees across the organization can build apps for their own work, using the building blocks and data their organization makes available to them. Describe the task. Get a working app."
+    actions:
+      - action: click
+        atCue: open
+        target:
+          text: Build with Jev
+      - action: waitFor
+        target:
+          css: '[data-testid="catalog-status"]:has-text("Catalog ready")'
+        timeoutMs: 60000
+      - action: type
+        atCue: type
+        target:
+          css: '[data-testid="screen-prompt"]'
+        value: show me a list of all opportunities and their location on a map. also show product-revenue for the corresponding customers and prospects as a chart.
+        delayMs: 22
+      - action: click
+        atCue: generate
+        target:
+          css: '[data-testid="generate-screen"]'
+      - action: waitFor
+        target:
+          css: '[data-repository-instance-name="SalesforceOpportunityGrid"] .p-datatable-tbody tr >> nth=1'
+        timeoutMs: 60000
+      - action: highlight
+        atCue: map
+        target:
+          css: '[data-repository-instance-name="pane_map"] .p-panel >> nth=0'
+        durationMs: 2200
+      - action: click
+        atCue: select
+        target:
+          css: '[data-repository-instance-name="SalesforceOpportunityGrid"] .p-datatable-tbody tr >> nth=1'
+      - action: waitFor
+        target:
+          css: '[data-repository-instance-name="ProductRevenueChart"] canvas'
+        timeoutMs: 60000
+      - action: highlight
+        target:
+          css: '[data-repository-instance-name="pane_chart"] .p-panel >> nth=0'
+        durationMs: 3000
+      - action: callout
+        atCue: permissions
+        value: Your account. Your permissions.
+      - action: highlight
+        atCue: permissions
+        target:
+          css: '[data-testid="user-widget"]'
+        durationMs: 3500
+      - action: callout
+        atCue: team
+        value: Build with the data and blocks available to your team
+      - action: highlight
+        atCue: team
+        target:
+          css: '[data-repository-instance-name="pane_chart"] .p-panel >> nth=0'
+        durationMs: 5000
+    assertions:
+      - visible:
+          css: '[data-repository-instance-name="SalesforceOpportunitiesMap"]'
+      - visible:
+          css: '[data-repository-instance-name="ProductRevenueChart"]'
+  - id: approved-building-blocks
+    title: A shared catalog of I.T.-approved building blocks
+    route: /?app=b1-labs
+    narration: "[cue:catalog] Build.One comes with thousands of building blocks: interfaces, data connections, and business logic, including ready-to-use components for Salesforce. [cue:extend] For your own systems, new blocks can be generated in minutes from a database schema or an API description. Custom blocks can join the same shared catalog. [cue:approved] I.T. pre-approves the blocks available to your team. Build.One assembles those existing components into an app that runs immediately, within the permissions already in place. The foundation is ready before I describe the app."
+    actions:
+      - action: click
+        target:
+          text: Build with Jev
+      - action: waitFor
+        target:
+          css: '[data-testid="catalog-status"]:has-text("Catalog ready")'
+        timeoutMs: 60000
+      - action: waitFor
+        target:
+          css: '[data-testid="knowledge-graph"] canvas'
+        timeoutMs: 60000
+      - action: highlight
+        atCue: catalog
+        target:
+          css: '[data-testid="catalog-status"]:has-text("Catalog ready")'
+        durationMs: 1500
+      - action: highlight
+        target:
+          css: '[data-testid="knowledge-graph"]'
+        durationMs: 4000
+      - action: callout
+        atCue: extend
+        value: Extend the catalog from database schemas and APIs
+      - action: highlight
+        atCue: extend
+        target:
+          css: '[data-testid="knowledge-graph"]'
+        durationMs: 5000
+      - action: callout
+        atCue: approved
+        value: I.T.-approved building blocks
+      - action: highlight
+        atCue: approved
+        target:
+          css: '[data-testid="knowledge-graph"]'
+        durationMs: 8000
+    assertions:
+      - visible:
+          css: '[data-testid="knowledge-graph"] canvas'
+  - id: generation-breakdown
+    title: Jev decides. Build.One assembles. No LLM calls.
+    route: /?app=b1-labs
+    narration: "[cue:run] Now I run the same request again and open the breakdown. [cue:jev] Jev makes two selections in parallel: which layout fits, and which business entities I mean. [cue:assemble] Build.One assembles the matching components into the app. [cue:measured] Here is the measured generation time: four hundred and seventy-seven milliseconds from click to response. Less than a second to assemble the app for this request. [cue:cost] Two Jev selection calls, a cached catalog, and no LLM calls in this generation step. Reusing components keeps the work small. an approach designed for fast, inexpensive app generation."
+    actions:
+      - action: click
+        target:
+          text: Build with Jev
+      - action: waitFor
+        target:
+          css: '[data-testid="catalog-status"]:has-text("Catalog ready")'
+        timeoutMs: 60000
+      - action: click
+        atCue: run
+        target:
+          role: checkbox
+          name: Open app when ready
+      - action: fill
+        target:
+          css: '[data-testid="screen-prompt"]'
+        value: show me a list of all opportunities and their location on a map. also show product-revenue for the corresponding customers and prospects as a chart.
+      - action: click
+        target:
+          css: '[data-testid="generate-screen"]'
+      - action: waitFor
+        target:
+          css: '[data-testid="generation-outcome"][data-status="created"]'
+        timeoutMs: 60000
+      - action: highlight
+        atCue: jev
+        target:
+          css: section.card:has(h2:text-is("What Jev decided"))
+        durationMs: 5000
+      - action: highlight
+        atCue: assemble
+        target:
+          css: section.card:has(h2:text-is("How B1 assembled the app"))
+        durationMs: 3000
+      - action: highlight
+        atCue: measured
+        target:
+          css: '[data-testid="generation-outcome"]'
+        durationMs: 6500
+      - action: callout
+        atCue: cost
+        value: Two Jev selections. Existing components.
+      - action: highlight
+        atCue: cost
+        target:
+          css: section.card:has(h2:text-is("Where the time went"))
+        durationMs: 11000
+    assertions:
+      - textContains:
+          target:
+            css: section.card:has(h2:text-is("What Jev decided"))
+          value: Overview with list and additional controls
+  - id: next-enterprise-workflow
+    title: Bring your next workflow
+    route: /screens/JevSalesforceOpportunityScreen20261001154650?app=b1-labs
+    narration: Jev decides. Build.One builds. [cue:workflow] Bring your team’s next workflow. Turn it into a working app, on enterprise data, within your existing
+    actions:
+      - action: waitFor
+        target:
+          css: '[data-repository-instance-name="SalesforceOpportunityGrid"] .p-datatable-tbody tr >> nth=1'
+        timeoutMs: 60000
+      - action: click
+        target:
+          css: '[data-repository-instance-name="SalesforceOpportunityGrid"] .p-datatable-tbody tr >> nth=1'
+      - action: waitFor
+        target:
+          css: '[data-repository-instance-name="ProductRevenueChart"] canvas'
+        timeoutMs: 60000
+      - action: callout
+        atMs: 0
+        value: Bring your next workflow
+      - action: highlight
+        atCue: workflow
+        target:
+          css: '[data-repository-instance-name="pane_chart"] .p-panel >> nth=0'
+        durationMs: 4500
+    assertions:
+      - visible:
+          css: '[data-repository-instance-name="SalesforceOpportunitiesMap"]'
+      - visible:
+          css: '[data-repository-instance-name="ProductRevenueChart"]'
