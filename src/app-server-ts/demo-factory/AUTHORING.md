@@ -18,6 +18,7 @@
 - `press`
 - `hover`
 - `highlight`
+- `callout` — an editable text banner at the bottom of the recording; see below.
 - `waitFor` — optionally with `timelapse` (see below), `stableMs` and/or
   `retry`. `stableMs`: the target must stay visible for that many milliseconds
   without interruption before the wait counts as met — for states that flicker
@@ -169,3 +170,19 @@ B1 should provide stable ids for demo-relevant interactions:
 ```
 
 Layout and CSS may change as long as these semantic ids remain.
+
+## Editable text banners
+
+Use a `callout` action to show a lower-third banner in the browser recording.
+It needs no target. `value` is plain text, and cues work like other actions:
+
+```yaml
+- action: callout
+  atCue: permissions
+  value: Your account. Your permissions.
+```
+
+The banner stays until another callout replaces it, the page navigates, or the
+scene ends. Set `durationMs` to hide it automatically without blocking later
+actions. An empty `value: ""` clears it. Edit the action in the Studio's scene
+Actions JSON, then re-record and render to apply the change.
