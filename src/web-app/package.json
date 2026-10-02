@@ -11,7 +11,7 @@
     "lint:fix": "([ -f .nuxt/eslint.config.mjs ] || nuxt prepare) && eslint . --fix"
   },
   "dependencies": {
-    "@buildone/web-framework-layer": "24.3.0-VG.468",
+    "@buildone/web-framework-layer": "24.3.0-VG.469",
     "@nuxt/image": "1.10.0",
     "@nuxt/ui": "^4.10.0",
     "@pinia/nuxt": "^0.11.3",

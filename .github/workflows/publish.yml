@@ -82,7 +82,7 @@ jobs:
       - name: Prepare Dockerfile
         run: cp src/app-server-ts/Dockerfile ./Dockerfile
 
-      - uses: aws-actions/configure-aws-credentials@v5
+      - uses: aws-actions/configure-aws-credentials@v6
         with:
           aws-access-key-id: ${{ env.B1_ACCESS_KEY_ID || secrets.B1_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ env.B1_SECRET_ACCESS_KEY || secrets.B1_SECRET_ACCESS_KEY }}
@@ -185,7 +185,7 @@ jobs:
       - name: Prepare Dockerfile
         run: cp src/web-app/Dockerfile ./Dockerfile
 
-      - uses: aws-actions/configure-aws-credentials@v5
+      - uses: aws-actions/configure-aws-credentials@v6
         with:
           aws-access-key-id: ${{ env.B1_ACCESS_KEY_ID || secrets.B1_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ env.B1_SECRET_ACCESS_KEY || secrets.B1_SECRET_ACCESS_KEY }}
