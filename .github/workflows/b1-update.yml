@@ -17,21 +17,32 @@ run-name: B1 Update${{ inputs.version && format(' to {0}', inputs.version) || ' 
 # `schedule:` trigger below — the job resolves the newest published version on
 # its own when no version is given, so it needs nothing else to run unattended.
 #
-# WHY THE CHECKS ARE DISPATCHED RATHER THAN JUST HAPPENING
-# GitHub does not start workflows for a pull request opened with GITHUB_TOKEN.
-# That guard is deliberate — it is what stops a workflow creating work for
-# itself forever — and it means an update pull request would otherwise sit with
-# no checks at all. Rather than keep a personal access token in every customer
-# repository to get around it, the last step asks for the runs explicitly. They
-# appear as their own runs against the branch instead of as checks on the pull
-# request; that is the trade, and it is stated on the pull request itself.
+# WORKFLOW FILES, AND WHO MAY PUSH THEM
+# Nearly every release changes a workflow, and this job's GITHUB_TOKEN may not
+# push a change under .github/workflows/ — GitHub offers no permission for it.
+# So the push goes through `b1 publish-update`, which asks Build.One's token
+# service for a token that may: the job shows its GitHub OIDC token (which
+# proves the repository and workflow) and, if the Build.One GitHub App is
+# installed on this repository, gets back a short-lived token for this
+# repository alone. The App's key never leaves Build.One. Without the App the
+# update still arrives: everything but the workflow changes is pushed, and those
+# come as a patch in the pull request, with the commands that apply it.
+#
+# WHY THE CHECKS ARE SOMETIMES DISPATCHED
+# GitHub does not start workflows for a pull request opened with GITHUB_TOKEN —
+# the guard that stops a workflow creating work for itself forever. A pull
+# request opened with the App's token gets its checks like any other. Without
+# it, `b1 publish-update` asks for the runs named in `checks` explicitly; they
+# appear as runs against the branch rather than as checks on the pull request,
+# and the pull request says so.
 #
 # WHAT IT NEEDS
 # The AUTH_URL and B1_ORG_API_KEY Actions secrets — the AWS credentials for the
 # package registry are fetched with them — and, for the pull request itself,
 # "Allow GitHub Actions to create and approve pull requests" enabled under
 # Settings → Actions → General. Without that last one the branch is still
-# pushed and the run says which setting to turn on.
+# pushed and the run says which setting to turn on. Optionally, the Build.One
+# GitHub App installed on the repository, so workflow changes are pushed too.
 
 on:
   workflow_dispatch:
@@ -53,6 +64,7 @@ permissions:
   contents: write # push the update branch
   pull-requests: write # open the pull request
   actions: write # start the checks against it
+  id-token: write # prove this run to Build.One's token service (workflow files)
 
 # Two updates at once would race for the same branch name and leave two pull
 # requests changing the same files. Queued rather than cancelled: a run that has
@@ -78,6 +90,9 @@ jobs:
       INPUT_BRANCH: ${{ inputs.branch }}
       INPUT_CHECKS: ${{ inputs.checks }}
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # Where Build.One's token service is; `b1 publish-update` asks it for a
+      # token that may push workflow files.
+      AUTH_URL: ${{ secrets.AUTH_URL }}
     steps:
       - uses: actions/checkout@v5
 
@@ -190,83 +205,40 @@ jobs:
           # and deployment files.
           b1 update "${VERSION}" --yes
 
-      - name: Commit what changed
-        id: commit
+      # Commit, push and open the pull request — in the CLI, which the step
+      # above has just updated, so a fix to how updates are published reaches
+      # this repository with the package rather than with another migration.
+      - name: Publish the update
+        id: publish
         if: steps.target.outputs.current == 'false'
-        env:
-          VERSION: ${{ steps.target.outputs.version }}
-          INSTALLED: ${{ steps.target.outputs.installed }}
-        run: |
-          set -euo pipefail
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -A
-
-          # A release with no migrations and no package changes reaching this
-          # repository is possible, and an empty pull request helps nobody.
-          if git diff --cached --quiet; then
-            echo "changed=false" >> "${GITHUB_OUTPUT}"
-            echo "::notice title=B1 update::${VERSION} changed no files in this repository, so there is no pull request to open."
-            exit 0
-          fi
-
-          echo "changed=true" >> "${GITHUB_OUTPUT}"
-          git commit --quiet -m "chore: update Build.One to ${VERSION}" -m "From ${INSTALLED}, by the B1 Update workflow."
-          git diff --stat HEAD~1 HEAD | tail -n 40 > /tmp/b1-update-stat.txt
-
-      - name: Open the pull request
-        id: pr
-        if: steps.commit.outputs.changed == 'true'
         env:
           VERSION: ${{ steps.target.outputs.version }}
           INSTALLED: ${{ steps.target.outputs.installed }}
           BRANCH: ${{ steps.target.outputs.branch }}
           BASE: ${{ github.ref_name }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          # The token service only serves Build.One customers, so it wants the
+          # organization key too. Given to this step alone, not the whole job.
+          B1_ORG_API_KEY: ${{ secrets.B1_ORG_API_KEY }}
         run: |
           set -euo pipefail
-          git push --quiet --set-upstream origin "${BRANCH}"
-
-          body=$(mktemp)
-          {
-            printf '`b1 update %s`, run by the [B1 Update workflow](%s).\n\n' "${VERSION}" "${RUN_URL}"
-            printf '| | |\n|---|---|\n| From | `%s` |\n| To | `%s` |\n\n' "${INSTALLED}" "${VERSION}"
-            printf 'The packages moved, the repository migrations that ship with them were applied, and the deployment files were regenerated.\n\n'
-            printf '<details><summary>Files changed</summary>\n\n```\n'
-            cat /tmp/b1-update-stat.txt
-            printf '```\n\n</details>\n\n'
-            printf -- '---\n\n'
-            printf 'GitHub does not start workflows for a pull request opened by Actions, so the checks were asked for separately and run against `%s` rather than appearing here. Their results are in the [Actions tab](%s/%s/actions?query=branch%%3A%s).\n' \
-              "${BRANCH}" "${GITHUB_SERVER_URL}" "${GITHUB_REPOSITORY}" "${BRANCH}"
-          } > "${body}"
-
-          if ! url=$(gh pr create \
-            --base "${BASE}" \
-            --head "${BRANCH}" \
-            --title "chore: update Build.One to ${VERSION}" \
-            --body-file "${body}"); then
-            echo "::error title=B1 update::The branch was pushed but the pull request could not be created. If this says 'GitHub Actions is not permitted to create pull requests', turn on Settings → Actions → General → Allow GitHub Actions to create and approve pull requests. Otherwise open the pull request from ${BRANCH} by hand."
+          if ! b1 publish-update --help > /dev/null 2>&1; then
+            echo "::error title=B1 update::${VERSION} predates \`b1 publish-update\`. Update to a newer release, or run \`b1 update ${VERSION}\` in a workspace and push from there."
             exit 1
           fi
-          echo "url=${url}" >> "${GITHUB_OUTPUT}"
+          b1 publish-update --version "${VERSION}" --installed "${INSTALLED}" \
+            --branch "${BRANCH}" --base "${BASE}" --run-url "${RUN_URL}" \
+            --checks "${INPUT_CHECKS}"
 
-      - name: Start the checks against the branch
-        if: steps.commit.outputs.changed == 'true' && inputs.checks != ''
-        env:
-          BRANCH: ${{ steps.target.outputs.branch }}
-        run: |
-          set -uo pipefail
-          # Not `set -e`: a repository whose CI is named something else, or
-          # whose build workflow has no workflow_dispatch trigger, should get a
-          # line telling it so — not a red run over a pull request that is
-          # perfectly good.
-          for workflow in ${INPUT_CHECKS}; do
-            if gh workflow run "${workflow}" --ref "${BRANCH}"; then
-              echo "Started ${workflow} against ${BRANCH}."
-            else
-              echo "::warning title=B1 update::Could not start ${workflow} — it may not exist in this repository, or may not accept a manual run. Start the checks on ${BRANCH} by hand, or set the workflow's 'checks' input to the ones this repository has."
-            fi
-          done
+      # The workflow changes this run could not push, when there were any — the
+      # pull request carries them too unless they are too large for its body.
+      - name: Keep the workflow patch
+        if: steps.publish.outputs.patch != ''
+        uses: actions/upload-artifact@v6
+        with:
+          name: b1-update-workflows-patch
+          path: ${{ steps.publish.outputs.patch }}
+          retention-days: 30
 
       - name: Summarise
         if: always() && steps.target.outputs.version != ''
@@ -275,8 +247,9 @@ jobs:
           INSTALLED: ${{ steps.target.outputs.installed }}
           BRANCH: ${{ steps.target.outputs.branch }}
           CURRENT: ${{ steps.target.outputs.current }}
-          CHANGED: ${{ steps.commit.outputs.changed }}
-          PR_URL: ${{ steps.pr.outputs.url }}
+          CHANGED: ${{ steps.publish.outputs.changed }}
+          PR_URL: ${{ steps.publish.outputs.url }}
+          MODE: ${{ steps.publish.outputs.mode }}
         run: |
           {
             echo "### B1 Update"
@@ -287,6 +260,10 @@ jobs:
               echo "\`${INSTALLED}\` → \`${VERSION}\` on \`${BRANCH}\`."
               echo ""
               echo "${PR_URL}"
+              if [[ "${MODE}" == "split" ]]; then
+                echo ""
+                echo "⚠️ The workflow changes are in the pull request as a patch to apply by hand — install the Build.One GitHub App (https://github.com/apps/build-one-update-service) on this repository to have them pushed too."
+              fi
             elif [[ "${CHANGED}" == "false" ]]; then
               echo "\`${VERSION}\` changed no files in this repository. No pull request opened."
             else
