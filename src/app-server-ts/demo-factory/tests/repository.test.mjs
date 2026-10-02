@@ -28,3 +28,15 @@ test('demo menu launch targets and the maintenance toolbar resolve uniquely afte
   assert.ok(maintenance.instances.some(instance => instance.objectMasterGuid === toolbar.objectMasterGuid));
   assert.equal(objects.filter(object => object.objectMasterGuid === toolbar.objectMasterGuid).length, 1);
 });
+
+test('both pipeline log instances use the built-in native component loader', async () => {
+  const log = objects.find(object => object.objectName === 'DemoFactoryJobLog');
+  assert.equal(log.objectTypeGuid, '217eaba6-7c1d-49f3-a755-e135d89c93ac');
+  assert.equal(log.attributes.componentName, 'DemoFactoryPipelineLog');
+  await readFile(new URL('../../../web-app/src/components/global/DemoFactoryPipelineLog.vue', import.meta.url));
+  const maintenance = objects.find(object => object.objectName === 'DemoFactoryDemoMaintenance');
+  const flatten = instances => instances.flatMap(instance => [instance, ...flatten(instance.instances ?? [])]);
+  const instances = flatten(maintenance.instances).filter(instance => instance.objectMasterGuid === log.objectMasterGuid);
+  assert.equal(instances.length, 2);
+  assert.equal(instances.filter(instance => instance.attributes.htmlClass === 'demo-job-status').length, 1);
+});
