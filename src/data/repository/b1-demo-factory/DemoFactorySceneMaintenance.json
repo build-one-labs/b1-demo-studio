@@ -3,17 +3,17 @@
   "createdBy": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
   "howToUse": "",
   "label": "",
-  "moduleGuid": "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4",
   "objectDescription": "Modal maintenance screen of one scene in the native Demo Factory Studio (issue #17, step 3), opened from the scene grid's title link and positioned by repositionTo on DemoFactorySceneDSO (keyFields id, the demoId:sceneId key). The DSO instance clears the master's foreignFields and initialFetch so it fetches on its own here. Save & Close commits through the TableIO links to both tabs: Scene (title, route, ids, narration) and Actions (browser actions and assertions as JSON).",
   "objectMasterGuid": "703ec51a-2bec-4891-b9f7-f38a12b2f879",
   "objectName": "DemoFactorySceneMaintenance",
   "objectTypeGuid": "d188099d-8548-49f0-86e4-c4b28dda9ecc",
   "owner": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "productGuid": "94328e98-6f1d-4d15-b86d-f62fff77d705",
   "status": "Active",
   "templateObject": false,
   "attributes": {
     "icon": "i-lucide-clapperboard",
-    "isModal": true,
+    "screenMode": "modal",
     "title": "{{title}} — Scene"
   },
   "instances": [
@@ -159,7 +159,9 @@
       "targetObjectInstanceGuid": "c9250af2-9d0d-42a3-b1fa-04591dc7b1e0"
     }
   ],
-  "tags": [],
+  "tags": [
+    "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4"
+  ],
   "tenantId": null,
   "validFrom": null,
   "validUntil": null

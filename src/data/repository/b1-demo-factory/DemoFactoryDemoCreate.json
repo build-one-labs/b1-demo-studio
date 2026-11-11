@@ -3,19 +3,19 @@
   "createdBy": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
   "howToUse": "",
   "label": "",
-  "moduleGuid": "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4",
   "objectDescription": "New demo dialog of the native Studio, opened from the search toolbar through the grid's addRecordContainer. Creates the demo as one document via save-demo — a copy of the demo selected in the search grid, or the blank starter — then repositions the search list to it (issue #17, step 3).",
   "objectMasterGuid": "f8bb9824-67b7-4bbb-95b6-f52c728ce4ec",
   "objectName": "DemoFactoryDemoCreate",
   "objectTypeGuid": "d188099d-8548-49f0-86e4-c4b28dda9ecc",
   "owner": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "productGuid": "94328e98-6f1d-4d15-b86d-f62fff77d705",
   "status": "Active",
   "templateObject": false,
   "attributes": {
     "eventNamespace": "#",
     "EventVueMounted": "#.onInitialize(eventSource)",
     "icon": "i-lucide-plus",
-    "isModal": true,
+    "screenMode": "modal",
     "maximizable": false,
     "title": "New demo"
   },
@@ -42,7 +42,9 @@
     }
   ],
   "links": [],
-  "tags": [],
+  "tags": [
+    "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4"
+  ],
   "tenantId": null,
   "validFrom": null,
   "validUntil": null

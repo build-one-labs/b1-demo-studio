@@ -45,19 +45,16 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       # Provisioned secrets from the auth server's store, with one organization
-      # API key. Skipped until that key is set, and every value below then
-      # falls back to the Actions secret it has always used.
-      # See .github/actions/b1-secrets.
+      # API key. See .github/actions/b1-secrets.
       - uses: ./.github/actions/b1-secrets
-        if: env.B1_ORG_API_KEY != ''
         with:
           auth-url: ${{ secrets.AUTH_URL }}
           api-key: ${{ secrets.B1_ORG_API_KEY }}
           require: B1_ACCESS_KEY_ID B1_SECRET_ACCESS_KEY
       - uses: ./.github/actions/setup-node
         with:
-          aws-access-key-id: ${{ env.B1_ACCESS_KEY_ID || secrets.B1_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ env.B1_SECRET_ACCESS_KEY || secrets.B1_SECRET_ACCESS_KEY }}
+          aws-access-key-id: ${{ env.B1_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.B1_SECRET_ACCESS_KEY }}
 
   build-app-server-ts:
     env:
@@ -70,19 +67,16 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       # Provisioned secrets from the auth server's store, with one organization
-      # API key. Skipped until that key is set, and every value below then
-      # falls back to the Actions secret it has always used.
-      # See .github/actions/b1-secrets.
+      # API key. See .github/actions/b1-secrets.
       - uses: ./.github/actions/b1-secrets
-        if: env.B1_ORG_API_KEY != ''
         with:
           auth-url: ${{ secrets.AUTH_URL }}
           api-key: ${{ secrets.B1_ORG_API_KEY }}
           require: B1_ACCESS_KEY_ID B1_SECRET_ACCESS_KEY
       - uses: ./.github/actions/setup-node
         with:
-          aws-access-key-id: ${{ env.B1_ACCESS_KEY_ID || secrets.B1_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ env.B1_SECRET_ACCESS_KEY || secrets.B1_SECRET_ACCESS_KEY }}
+          aws-access-key-id: ${{ env.B1_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.B1_SECRET_ACCESS_KEY }}
           focus-workspaces: app app-server-ts
       - run: yarn workspace app-server-ts build
 
@@ -97,19 +91,16 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       # Provisioned secrets from the auth server's store, with one organization
-      # API key. Skipped until that key is set, and every value below then
-      # falls back to the Actions secret it has always used.
-      # See .github/actions/b1-secrets.
+      # API key. See .github/actions/b1-secrets.
       - uses: ./.github/actions/b1-secrets
-        if: env.B1_ORG_API_KEY != ''
         with:
           auth-url: ${{ secrets.AUTH_URL }}
           api-key: ${{ secrets.B1_ORG_API_KEY }}
           require: B1_ACCESS_KEY_ID B1_SECRET_ACCESS_KEY
       - uses: ./.github/actions/setup-node
         with:
-          aws-access-key-id: ${{ env.B1_ACCESS_KEY_ID || secrets.B1_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ env.B1_SECRET_ACCESS_KEY || secrets.B1_SECRET_ACCESS_KEY }}
+          aws-access-key-id: ${{ env.B1_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.B1_SECRET_ACCESS_KEY }}
           focus-workspaces: app app-server-ts
       - run: yarn workspace app-server-ts lint
 
@@ -124,21 +115,20 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       # Provisioned secrets from the auth server's store, with one organization
-      # API key. Skipped until that key is set, and every value below then
-      # falls back to the Actions secret it has always used.
-      # See .github/actions/b1-secrets.
+      # API key. See .github/actions/b1-secrets.
       - uses: ./.github/actions/b1-secrets
-        if: env.B1_ORG_API_KEY != ''
         with:
           auth-url: ${{ secrets.AUTH_URL }}
           api-key: ${{ secrets.B1_ORG_API_KEY }}
           require: B1_ACCESS_KEY_ID B1_SECRET_ACCESS_KEY
       - uses: ./.github/actions/setup-node
         with:
-          aws-access-key-id: ${{ env.B1_ACCESS_KEY_ID || secrets.B1_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ env.B1_SECRET_ACCESS_KEY || secrets.B1_SECRET_ACCESS_KEY }}
+          aws-access-key-id: ${{ env.B1_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.B1_SECRET_ACCESS_KEY }}
           focus-workspaces: app web-app
+          current-platform-only: 'true'
       - run: yarn workspace web-app build
+      - uses: ./.github/actions/check-native-files
 
   lint-web-app:
     env:
@@ -151,18 +141,15 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       # Provisioned secrets from the auth server's store, with one organization
-      # API key. Skipped until that key is set, and every value below then
-      # falls back to the Actions secret it has always used.
-      # See .github/actions/b1-secrets.
+      # API key. See .github/actions/b1-secrets.
       - uses: ./.github/actions/b1-secrets
-        if: env.B1_ORG_API_KEY != ''
         with:
           auth-url: ${{ secrets.AUTH_URL }}
           api-key: ${{ secrets.B1_ORG_API_KEY }}
           require: B1_ACCESS_KEY_ID B1_SECRET_ACCESS_KEY
       - uses: ./.github/actions/setup-node
         with:
-          aws-access-key-id: ${{ env.B1_ACCESS_KEY_ID || secrets.B1_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ env.B1_SECRET_ACCESS_KEY || secrets.B1_SECRET_ACCESS_KEY }}
+          aws-access-key-id: ${{ env.B1_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.B1_SECRET_ACCESS_KEY }}
           focus-workspaces: app web-app
       - run: yarn workspace web-app lint

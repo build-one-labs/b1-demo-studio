@@ -1,0 +1,31 @@
+name: Repository layout
+
+# Fails a pull request that adds a top-level folder or file nobody listed, a
+# file committed past .gitignore, a file over 1 MiB, or raw data under docs/.
+# What is allowed is .github/repo-layout.json: add an entry there, with what it
+# is for, when a new folder or a large file really belongs in the repository.
+# See node_modules/@buildone/swat-cli/knowledge/architecture_info/repository-layout.md.
+#
+# Mandatory: it needs no secrets and no install, so it runs on every pull
+# request, in seconds, and is never skipped.
+
+on:
+  pull_request:
+  push:
+    branches: [develop, main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: repo-layout-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    # Pinned like every other Build.One workflow (24.3.0-VG.461): an image someone chose.
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - uses: ./.github/actions/check-layout

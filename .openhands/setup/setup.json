@@ -5,11 +5,11 @@
   },
   {
     "description": "Validating registry credentials",
-    "script": "if [ -z \"${BUILDONE_USER:-}\" ] || [ -z \"${BUILDONE_TOKEN:-}\" ] || [ -z \"${WORKSPACE_ROOT:-}\" ]; then echo 'Missing BUILDONE_USER, BUILDONE_TOKEN, or WORKSPACE_ROOT'; exit 1; fi && echo 'Credentials validated'"
+    "script": "if [ -z \"${B1_ACCESS_KEY_ID:-}\" ] || [ -z \"${B1_SECRET_ACCESS_KEY:-}\" ] || [ -z \"${WORKSPACE_ROOT:-}\" ]; then echo 'Missing B1_ACCESS_KEY_ID, B1_SECRET_ACCESS_KEY, or WORKSPACE_ROOT'; exit 1; fi && echo 'Credentials validated'"
   },
   {
     "description": "Installing dependencies",
-    "script": "cd ${WORKSPACE_ROOT} && yarn install && chmod -R +x ${WORKSPACE_ROOT}/node_modules/@buildone/swat-cli/scripts/openhands ${WORKSPACE_ROOT}/node_modules/@buildone/swat-cli/scripts/devcontainer"
+    "script": "cd ${WORKSPACE_ROOT} && if [ -z \"${CODEARTIFACT_AUTH_TOKEN:-}\" ]; then CODEARTIFACT_AUTH_TOKEN=$(env -u AWS_SESSION_TOKEN -u AWS_PROFILE AWS_ACCESS_KEY_ID=\"${B1_ACCESS_KEY_ID:-}\" AWS_SECRET_ACCESS_KEY=\"${B1_SECRET_ACCESS_KEY:-}\" aws codeartifact get-authorization-token --domain buildone --domain-owner 653306034207 --region eu-central-1 --query authorizationToken --output text) && [ -n \"${CODEARTIFACT_AUTH_TOKEN}\" ] || { echo 'Could not get a package registry token with B1_ACCESS_KEY_ID / B1_SECRET_ACCESS_KEY'; exit 1; }; export CODEARTIFACT_AUTH_TOKEN; mkdir -p .b1/env && rm -f .b1/env/.aws-token.env && (umask 077 && echo \"export CODEARTIFACT_AUTH_TOKEN=${CODEARTIFACT_AUTH_TOKEN}\" > .b1/env/.aws-token.env); fi && yarn install && chmod -R +x ${WORKSPACE_ROOT}/node_modules/@buildone/swat-cli/scripts/openhands ${WORKSPACE_ROOT}/node_modules/@buildone/swat-cli/scripts/devcontainer"
   },
   {
     "description": "Validating environment variables",

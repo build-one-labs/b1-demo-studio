@@ -11,7 +11,7 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   telemetry: false,
   extends: ['@buildone/web-framework-layer'],
-  modules: ['@nuxt/eslint', '@nuxt/image'],
+  modules: ['@nuxt/eslint'],
   css: ['~/assets/css/demo-factory.css'],
   vite: {
     // Dev server only. Inside the workspace's compose network the app server

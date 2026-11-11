@@ -1,0 +1,5 @@
+# Build.One's internal files. Everything here is local to the workspace except
+# the files listed below. Written by the Build.One CLI; do not edit it by hand.
+/*
+!/.gitignore
+!/migrations.json

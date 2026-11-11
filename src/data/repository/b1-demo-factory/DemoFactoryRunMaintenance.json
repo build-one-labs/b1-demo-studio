@@ -3,12 +3,12 @@
   "createdBy": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
   "howToUse": "",
   "label": "",
-  "moduleGuid": "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4",
   "objectDescription": "Maintenance screen of one run in the native Demo Factory Studio (issue #17), opened from a run grid's link and positioned by repositionTo on DemoFactoryRunDSO (keyFields runId; the instance clears the master's foreignFields and initialFetch). Toolbar: open video, open captions, close. Tabs: Preview (the b1_media_player over the run row above the b1_demo_timeline over the run's scenes, which follows and seeks the player), Run (the facts, read-only), Scenes (per-scene results, Join) and Captions (cues, Join).",
   "objectMasterGuid": "4d847a68-35ca-4843-a8fa-81c7b5698618",
   "objectName": "DemoFactoryRunMaintenance",
   "objectTypeGuid": "d188099d-8548-49f0-86e4-c4b28dda9ecc",
   "owner": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "productGuid": "94328e98-6f1d-4d15-b86d-f62fff77d705",
   "status": "Active",
   "templateObject": false,
   "attributes": {
@@ -339,7 +339,9 @@
       "targetObjectInstanceGuid": "8d588866-bc43-4919-8a1d-43f0ba63e082"
     }
   ],
-  "tags": [],
+  "tags": [
+    "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4"
+  ],
   "tenantId": null,
   "validFrom": null,
   "validUntil": null

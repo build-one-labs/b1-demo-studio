@@ -27,24 +27,12 @@ jobs:
       - uses: actions/checkout@v5
       # NEON_API_KEY comes from the auth server's store, like every other
       # provisioned value. See .github/actions/b1-secrets.
-      #
-      # Skipped when no key is configured yet, and the step below falls back to
-      # the old Actions secret: a repository that has not provisioned
-      # B1_ORG_API_KEY must keep working exactly as it did. A step `if:` cannot
-      # read the `secrets` context, which is why the key comes through job env.
       - uses: ./.github/actions/b1-secrets
-        if: env.B1_ORG_API_KEY != ''
         with:
           auth-url: ${{ secrets.AUTH_URL }}
           api-key: ${{ secrets.B1_ORG_API_KEY }}
           require: NEON_API_KEY NEON_PROJECT_ID
       - name: Delete Neon branch for closed PR
         env:
-          # Fetched value first, the pre-migration Actions secret second.
-          NEON_API_KEY: ${{ env.NEON_API_KEY || secrets.NEON_API_KEY }}
-          # Fetched value first, the Actions variable second. A step's env beats
-          # what an earlier step wrote to $GITHUB_ENV, so the bare
-          # `vars.NEON_PROJECT_ID` that stood here replaced the fetched id with an
-          # empty string, and the cleanup skipped every run (B1-1255).
-          NEON_PROJECT_ID: ${{ env.NEON_PROJECT_ID || vars.NEON_PROJECT_ID }}
-        run: ./.github/scripts/neon-cleanup.sh by-ref "${{ github.event.pull_request.head.ref }}"
+          B1_GITHUB_EVENT_PULL_REQUEST_HEAD_REF: ${{ github.event.pull_request.head.ref }}
+        run: ./.github/scripts/neon-cleanup.sh by-ref "${B1_GITHUB_EVENT_PULL_REQUEST_HEAD_REF}"

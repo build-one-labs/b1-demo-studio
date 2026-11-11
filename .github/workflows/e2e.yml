@@ -77,8 +77,8 @@ jobs:
       # Names the Neon branch this run works in, so CI never lands on a
       # developer's.
       GITHUB_USER: github-actions
-      DATABASE_SERVER_TYPE: neon
-      AUTHENTICATION_SERVER_TYPE: remote
+      B1_DATABASE_SERVER_TYPE: neon
+      B1_AUTHENTICATION_SERVER_TYPE: remote
       # With no auth_server container to fall back on, the stack needs this by
       # name: root.deployment.config.json resolves `authenticationUrl` from
       # `${AUTH_URL:-http://auth_server:3000}`, and the guard calls getSession()
@@ -107,8 +107,8 @@ jobs:
 
       - uses: ./.github/actions/setup-node
         with:
-          aws-access-key-id: ${{ env.B1_ACCESS_KEY_ID || secrets.B1_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ env.B1_SECRET_ACCESS_KEY || secrets.B1_SECRET_ACCESS_KEY }}
+          aws-access-key-id: ${{ env.B1_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.B1_SECRET_ACCESS_KEY }}
           focus-workspaces: app app-server-ts web-app data e2e
 
       - name: Prepare the runner

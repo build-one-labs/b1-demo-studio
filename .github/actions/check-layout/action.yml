@@ -1,0 +1,11 @@
+name: Check the repository layout
+description: >-
+  Fail when a commit adds an unlisted top-level entry, a force-added ignored file,
+  a file over the size limit or a data file under docs/ (.github/repo-layout.json).
+
+runs:
+  using: composite
+  steps:
+    - name: Check the repository layout
+      shell: bash
+      run: node "${GITHUB_ACTION_PATH}/check-layout.mjs"

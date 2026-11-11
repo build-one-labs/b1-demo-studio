@@ -1,0 +1,38 @@
+{
+  "$comment": "What this repository may contain at its top levels, and which large, data or force-added files are there on purpose. Checked on every pull request by .github/workflows/repo-layout.yml; locally `b1 check-layout`. Add an entry, with what it is for, when a new folder or file really belongs here. Rules: node_modules/@buildone/swat-cli/knowledge/architecture_info/repository-layout.md.",
+  "root": {
+    ".agents": "Codex skills (the b1- skills are synced in by the CLI)",
+    ".b1": "Build.One's internal folder (the migrations ledger; everything else stays local)",
+    ".build": "Deployment configuration layers (until the stack is rendered from repository objects)",
+    ".claude": "Claude Code settings and skills",
+    ".codex": "Codex configuration (MCP servers)",
+    ".devcontainer": "Workspace (Codespaces / dev container) definition",
+    ".dockerignore": "Docker build context exclusions",
+    ".github": "CI workflows and actions",
+    ".gitignore": "Ignore rules",
+    ".openhands": "OpenHands repository instructions and setup",
+    ".vscode": "Shared VS Code settings and tasks",
+    ".yarn": "Pinned Yarn release",
+    ".yarnrc.yml": "Yarn configuration",
+    "CLAUDE.md": "Instructions for Claude Code",
+    "eslint.config.js": "ESLint configuration",
+    "package.json": "Workspace root manifest",
+    "prettier.config.js": "Prettier configuration",
+    "README.md": "Repository overview",
+    "src": "Application code",
+    "yarn.lock": "Dependency lockfile"
+  },
+  "src": {
+    "app-server-ts": "Backend API (NestJS)",
+    "data": "Blueprint export: the app's repository objects, versioned in git",
+    "e2e": "Playwright end-to-end tests",
+    "web-app": "Frontend (Nuxt)"
+  },
+  "maxFileBytes": 1048576,
+  "largeFiles": {
+    ".yarn/releases/yarn-*.cjs": "The pinned Yarn release; Yarn runs it from the repository"
+  },
+  "unlimitedFiles": {
+    "yarn.lock": "Dependency lockfile; it grows with the dependencies, so it has no size limit"
+  }
+}

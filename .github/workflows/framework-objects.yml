@@ -1,0 +1,90 @@
+name: Framework objects
+
+# Fails a pull request that adds or changes a copy of a blueprint object the
+# framework ships. Such a copy lands in src/data/repository when a framework
+# object is edited in the workspace and exported; on import it replaces the
+# object from @buildone/swat-data and hides every framework update to it. To
+# customize a framework object, copy it into your own app (copy_object).
+#
+# Runs `b1 check-framework-objects`, which reads the blueprint JSON and git — no
+# stack, no database. Only files the pull request adds or changes fail it; copies
+# already in the repository are reported as warnings. Run this workflow by hand
+# to check the whole repository strictly: it then fails on every copy.
+# See node_modules/@buildone/swat-cli/knowledge/blueprint_dsl/framework-objects.md.
+
+on:
+  pull_request:
+    paths:
+      - 'src/data/repository/**'
+      # A framework update (b1 update) — the dependency bump and the lockfile. It
+      # changes no project object, so it only warns, but that is how the update
+      # pull request that brings this workflow shows the copies a repository already
+      # has, judged against the framework release it brings. app-server-ts is the
+      # workspace that depends on @buildone/swat-data.
+      - 'package.json'
+      - 'src/app-server-ts/package.json'
+      - 'yarn.lock'
+      - '.github/workflows/framework-objects.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: framework-objects-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Installing the CLI needs the package registry, and its credentials come from
+  # the secret store through two Actions secrets. A repository that has not been
+  # provisioned yet gets a notice here instead of a red check on every pull
+  # request. A step `if:` cannot read the `secrets` context, hence a job.
+  preflight:
+    runs-on: ubuntu-latest
+    outputs:
+      ready: ${{ steps.check.outputs.ready }}
+    env:
+      AUTH_URL: ${{ secrets.AUTH_URL }}
+      B1_ORG_API_KEY: ${{ secrets.B1_ORG_API_KEY }}
+    steps:
+      - name: Check the credentials this run needs
+        id: check
+        run: |
+          if [[ -n "${AUTH_URL}" && -n "${B1_ORG_API_KEY}" ]]; then
+            echo "ready=true" >> "${GITHUB_OUTPUT}"
+          else
+            echo "::notice title=Framework objects skipped::AUTH_URL and B1_ORG_API_KEY are not set for this repository, so the CLI cannot be installed."
+            echo "ready=false" >> "${GITHUB_OUTPUT}"
+          fi
+
+  check:
+    needs: preflight
+    if: needs.preflight.outputs.ready == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      # Depth 2 for HEAD^1, the merge commit's first parent: exactly what this pull
+      # request was merged with, even in a re-run after the base branch has moved.
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 2
+
+      - name: Fetch this repository's secrets
+        uses: ./.github/actions/b1-secrets
+        with:
+          auth-url: ${{ secrets.AUTH_URL }}
+          api-key: ${{ secrets.B1_ORG_API_KEY }}
+          require: B1_ACCESS_KEY_ID B1_SECRET_ACCESS_KEY
+
+      - uses: ./.github/actions/setup-node
+        with:
+          aws-access-key-id: ${{ env.B1_ACCESS_KEY_ID || secrets.B1_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.B1_SECRET_ACCESS_KEY || secrets.B1_SECRET_ACCESS_KEY }}
+          # app-server-ts brings @buildone/swat-data, the framework's objects. Without
+          # it the check cannot run, and fails.
+          focus-workspaces: app app-server-ts data
+
+      - name: Check that the framework's objects are left alone
+        env:
+          WORKSPACE_ROOT: ${{ github.workspace }}
+          SCOPE: ${{ github.event_name == 'pull_request' && '--base HEAD^1' || '--all' }}
+        run: yarn b1 check-framework-objects ${SCOPE}

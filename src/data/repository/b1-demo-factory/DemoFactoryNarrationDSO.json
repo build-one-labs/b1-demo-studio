@@ -3,12 +3,12 @@
   "createdBy": "1nd7tSsWQull81DW5XEYcEbeMwtIk1R0",
   "howToUse": "",
   "label": "",
-  "moduleGuid": "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4",
   "objectDescription": "Narration per run scene — provider, spoken text, duration and cue offsets. The character-level alignment stays on disk; alignmentUrl and audioUrl point at the demo-factory media controller. keyFields=id (<runId>:<sceneId>).",
   "objectMasterGuid": "de3d761d-add2-4e8a-8bee-83375c1fb3d9",
   "objectName": "DemoFactoryNarrationDSO",
   "objectTypeGuid": "7f9b0fa6-4d9d-486e-a87c-9c8936822da0",
   "owner": "1nd7tSsWQull81DW5XEYcEbeMwtIk1R0",
+  "productGuid": "94328e98-6f1d-4d15-b86d-f62fff77d705",
   "status": "Active",
   "templateObject": false,
   "attributes": {
@@ -21,7 +21,9 @@
   },
   "instances": [],
   "links": [],
-  "tags": [],
+  "tags": [
+    "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4"
+  ],
   "tenantId": null,
   "validFrom": null,
   "validUntil": null

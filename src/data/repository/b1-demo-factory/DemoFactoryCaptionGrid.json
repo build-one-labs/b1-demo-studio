@@ -3,12 +3,12 @@
   "createdBy": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
   "howToUse": "",
   "label": "",
-  "moduleGuid": "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4",
   "objectDescription": "Caption cues of one run on the run maintenance screen, over DemoFactoryCaptionDSO (Join from the run): scene, index, start and end, text — what the .srt holds, one row per cue (issue #17, step 4).",
   "objectMasterGuid": "1489162a-4201-4bba-8e06-854360d2f072",
   "objectName": "DemoFactoryCaptionGrid",
   "objectTypeGuid": "63d81ac2-8555-44e1-9032-7064448799c4",
   "owner": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "productGuid": "94328e98-6f1d-4d15-b86d-f62fff77d705",
   "status": "Active",
   "templateObject": false,
   "attributes": {
@@ -89,7 +89,9 @@
     }
   ],
   "links": [],
-  "tags": [],
+  "tags": [
+    "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4"
+  ],
   "tenantId": null,
   "validFrom": null,
   "validUntil": null

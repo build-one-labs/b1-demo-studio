@@ -1,0 +1,28 @@
+name: 'Generate version'
+description: >
+  Compute this commit's version with GitVersion's native binary, without Docker,
+  Node or an install.
+
+# WHY
+# A job that only needs a version number has no use for a dependency install or
+# two Docker images, and in a publish every other job waits for it (B1-1493).
+#
+# The checkout needs the whole history, but not its file contents, so a job using
+# this can check out with `fetch-depth: 0` and `filter: blob:none`.
+#
+# The script is a copy of the CLI's src/cli/scripts/utils/generate-version.sh, the one
+# place GitVersion runs, because a job using this has no CLI. Without a GitVersion.yml
+# in the repository, it reads the config from the CLI version in yarn.lock, which needs
+# AWS credentials configured first.
+
+outputs:
+  version:
+    description: 'The computed version (GitVersion SemVer).'
+    value: ${{ steps.generate.outputs.version }}
+
+runs:
+  using: 'composite'
+  steps:
+    - id: generate
+      shell: bash
+      run: bash "${GITHUB_ACTION_PATH}/generate-version.sh"

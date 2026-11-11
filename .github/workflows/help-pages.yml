@@ -1,0 +1,77 @@
+name: Help pages
+
+# Fails a pull request that leaves an app's help page behind: a screen added to
+# the app's menu that the help never mentions, or a screen the help links to that
+# was renamed or removed. Runs `b1 check-help`, which reads the blueprint JSON and
+# the help pages' Vue files — no stack, no database, a minute at most.
+#
+# An app opts in by naming its help screen in its b1_app `helpScreen`; a
+# repository whose apps name none passes with a notice. See
+# node_modules/@buildone/swat-cli/knowledge/blueprint_dsl/help-screens.md.
+
+on:
+  pull_request:
+    paths:
+      - 'src/data/repository/**'
+      - 'src/web-app/**'
+      # A framework update (b1 update) can rename or add framework objects the
+      # app's navigation goes through — they are read from node_modules.
+      - 'package.json'
+      - 'yarn.lock'
+      - '.github/workflows/help-pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: help-pages-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Installing the CLI needs the package registry, and its credentials come from
+  # the secret store through two Actions secrets. A repository that has not been
+  # provisioned yet gets a notice here instead of a red check on every pull
+  # request. A step `if:` cannot read the `secrets` context, hence a job.
+  preflight:
+    runs-on: ubuntu-latest
+    outputs:
+      ready: ${{ steps.check.outputs.ready }}
+    env:
+      AUTH_URL: ${{ secrets.AUTH_URL }}
+      B1_ORG_API_KEY: ${{ secrets.B1_ORG_API_KEY }}
+    steps:
+      - name: Check the credentials this run needs
+        id: check
+        run: |
+          if [[ -n "${AUTH_URL}" && -n "${B1_ORG_API_KEY}" ]]; then
+            echo "ready=true" >> "${GITHUB_OUTPUT}"
+          else
+            echo "::notice title=Help pages skipped::AUTH_URL and B1_ORG_API_KEY are not set for this repository, so the CLI cannot be installed."
+            echo "ready=false" >> "${GITHUB_OUTPUT}"
+          fi
+
+  check:
+    needs: preflight
+    if: needs.preflight.outputs.ready == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Fetch this repository's secrets
+        uses: ./.github/actions/b1-secrets
+        with:
+          auth-url: ${{ secrets.AUTH_URL }}
+          api-key: ${{ secrets.B1_ORG_API_KEY }}
+          require: B1_ACCESS_KEY_ID B1_SECRET_ACCESS_KEY
+
+      - uses: ./.github/actions/setup-node
+        with:
+          aws-access-key-id: ${{ env.B1_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.B1_SECRET_ACCESS_KEY }}
+          focus-workspaces: app data
+
+      - name: Check that every help page covers its app
+        env:
+          WORKSPACE_ROOT: ${{ github.workspace }}
+        run: yarn b1 check-help

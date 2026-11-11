@@ -5,5 +5,12 @@
     "howToUse": "Business-domain classification of repository objects.",
     "id": "9312cf25-2b46-46e1-9a67-b260727699cd",
     "label": "Domain"
+  },
+  {
+    "color": "#64748b",
+    "description": "Functional areas, carried over from the modules that used to group repository objects.",
+    "howToUse": "The functional area an object belongs to. An object can carry several.",
+    "id": "b7c1a511-1511-4b15-9e11-0a5e1511b1a5",
+    "label": "Module"
   }
 ]

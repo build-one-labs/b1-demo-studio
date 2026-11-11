@@ -3,12 +3,12 @@
   "createdBy": "1nd7tSsWQull81DW5XEYcEbeMwtIk1R0",
   "howToUse": "",
   "label": "",
-  "moduleGuid": "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4",
   "objectDescription": "Demo Creator",
   "objectMasterGuid": "34e589aa-fd11-4aa9-b2cf-ed6ec90fe6a4",
   "objectName": "DemoCreatorAgent",
   "objectTypeGuid": "061d6de8-56e1-43c2-9887-8b8892d967e7",
   "owner": "1nd7tSsWQull81DW5XEYcEbeMwtIk1R0",
+  "productGuid": "94328e98-6f1d-4d15-b86d-f62fff77d705",
   "status": "Active",
   "templateObject": false,
   "attributes": {
@@ -60,7 +60,9 @@
     }
   ],
   "links": [],
-  "tags": [],
+  "tags": [
+    "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4"
+  ],
   "tenantId": null,
   "validFrom": null,
   "validUntil": null

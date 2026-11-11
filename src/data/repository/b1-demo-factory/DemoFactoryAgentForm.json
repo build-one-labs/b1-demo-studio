@@ -3,12 +3,12 @@
   "createdBy": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
   "howToUse": "",
   "label": "",
-  "moduleGuid": "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4",
   "objectDescription": "Form of the Ask the Demo Creator dialog: what the agent should do. Start creates a conversation with the Demo Creator agent against this environment (the selected demo travels as context) and opens the chat (issue #17, step 3).",
   "objectMasterGuid": "4ce79432-ebee-4acc-bb82-ef322f3a7185",
   "objectName": "DemoFactoryAgentForm",
   "objectTypeGuid": "130726b3-7c42-4f22-a324-cc07f3d21feb",
   "owner": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "productGuid": "94328e98-6f1d-4d15-b86d-f62fff77d705",
   "status": "Active",
   "templateObject": false,
   "attributes": {
@@ -74,7 +74,9 @@
     }
   ],
   "links": [],
-  "tags": [],
+  "tags": [
+    "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4"
+  ],
   "tenantId": null,
   "validFrom": null,
   "validUntil": null

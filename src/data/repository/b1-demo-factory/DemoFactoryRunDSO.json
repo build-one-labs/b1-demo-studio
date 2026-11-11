@@ -3,12 +3,12 @@
   "createdBy": "1nd7tSsWQull81DW5XEYcEbeMwtIk1R0",
   "howToUse": "",
   "label": "",
-  "moduleGuid": "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4",
   "objectDescription": "Recorded and rendered runs, newest first. Written by DemoFactoryRunIngest after a pipeline job and reconciled against demo-factory/output on start — rows whose run directory is gone are dropped. keyFields=runId.",
   "objectMasterGuid": "49b67af7-2346-40c3-8ba3-ff546ed534cd",
   "objectName": "DemoFactoryRunDSO",
   "objectTypeGuid": "7f9b0fa6-4d9d-486e-a87c-9c8936822da0",
   "owner": "1nd7tSsWQull81DW5XEYcEbeMwtIk1R0",
+  "productGuid": "94328e98-6f1d-4d15-b86d-f62fff77d705",
   "status": "Active",
   "templateObject": false,
   "attributes": {
@@ -21,7 +21,9 @@
   },
   "instances": [],
   "links": [],
-  "tags": [],
+  "tags": [
+    "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4"
+  ],
   "tenantId": null,
   "validFrom": null,
   "validUntil": null

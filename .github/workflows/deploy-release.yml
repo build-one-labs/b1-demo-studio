@@ -1,5 +1,5 @@
 name: Deploy Release
-run-name: Deploy Release ${{ inputs.version }}
+run-name: Deploy Release ${{ inputs.version }} to stack ${{ inputs.stack-id || inputs.stack-name || inputs.profile }}
 
 # Dispatched by the Release & Deploy screen's "Deploy" action. Deploys a released
 # version to a Portainer stack — either updating an existing stack (`stack-id`) or
@@ -12,17 +12,16 @@ on:
         required: false
         default: ''
       stack-name:
-        description: 'New stack name (create a new stack; requires endpoint-id + domain)'
+        description: 'New stack name (create a new stack; requires endpoint-id + app-url)'
         required: false
         default: ''
       endpoint-id:
         description: 'Portainer endpoint id (required when creating a new stack)'
         required: false
         default: ''
-      domain:
-        description: 'Domain for the new stack, e.g. test.example.com (required when creating)'
+      app-url:
+        description: 'App URL to serve the new stack at, without https://, e.g. app.example.com (required when creating)'
         required: false
-        default: ''
       repository:
         description: 'Source repository (org/repo) recorded on the new stack'
         required: false
@@ -48,7 +47,11 @@ on:
         required: false
         default: ''
       env-secrets:
-        description: 'Names of repository secrets to set as stack env vars (comma or newline separated). Names only — the values are resolved in the job.'
+        description: 'Names of secret-store secrets to set as stack env vars (comma or newline separated). Names only — the values are resolved in the job.'
+        required: false
+        default: ''
+      profile:
+        description: 'Deployment profile to deploy (a b1_infra_deployment_profile in the repository). With it, stack-name only labels the run.'
         required: false
         default: ''
   workflow_call:
@@ -65,7 +68,7 @@ on:
         type: string
         required: false
         default: ''
-      domain:
+      app-url:
         type: string
         required: false
         default: ''
@@ -97,19 +100,11 @@ on:
         type: string
         required: false
         default: ''
+      profile:
+        type: string
+        required: false
+        default: ''
     secrets:
-      B1_ACCESS_KEY_ID:
-        required: false
-      B1_SECRET_ACCESS_KEY:
-        required: false
-      PORTAINER_URL:
-        required: false
-      PORTAINER_API_KEY:
-        required: false
-      PUBLISH_DOCKER_REPOSITORY:
-        required: false
-      PUBLISH_APP_NAME:
-        required: false
       AUTH_URL:
         required: false
       B1_ORG_API_KEY:
@@ -131,27 +126,26 @@ jobs:
         with:
           fetch-depth: 0
       # Provisioned secrets from the auth server's store, with one organization
-      # API key. Skipped until that key is set, and every value below then
-      # falls back to the Actions secret it has always used.
-      # See .github/actions/b1-secrets.
+      # API key. See .github/actions/b1-secrets.
       - uses: ./.github/actions/b1-secrets
-        if: env.B1_ORG_API_KEY != ''
         with:
           auth-url: ${{ secrets.AUTH_URL }}
           api-key: ${{ secrets.B1_ORG_API_KEY }}
           require: B1_ACCESS_KEY_ID B1_SECRET_ACCESS_KEY PORTAINER_API_KEY PORTAINER_URL PUBLISH_APP_NAME PUBLISH_DOCKER_REPOSITORY
       - uses: ./.github/actions/setup-node
         with:
-          aws-access-key-id: ${{ env.B1_ACCESS_KEY_ID || secrets.B1_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ env.B1_SECRET_ACCESS_KEY || secrets.B1_SECRET_ACCESS_KEY }}
+          aws-access-key-id: ${{ env.B1_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.B1_SECRET_ACCESS_KEY }}
       - name: Resolve version
         id: version
         run: |
-          VERSION="${{ inputs.version }}"
+          VERSION="${B1_INPUT_VERSION}"
           if [ -z "$VERSION" ] || [ "$VERSION" = "auto" ]; then
             VERSION=$(git describe --tags --abbrev=0)
           fi
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+        env:
+          B1_INPUT_VERSION: ${{ inputs.version }}
       # The release's own files. This run, its local actions and the CLI installed
       # above come from the ref it was dispatched on — the default branch, because
       # a release tagged before this workflow existed has neither the workflow nor
@@ -172,38 +166,65 @@ jobs:
             git -c advice.detachedHead=false checkout "${TARGET}"
           fi
       - name: Generate deployment files
+        if: inputs.profile == ''
         env:
           WORKSPACE_ROOT: .
         run: npx b1 generate deployment
-      - name: Deploy to Portainer
+      # B1-1275: a stack described by a deployment profile object — rendered from the
+      # repository's blueprint data, created or updated by name, then observed until
+      # every service is ready. The profile and version reach the command through the
+      # environment: a dispatch input interpolated into `run:` could inject a command.
+      - name: Deploy with profile
+        if: inputs.profile != ''
         env:
           WORKSPACE_ROOT: .
-          PUBLISH_DOCKER_REPOSITORY: ${{ env.PUBLISH_DOCKER_REPOSITORY || secrets.PUBLISH_DOCKER_REPOSITORY }}
-          PUBLISH_APP_NAME: ${{ env.PUBLISH_APP_NAME || secrets.PUBLISH_APP_NAME }}
+          B1_DEPLOY_PROFILE: ${{ inputs.profile }}
+          B1_DEPLOY_VERSION: ${{ steps.version.outputs.version }}
+          B1_DEPLOY_ENV_VARS: ${{ inputs.env-vars }}
+          B1_DEPLOY_ENV_SECRETS: ${{ inputs.env-secrets }}
+          PORTAINER_URL: ${{ inputs.portainer-url || env.PORTAINER_URL }}
+          PORTAINER_API_KEY: ${{ inputs.portainer-api-key || env.PORTAINER_API_KEY }}
+          AUTH_URL: ${{ env.AUTH_URL || secrets.AUTH_URL }}
+        run: npx b1 deploy "${B1_DEPLOY_VERSION}" --profile "${B1_DEPLOY_PROFILE}"
+      - name: Deploy to Portainer
+        if: inputs.profile == ''
+        env:
+          B1_INPUT_PORTAINER_URL: ${{ inputs.portainer-url }}
+          B1_INPUT_PORTAINER_API_KEY: ${{ inputs.portainer-api-key }}
+          B1_STEPS_VERSION_VERSION: ${{ steps.version.outputs.version }}
+          B1_INPUT_DEPLOYMENT_CONFIG: ${{ inputs.deployment-config }}
+          B1_INPUT_STACK_ID: ${{ inputs.stack-id }}
+          B1_INPUT_STACK_NAME: ${{ inputs.stack-name }}
+          B1_INPUT_ENDPOINT_ID: ${{ inputs.endpoint-id }}
+          B1_INPUT_REPOSITORY: ${{ inputs.repository }}
+          # Through the environment, not expanded into the script: a crafted value would run commands in this job.
+          B1_DEPLOY_APP_URL: ${{ inputs.app-url }}
+          WORKSPACE_ROOT: .
+          PUBLISH_DOCKER_REPOSITORY: ${{ env.PUBLISH_DOCKER_REPOSITORY }}
+          PUBLISH_APP_NAME: ${{ env.PUBLISH_APP_NAME }}
           # Stack env vars reach the deploy through the environment, not the command
           # line the runner echoes. `secrets` cannot be indexed by a name computed
           # at run time, so the whole context is passed and b1 deploy picks out only
           # the names asked for.
           B1_DEPLOY_ENV_VARS: ${{ inputs.env-vars }}
           B1_DEPLOY_ENV_SECRETS: ${{ inputs.env-secrets }}
-          B1_DEPLOY_SECRETS_JSON: ${{ toJSON(secrets) }}
           # The auth server this deploy ran against, carried into the stack Env: every
           # service in the generated compose reads `${AUTH_URL:-http://auth_server:3000}`,
           # and that default only exists in a stack with a local auth server. b1 deploy
           # sets it on every deploy of a remote-auth stack, overwriting what the stack has.
           AUTH_URL: ${{ env.AUTH_URL || secrets.AUTH_URL }}
         run: |
-          PORTAINER_URL="${{ inputs.portainer-url }}"
-          PORTAINER_KEY="${{ inputs.portainer-api-key }}"
-          [ -z "$PORTAINER_URL" ] && PORTAINER_URL="${{ env.PORTAINER_URL || secrets.PORTAINER_URL }}"
-          [ -z "$PORTAINER_KEY" ] && PORTAINER_KEY="${{ env.PORTAINER_API_KEY || secrets.PORTAINER_API_KEY }}"
+          # From the environment, not expanded into this script: a stored value containing a
+          # quote or $( would break the step or run commands in a job holding credentials.
+          PORTAINER_URL="${B1_INPUT_PORTAINER_URL:-${PORTAINER_URL:-}}"
+          PORTAINER_KEY="${B1_INPUT_PORTAINER_API_KEY:-${PORTAINER_API_KEY:-}}"
           npx b1 deploy \
-            "${{ steps.version.outputs.version }}" \
-            ".deploy/${{ inputs.deployment-config }}" \
-            "${{ inputs.stack-id }}" \
+            "${B1_STEPS_VERSION_VERSION}" \
+            ".deploy/${B1_INPUT_DEPLOYMENT_CONFIG}" \
+            "${B1_INPUT_STACK_ID}" \
             "$PORTAINER_URL" \
             "$PORTAINER_KEY" \
-            --stack-name="${{ inputs.stack-name }}" \
-            --endpoint-id="${{ inputs.endpoint-id }}" \
-            --domain="${{ inputs.domain }}" \
-            --repository="${{ inputs.repository }}"
+            --stack-name="${B1_INPUT_STACK_NAME}" \
+            --endpoint-id="${B1_INPUT_ENDPOINT_ID}" \
+            --app-url="${B1_DEPLOY_APP_URL}" \
+            --repository="${B1_INPUT_REPOSITORY}"

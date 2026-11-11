@@ -3,12 +3,12 @@
   "createdBy": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
   "howToUse": "",
   "label": "",
-  "moduleGuid": "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4",
   "objectDescription": "Primary demo actions: Save, Run full demo, Edit with Demo Agent (current demo and selected scene context), Close. Stage actions live in the corresponding tabs.",
   "objectMasterGuid": "3bec2751-cd4e-4e1e-8d27-f95791bd7d50",
   "objectName": "DemoFactoryDemoMaintenanceToolbar",
   "objectTypeGuid": "c0f01216-5d6f-4923-b9ce-1f3049f9d2b5",
   "owner": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "productGuid": "94328e98-6f1d-4d15-b86d-f62fff77d705",
   "status": "Active",
   "templateObject": false,
   "attributes": {
@@ -26,7 +26,7 @@
         "actionType": "PUBLISH",
         "label": "Save",
         "smallImage": "i-lucide-save",
-        "tooltip": "Save the demo \u2014 the server validates the document before anything lands"
+        "tooltip": "Save the demo — the server validates the document before anything lands"
       },
       "instances": []
     },
@@ -68,7 +68,7 @@
         "actionParameter": "DemoFactoryHelpScreen",
         "label": "Hilfe",
         "smallImage": "i-lucide-circle-help",
-        "tooltip": "Anleitung und Mein erstes Video \u00f6ffnen"
+        "tooltip": "Anleitung und Mein erstes Video öffnen"
       },
       "instances": []
     },
@@ -88,7 +88,9 @@
     }
   ],
   "links": [],
-  "tags": [],
+  "tags": [
+    "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4"
+  ],
   "tenantId": null,
   "validFrom": null,
   "validUntil": null
