@@ -3,12 +3,12 @@
   "createdBy": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
   "howToUse": "",
   "label": "",
-  "moduleGuid": "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4",
   "objectDescription": "Scene tab of the native Studio inspector, over DemoFactorySceneDSO: what the scene is (title, route, ids, position) on the left and its narration with [cue:…] markers on the right. Edits the row the scene grid selects; saved through the Save toolbar. Replaces the Scene tab of the former DemoFactoryStudio component (issue #17, step 2).",
   "objectMasterGuid": "a5b1a8b8-43fb-4031-9e31-4b41b18a2688",
   "objectName": "DemoFactorySceneForm",
   "objectTypeGuid": "130726b3-7c42-4f22-a324-cc07f3d21feb",
   "owner": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "productGuid": "94328e98-6f1d-4d15-b86d-f62fff77d705",
   "status": "Active",
   "templateObject": false,
   "attributes": {
@@ -122,7 +122,9 @@
     }
   ],
   "links": [],
-  "tags": [],
+  "tags": [
+    "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4"
+  ],
   "tenantId": null,
   "validFrom": null,
   "validUntil": null

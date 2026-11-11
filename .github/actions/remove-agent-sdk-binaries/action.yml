@@ -1,0 +1,23 @@
+name: Remove the Claude Agent SDK binaries
+description: Remove about 1 GB of native binaries from an app server install, and fail if they stay or the app server needs them
+
+runs:
+  using: composite
+  steps:
+    - name: Remove the Claude Agent SDK binaries
+      shell: bash
+      run: |
+        # Wherever hoisting put them. The trailing hyphen keeps the SDK's JavaScript package.
+        BINARIES=(. -path ./.git -prune -o -type d -path '*/node_modules/@anthropic-ai/claude-agent-sdk-*' -prune)
+        find "${BINARIES[@]}" -exec rm -rf {} +
+        LEFT=$(find "${BINARIES[@]}" -print)
+        if [ -n "${LEFT}" ]; then
+          echo "${LEFT}"
+          echo "::error::The Claude Agent SDK's binaries are still there, and would add about 1 GB to the image."
+          exit 1
+        fi
+        # Without its binary the SDK fails only when it is called, in production.
+        if grep -rIl --exclude-dir=node_modules --exclude-dir=dist '@anthropic-ai/claude-agent-sdk' src/app-server-ts; then
+          echo "::error::The app server uses @anthropic-ai/claude-agent-sdk, which needs these binaries. Remove the remove-agent-sdk-binaries step from this job."
+          exit 1
+        fi

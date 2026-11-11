@@ -84,6 +84,10 @@ ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 \
     REMOTION_BROWSER_EXECUTABLE=/usr/bin/chromium \
     FFMPEG_PATH=/usr/bin/ffmpeg \
     FFPROBE_PATH=/usr/bin/ffprobe
+ENV APP_DATA_FOLDER=/data/app
+ENV B1_DATA_FOLDER=/data/b1
+ENV B1_UPLOAD_DIR=/app-data/uploads
+ENV B1_EXPORT_DATA_FOLDER=/data/local
 
 # The pipeline itself: ESM sources the actions spawn, the Remotion composition
 # they bundle at render time, and the demo storyboards. Its dependencies are

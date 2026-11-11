@@ -1,0 +1,17 @@
+name: Check for native files
+description: Fail if a web app build holds native files, which would be built for this runner only
+
+inputs:
+  path:
+    description: The build output to check
+    required: false
+    default: src/web-app/.output
+
+runs:
+  using: composite
+  steps:
+    - name: Check the build has no native files
+      shell: bash
+      env:
+        OUTPUT_PATH: ${{ inputs.path }}
+      run: node "${GITHUB_ACTION_PATH}/check-native-files.mjs" "${OUTPUT_PATH}"

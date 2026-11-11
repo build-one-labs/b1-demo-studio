@@ -1,0 +1,45 @@
+{
+  "productGuid": "df5d0f1a-7d37-44ea-8021-e868ac4a5aec",
+  "objectDescription": "This repository's refinements of b1-stack-standalone (converted from .build/deploy).",
+  "objectMasterGuid": "e001c741-5c8c-45d3-9eb1-d1197af07354",
+  "objectName": "app-stack-standalone",
+  "objectTypeGuid": "8908f9a5-cfc0-4001-ac5b-7a14c0295221",
+  "status": "Active",
+  "templateObject": false,
+  "attributes": {
+    "stackRef": "b1-stack-standalone",
+    "volumes": {
+      "demo_factory_data": null
+    }
+  },
+  "instances": [
+    {
+      "instanceName": "app_server_ts",
+      "objectInstanceGuid": "51d977e5-269f-4ded-922e-bed2dcef29f7",
+      "objectMasterGuid": "70623cb6-98f3-460b-a266-223ef6cc1e51",
+      "objectSequence": 1,
+      "attributes": {
+        "env": {
+          "B1_DEFAULT_APP": "${B1_DEFAULT_APP:-b1-demo-factory}",
+          "REPOSITORY": "build-one-labs/b1-demo-studio",
+          "B1_BASE_URL": "${B1_BASE_URL:-https://${STACK}.${DOMAIN}}",
+          "B1_USER_API_KEY": "${B1_USER_API_KEY:-}",
+          "DEMO_OUTPUT_DIR": "/data/demo-factory/output",
+          "DEMO_CACHE_DIR": "/data/demo-factory/cache",
+          "ELEVENLABS_API_KEY": "${ELEVENLABS_API_KEY:-}",
+          "ELEVENLABS_VOICE_ID": "${ELEVENLABS_VOICE_ID:-}",
+          "DEMO_FACTORY_OPERATORS": "${DEMO_FACTORY_OPERATORS:-}"
+        },
+        "volumes": {
+          "/data/demo-factory": "demo_factory_data"
+        }
+      },
+      "instances": []
+    }
+  ],
+  "links": [],
+  "tags": [],
+  "tenantId": null,
+  "validFrom": null,
+  "validUntil": null
+}

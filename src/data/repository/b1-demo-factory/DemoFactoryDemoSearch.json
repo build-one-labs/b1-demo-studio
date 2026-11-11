@@ -3,12 +3,12 @@
   "createdBy": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
   "howToUse": "",
   "label": "",
-  "moduleGuid": "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4",
   "objectDescription": "Demo search screen of the native Demo Factory Studio (issue #17): the demo list with its toolbar (New, Import, Ask the Demo Creator). The title link opens DemoFactoryDemoMaintenance positioned to the demo, where editing, scenes and the pipeline live. Opened from the Demos entry of DemoFactoryMenu in the sidebar of DemoFactoryNativeScreen.",
   "objectMasterGuid": "baf6c9b4-d106-4126-93c0-311b7d061a63",
   "objectName": "DemoFactoryDemoSearch",
   "objectTypeGuid": "d188099d-8548-49f0-86e4-c4b28dda9ecc",
   "owner": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "productGuid": "94328e98-6f1d-4d15-b86d-f62fff77d705",
   "status": "Active",
   "templateObject": false,
   "attributes": {
@@ -85,7 +85,9 @@
       "targetObjectInstanceGuid": "bbaeb5f9-1a4c-43eb-9484-3f950305d123"
     }
   ],
-  "tags": [],
+  "tags": [
+    "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4"
+  ],
   "tenantId": null,
   "validFrom": null,
   "validUntil": null

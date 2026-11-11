@@ -3,12 +3,12 @@
   "createdBy": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
   "howToUse": "",
   "label": "",
-  "moduleGuid": "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4",
   "objectDescription": "Demo tab actions: validate the definition; export and delete in More actions.",
   "objectMasterGuid": "e95bfdad-ee9e-4769-9b37-f90983d9cf13",
   "objectName": "DemoFactoryDemoActionsToolbar",
   "objectTypeGuid": "c0f01216-5d6f-4923-b9ce-1f3049f9d2b5",
   "owner": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "productGuid": "94328e98-6f1d-4d15-b86d-f62fff77d705",
   "status": "Active",
   "templateObject": false,
   "attributes": {
@@ -39,7 +39,9 @@
     }
   ],
   "links": [],
-  "tags": [],
+  "tags": [
+    "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4"
+  ],
   "tenantId": null,
   "validFrom": null,
   "validUntil": null

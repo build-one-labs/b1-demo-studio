@@ -3,12 +3,12 @@
   "createdBy": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
   "howToUse": "",
   "label": "",
-  "moduleGuid": "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4",
   "objectDescription": "Settings view of the native Demo Factory Studio (issue #17, step 3), opened from the Settings entry of DemoFactoryMenu: the runtime configuration grid (DemoFactorySettingDSO, values edited in place) on the left; on the right the recording sign-in (mint the auth state from a pasted session token) above what this host can do (DemoFactoryHostDSO). Saving a value or minting the auth state re-asks the stage verdicts (DemoFactoryStageDSO) and the host capabilities, because several settings decide what the host can run.",
   "objectMasterGuid": "20973f2d-d555-4fc2-812b-1385fe9d0ef9",
   "objectName": "DemoFactorySettingsScreen",
   "objectTypeGuid": "d188099d-8548-49f0-86e4-c4b28dda9ecc",
   "owner": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "productGuid": "94328e98-6f1d-4d15-b86d-f62fff77d705",
   "status": "Active",
   "templateObject": false,
   "attributes": {
@@ -186,7 +186,9 @@
       "targetObjectInstanceGuid": "1277cc9b-d322-4822-a0a8-49aa32c4b810"
     }
   ],
-  "tags": [],
+  "tags": [
+    "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4"
+  ],
   "tenantId": null,
   "validFrom": null,
   "validUntil": null

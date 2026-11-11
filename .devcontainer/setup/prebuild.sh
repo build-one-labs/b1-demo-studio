@@ -441,7 +441,7 @@ if [[ "${PREBUILD_CHECK:-}" != "true" ]]; then
                 && [[ -n "${CODEARTIFACT_AUTH_TOKEN}" ]]; then
                 export CODEARTIFACT_AUTH_TOKEN
                 mkdir -p "${WORKSPACE_ROOT}/.b1/env" 2>/dev/null || true
-                echo "export CODEARTIFACT_AUTH_TOKEN=${CODEARTIFACT_AUTH_TOKEN}" > "${WORKSPACE_ROOT}/.b1/env/.aws-token.env"
+                echo "CODEARTIFACT_AUTH_TOKEN=${CODEARTIFACT_AUTH_TOKEN}" > "${WORKSPACE_ROOT}/.b1/env/.aws-token.env"
                 log INFO "CodeArtifact token obtained"
             else
                 CODEARTIFACT_AUTH_TOKEN=""
@@ -449,7 +449,7 @@ if [[ "${PREBUILD_CHECK:-}" != "true" ]]; then
             fi
         fi
         if [[ -z "${CODEARTIFACT_AUTH_TOKEN:-}" && -f "${WORKSPACE_ROOT}/.b1/env/.aws-token.env" ]]; then
-            source "${WORKSPACE_ROOT}/.b1/env/.aws-token.env" || true
+            set -a; source "${WORKSPACE_ROOT}/.b1/env/.aws-token.env" || true; set +a
             if [[ -n "${CODEARTIFACT_AUTH_TOKEN:-}" ]]; then
                 log INFO "Using cached CodeArtifact token"
             fi

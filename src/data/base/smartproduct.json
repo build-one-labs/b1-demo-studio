@@ -20,5 +20,16 @@
     "vendor": "",
     "createdBy": null,
     "tenantId": null
+  },
+  {
+    "productCode": "app-stack",
+    "productDescription": "This repository's stack: refinements of the B1 platform stack (b1_infra_stack_overlay) and the stacks it deploys (b1_infra_deployment_profile).",
+    "productGuid": "df5d0f1a-7d37-44ea-8021-e868ac4a5aec",
+    "productInstalled": true,
+    "productName": "app-stack",
+    "systemOwned": false,
+    "vendor": "",
+    "createdBy": null,
+    "tenantId": null
   }
 ]

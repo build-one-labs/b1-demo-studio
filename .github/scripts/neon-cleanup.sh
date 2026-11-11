@@ -69,7 +69,7 @@ missing_config() {
   if [[ "${GITHUB_ACTIONS:-}" == "true" ]]; then
     echo "::error title=Neon branch cleanup::$1 not set — no branches can be cleaned up."
     log "ERROR: $1 not set. In CI it comes from the B1 secret store via"
-    log "       .github/actions/b1-secrets (or the Actions secret/variable fallback)."
+    log "       .github/actions/b1-secrets."
     exit 1
   fi
   log "$1 not set — skipping Neon branch cleanup."

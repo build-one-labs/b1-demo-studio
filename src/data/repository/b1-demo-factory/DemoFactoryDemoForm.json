@@ -3,12 +3,12 @@
   "createdBy": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
   "howToUse": "",
   "label": "",
-  "moduleGuid": "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4",
   "objectDescription": "Demo tab of the native Studio inspector: the demo's own settings over DemoFactoryDemoDSO — identity, where it records (base URL, viewport, fps, language, holds) and the whole settings block as JSON for anything the fields do not cover. Two columns: identity and recording left, the raw settings right. Replaces the Demo tab PR #16 added to the Vue component (issue #17, step 2).",
   "objectMasterGuid": "aff98969-906d-4c91-950f-e2f270a9b619",
   "objectName": "DemoFactoryDemoForm",
   "objectTypeGuid": "130726b3-7c42-4f22-a324-cc07f3d21feb",
   "owner": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "productGuid": "94328e98-6f1d-4d15-b86d-f62fff77d705",
   "status": "Active",
   "templateObject": false,
   "attributes": {
@@ -215,7 +215,9 @@
     }
   ],
   "links": [],
-  "tags": [],
+  "tags": [
+    "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4"
+  ],
   "tenantId": null,
   "validFrom": null,
   "validUntil": null

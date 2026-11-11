@@ -3,12 +3,12 @@
   "createdBy": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
   "howToUse": "",
   "label": "",
-  "moduleGuid": "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4",
   "objectDescription": "Form of the Import demo dialog: the pasted demo.yaml text, what to do when the id collides (refuse, overwrite, import as a copy) and the copy's new id. Import hands the text to import-demo, which validates it exactly like a Studio edit (issue #17, step 3).",
   "objectMasterGuid": "1de25a0d-e5a2-475c-bf83-1d314081b6a4",
   "objectName": "DemoFactoryImportForm",
   "objectTypeGuid": "130726b3-7c42-4f22-a324-cc07f3d21feb",
   "owner": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
+  "productGuid": "94328e98-6f1d-4d15-b86d-f62fff77d705",
   "status": "Active",
   "templateObject": false,
   "attributes": {
@@ -95,7 +95,9 @@
     }
   ],
   "links": [],
-  "tags": [],
+  "tags": [
+    "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4"
+  ],
   "tenantId": null,
   "validFrom": null,
   "validUntil": null

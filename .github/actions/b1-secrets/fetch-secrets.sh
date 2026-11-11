@@ -293,6 +293,6 @@ if [[ -n "${require}" ]]; then
     fi
   done
   if [[ ${#missing[@]} -gt 0 ]]; then
-    fail "Required secret(s) not available from ${auth_url}: ${missing[*]}. Provision them for this organization (or this repository's scope), or set them as Actions secrets."
+    fail "Required secret(s) not available from ${auth_url}: ${missing[*]}. Provision them for this organization (or this repository's scope)."
   fi
 fi

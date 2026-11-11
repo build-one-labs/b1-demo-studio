@@ -1,0 +1,59 @@
+name: 'Publish Deployment Bundle'
+description: 'Generate this version''s deployment files and publish them to the raw artifacts bucket'
+
+# A thin wrapper over the CLI's `scripts/publish/publish-deployment.mjs`
+# (B1-1357), which does the work: the bundle, its manifest, the release/dev and
+# write-once rules. It is a script of the installed
+# @buildone/swat-cli, not a `b1` command, like the other publish steps; it lives
+# in the CLI so that a fix reaches every repository with `b1 update`.
+#
+# The calling job checks out the version, installs the CLI and configures AWS
+# credentials first, exactly as its image jobs do.
+
+inputs:
+  version:
+    description: 'Version to publish (the tag the job checked out)'
+    required: true
+  docker-repository:
+    description: 'ECR repository base URL (PUBLISH_DOCKER_REPOSITORY); generation resolves the image names from it'
+    required: true
+  app-name:
+    description: 'App name (PUBLISH_APP_NAME); the bundle is published under <prefix>/<app-name>/<version>'
+    required: true
+  artifacts-location:
+    description: 'Bucket and folder (PUBLISH_ARTIFACTS_LOCATION, e.g. buildone-prod-raw-artifacts/b1). Empty: the raw artifacts bucket, under the IAM user name of the AWS key'
+    required: false
+    default: ''
+  working-directory:
+    description: 'Repository root'
+    required: false
+    default: '.'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Publish the deployment bundle
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      env:
+        VERSION: ${{ inputs.version }}
+        WORKSPACE_ROOT: .
+        PUBLISH_DOCKER_REPOSITORY: ${{ inputs.docker-repository }}
+        PUBLISH_APP_NAME: ${{ inputs.app-name }}
+        PUBLISH_ARTIFACTS_LOCATION: ${{ inputs.artifacts-location }}
+      run: |
+        # The script ships in the CLI the checkout installed. A CLI that is not
+        # installed is a broken job; one that predates the script (an old tag
+        # rebuilt by hand) has nothing to publish with, which is not a failure.
+        CLI_DIR="$(node -p "require('path').dirname(require.resolve('@buildone/swat-cli/package.json'))" 2>/dev/null || true)"
+        if [ -z "${CLI_DIR}" ]; then
+          echo "::error::@buildone/swat-cli is not installed, so no deployment bundle was published."
+          exit 1
+        fi
+        SCRIPT="${CLI_DIR}/scripts/publish/publish-deployment.mjs"
+        if [ ! -f "${SCRIPT}" ]; then
+          echo "::notice::The CLI at ${VERSION} predates the deployment bundle; no bundle for this version."
+          exit 0
+        fi
+        npx b1 generate deployment
+        npx zx "${SCRIPT}" "${VERSION}"

@@ -25,10 +25,19 @@ RUN apt-get update && \
 # downgrade to no signature at all. Matching the status line instead accepts a
 # good signature from this one key, tolerating only its expiry, and leaves
 # BADSIG, REVKEYSIG and an unknown signer failing the build.
+#
+# The archive follows the architecture the image is built for: Docker builds
+# arm64 on Apple Silicon, where the x86_64 installer cannot run. AWS signs the
+# aarch64 archive with the same key, so the check above covers both.
 ARG AWSCLI_VERSION=2.36.31
 COPY setup/awscli-team.gpg.asc /tmp/awscli-team.gpg.asc
 RUN set -eux; \
-  url="https://awscli.amazonaws.com/awscli-exe-linux-x86_64-${AWSCLI_VERSION}.zip"; \
+  case "$(uname -m)" in \
+    x86_64) arch=x86_64 ;; \
+    aarch64 | arm64) arch=aarch64 ;; \
+    *) echo "No AWS CLI build for architecture $(uname -m): expected x86_64 or aarch64." >&2; exit 1 ;; \
+  esac; \
+  url="https://awscli.amazonaws.com/awscli-exe-linux-${arch}-${AWSCLI_VERSION}.zip"; \
   curl -fsSL "${url}" -o /tmp/awscli.zip; \
   curl -fsSL "${url}.sig" -o /tmp/awscli.zip.sig; \
   export GNUPGHOME=/tmp/awscli-gnupg; \

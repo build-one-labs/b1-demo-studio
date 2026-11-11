@@ -20,14 +20,6 @@ on:
         required: false
         default: auto
     secrets:
-      B1_ACCESS_KEY_ID:
-        required: false
-      B1_SECRET_ACCESS_KEY:
-        required: false
-      PUBLISH_DOCKER_REPOSITORY:
-        required: false
-      PUBLISH_APP_NAME:
-        required: false
       AUTH_URL:
         required: false
       B1_ORG_API_KEY:
@@ -56,20 +48,24 @@ jobs:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
+          filter: blob:none
       # Provisioned secrets from the auth server's store, with one organization
-      # API key. Skipped until that key is set, and every value below then
-      # falls back to the Actions secret it has always used.
-      # See .github/actions/b1-secrets.
+      # API key. See .github/actions/b1-secrets.
       - uses: ./.github/actions/b1-secrets
-        if: env.B1_ORG_API_KEY != ''
         with:
           auth-url: ${{ secrets.AUTH_URL }}
           api-key: ${{ secrets.B1_ORG_API_KEY }}
           require: B1_ACCESS_KEY_ID B1_SECRET_ACCESS_KEY
-      - uses: ./.github/actions/setup-node
+      # Credentials only: nothing below needs an install (B1-1493).
+      - uses: aws-actions/configure-aws-credentials@v6
+        if: inputs.version == '' || inputs.version == 'auto'
         with:
-          aws-access-key-id: ${{ env.B1_ACCESS_KEY_ID || secrets.B1_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ env.B1_SECRET_ACCESS_KEY || secrets.B1_SECRET_ACCESS_KEY }}
+          aws-access-key-id: ${{ env.B1_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.B1_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+      - uses: ./.github/actions/generate-version
+        id: generated
+        if: inputs.version == '' || inputs.version == 'auto'
       - name: Configure git
         run: |
           git config user.name "github-actions[bot]"
@@ -77,238 +73,33 @@ jobs:
       - name: Create tag
         id: version
         env:
-          WORKSPACE_ROOT: .
           INPUT_VERSION: ${{ inputs.version }}
+          GENERATED_VERSION: ${{ steps.generated.outputs.version }}
         run: |
-          # "auto" (or empty) lets `b1 tag` compute the version from the branch;
+          # "auto" (or empty) uses the generated version from the branch;
           # an explicit value is used verbatim (the screen's "custom" mode).
-          npx b1 tag "${INPUT_VERSION:-auto}"
-          git push --tags
-          # The newest tag reachable from HEAD is the one just created.
-          VERSION=$(git describe --tags --abbrev=0)
+          VERSION="${INPUT_VERSION:-auto}"
+          if [ "${VERSION}" = "auto" ]; then VERSION="${GENERATED_VERSION}"; fi
+          # refs/tags/: a branch or a commit hash with this name is not this tag.
+          if TAGGED=$(git rev-parse -q --verify "refs/tags/${VERSION}^{commit}"); then
+            if [ "${TAGGED}" != "$(git rev-parse HEAD)" ]; then
+              echo "::error::Tag ${VERSION} already exists on ${TAGGED}, not on this commit, so this would publish other code. Dispatch a custom version, or dispatch on that commit to rebuild it. An automatic version repeats after a force-push, and a new commit gets a new one."
+              exit 1
+            fi
+          else
+            git tag "${VERSION}"
+          fi
+          git push origin "refs/tags/${VERSION}"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "Tagged $VERSION"
 
-  publish-app-server-ts:
+  # What publishing does is in publish-version.yml, shared with the other publish workflow.
+  publish:
     needs: version
-    runs-on: ubuntu-24.04
-    env:
-      VERSION: ${{ needs.version.outputs.version }}
-      B1_ORG_API_KEY: ${{ secrets.B1_ORG_API_KEY }}
-    steps:
-      - uses: actions/checkout@v6
-        with:
-          ref: ${{ needs.version.outputs.version }}
-      # Provisioned secrets from the auth server's store, with one organization
-      # API key. Skipped until that key is set, and every value below then
-      # falls back to the Actions secret it has always used.
-      # See .github/actions/b1-secrets.
-      - uses: ./.github/actions/b1-secrets
-        if: env.B1_ORG_API_KEY != ''
-        with:
-          auth-url: ${{ secrets.AUTH_URL }}
-          api-key: ${{ secrets.B1_ORG_API_KEY }}
-          require: B1_ACCESS_KEY_ID B1_SECRET_ACCESS_KEY PUBLISH_APP_NAME PUBLISH_DOCKER_REPOSITORY
-      - uses: ./.github/actions/setup-node
-        with:
-          aws-access-key-id: ${{ env.B1_ACCESS_KEY_ID || secrets.B1_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ env.B1_SECRET_ACCESS_KEY || secrets.B1_SECRET_ACCESS_KEY }}
-          focus-workspaces: app app-server-ts data
-      - name: Build
-        run: yarn workspace app-server-ts build
-      - name: Prune to production dependencies
-        run: yarn workspaces focus app-server-ts --production
-      - name: Prepare Dockerfile
-        run: cp src/app-server-ts/Dockerfile ./Dockerfile
-      - uses: aws-actions/configure-aws-credentials@v6
-        with:
-          aws-access-key-id: ${{ env.B1_ACCESS_KEY_ID || secrets.B1_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ env.B1_SECRET_ACCESS_KEY || secrets.B1_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
-      - uses: aws-actions/amazon-ecr-login@v2
-      - uses: docker/setup-qemu-action@v4
-        with:
-          platforms: arm64
-      - uses: docker/setup-buildx-action@v4
-
-      - name: Build and push image
-        env:
-          DOCKER_REPOSITORY: ${{ env.PUBLISH_DOCKER_REPOSITORY || secrets.PUBLISH_DOCKER_REPOSITORY }}
-          APP_NAME: ${{ env.PUBLISH_APP_NAME || secrets.PUBLISH_APP_NAME }}
-        run: |
-          if [ -z "${DOCKER_REPOSITORY}" ] || [ -z "${APP_NAME}" ]; then
-            echo "DOCKER_REPOSITORY / APP_NAME are empty — is the auth server's" >&2
-            echo "publish-docker-repository / publish-app-name pair provisioned," >&2
-            echo "or PUBLISH_DOCKER_REPOSITORY / PUBLISH_APP_NAME set as secrets?" >&2
-            exit 1
-          fi
-          IMAGE="${DOCKER_REPOSITORY}/${APP_NAME}-app-server-ts"
-          # Both architectures, so an arm64 host runs this natively instead of
-          # emulating it. One invocation builds and pushes: a multi-platform build
-          # is a manifest list, which the local image store cannot hold, so there
-          # would be nothing left behind for a separate docker push to send.
-          # Up to 3 attempts. The arm64 half builds under QEMU, which now and then
-          # crashes on its own ("qemu: uncaught target signal 11"), and a registry can
-          # drop a push; a re-run passes. buildx keeps the layers that finished, so a
-          # retry only repeats the step that failed.
-          ATTEMPT=1
-          until docker buildx build . \
-              --platform linux/amd64,linux/arm64 \
-              --push \
-              --provenance=false \
-              -t "${IMAGE}:${VERSION}" \
-              --build-arg BUILD_VERSION="${VERSION}" \
-              --build-arg BUILD_DATE="$(date)" \
-              --build-arg BUILD_NAME="${APP_NAME}-app-server-ts" \
-              --build-arg BUILD_IMAGE="${IMAGE}"; do
-            if [ "${ATTEMPT}" -ge 3 ]; then
-              echo "::error::Building ${IMAGE}:${VERSION} failed on all 3 attempts; the last error is in the log above."
-              exit 1
-            fi
-            echo "::warning::Building ${IMAGE}:${VERSION} failed (attempt ${ATTEMPT} of 3); retrying in $((ATTEMPT * 15))s."
-            sleep $((ATTEMPT * 15))
-            ATTEMPT=$((ATTEMPT + 1))
-          done
-
-          # Asserted, not assumed. A single-platform push still produces a working
-          # image and a green job — the only place it shows up is on someone
-          # else's arm64 host, months later, as "the application is slow".
-          PUBLISHED=$(docker buildx imagetools inspect --raw "${IMAGE}:${VERSION}" \
-            | jq -r '.manifests[]? | select(.platform.architecture != "unknown") | .platform.architecture' \
-            | sort -u)
-          echo "${IMAGE}:${VERSION} publishes: $(echo "${PUBLISHED}" | tr '\n' ' ')"
-          for ARCH in amd64 arm64; do
-            echo "${PUBLISHED}" | grep -qx "${ARCH}" || {
-              echo "::error::${IMAGE}:${VERSION} has no ${ARCH} variant. Hosts on that CPU will run it under emulation."
-              exit 1
-            }
-          done
-
-  publish-web-app:
-    needs: version
-    runs-on: ubuntu-24.04
-    env:
-      VERSION: ${{ needs.version.outputs.version }}
-      B1_ORG_API_KEY: ${{ secrets.B1_ORG_API_KEY }}
-    steps:
-      - uses: actions/checkout@v6
-        with:
-          ref: ${{ needs.version.outputs.version }}
-      # Provisioned secrets from the auth server's store, with one organization
-      # API key. Skipped until that key is set, and every value below then
-      # falls back to the Actions secret it has always used.
-      # See .github/actions/b1-secrets.
-      - uses: ./.github/actions/b1-secrets
-        if: env.B1_ORG_API_KEY != ''
-        with:
-          auth-url: ${{ secrets.AUTH_URL }}
-          api-key: ${{ secrets.B1_ORG_API_KEY }}
-          require: B1_ACCESS_KEY_ID B1_SECRET_ACCESS_KEY PUBLISH_APP_NAME PUBLISH_DOCKER_REPOSITORY
-      - uses: ./.github/actions/setup-node
-        with:
-          aws-access-key-id: ${{ env.B1_ACCESS_KEY_ID || secrets.B1_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ env.B1_SECRET_ACCESS_KEY || secrets.B1_SECRET_ACCESS_KEY }}
-          focus-workspaces: app web-app
-      - name: Build
-        run: yarn workspace web-app build
-      - name: Prepare Dockerfile
-        run: cp src/web-app/Dockerfile ./Dockerfile
-      - uses: aws-actions/configure-aws-credentials@v6
-        with:
-          aws-access-key-id: ${{ env.B1_ACCESS_KEY_ID || secrets.B1_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ env.B1_SECRET_ACCESS_KEY || secrets.B1_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
-      - uses: aws-actions/amazon-ecr-login@v2
-      - uses: docker/setup-qemu-action@v4
-        with:
-          platforms: arm64
-      - uses: docker/setup-buildx-action@v4
-
-      - name: Build and push image
-        env:
-          DOCKER_REPOSITORY: ${{ env.PUBLISH_DOCKER_REPOSITORY || secrets.PUBLISH_DOCKER_REPOSITORY }}
-          APP_NAME: ${{ env.PUBLISH_APP_NAME || secrets.PUBLISH_APP_NAME }}
-        run: |
-          if [ -z "${DOCKER_REPOSITORY}" ] || [ -z "${APP_NAME}" ]; then
-            echo "DOCKER_REPOSITORY / APP_NAME are empty — is the auth server's" >&2
-            echo "publish-docker-repository / publish-app-name pair provisioned," >&2
-            echo "or PUBLISH_DOCKER_REPOSITORY / PUBLISH_APP_NAME set as secrets?" >&2
-            exit 1
-          fi
-          IMAGE="${DOCKER_REPOSITORY}/${APP_NAME}-web-app"
-          # Both architectures, so an arm64 host runs this natively instead of
-          # emulating it. One invocation builds and pushes: a multi-platform build
-          # is a manifest list, which the local image store cannot hold, so there
-          # would be nothing left behind for a separate docker push to send.
-          # Up to 3 attempts. The arm64 half builds under QEMU, which now and then
-          # crashes on its own ("qemu: uncaught target signal 11"), and a registry can
-          # drop a push; a re-run passes. buildx keeps the layers that finished, so a
-          # retry only repeats the step that failed.
-          ATTEMPT=1
-          until docker buildx build . \
-              --platform linux/amd64,linux/arm64 \
-              --push \
-              --provenance=false \
-              -t "${IMAGE}:${VERSION}" \
-              --build-arg BUILD_VERSION="${VERSION}" \
-              --build-arg BUILD_DATE="$(date)" \
-              --build-arg BUILD_NAME="${APP_NAME}-web-app" \
-              --build-arg BUILD_IMAGE="${IMAGE}"; do
-            if [ "${ATTEMPT}" -ge 3 ]; then
-              echo "::error::Building ${IMAGE}:${VERSION} failed on all 3 attempts; the last error is in the log above."
-              exit 1
-            fi
-            echo "::warning::Building ${IMAGE}:${VERSION} failed (attempt ${ATTEMPT} of 3); retrying in $((ATTEMPT * 15))s."
-            sleep $((ATTEMPT * 15))
-            ATTEMPT=$((ATTEMPT + 1))
-          done
-
-          # Asserted, not assumed. A single-platform push still produces a working
-          # image and a green job — the only place it shows up is on someone
-          # else's arm64 host, months later, as "the application is slow".
-          PUBLISHED=$(docker buildx imagetools inspect --raw "${IMAGE}:${VERSION}" \
-            | jq -r '.manifests[]? | select(.platform.architecture != "unknown") | .platform.architecture' \
-            | sort -u)
-          echo "${IMAGE}:${VERSION} publishes: $(echo "${PUBLISHED}" | tr '\n' ' ')"
-          for ARCH in amd64 arm64; do
-            echo "${PUBLISHED}" | grep -qx "${ARCH}" || {
-              echo "::error::${IMAGE}:${VERSION} has no ${ARCH} variant. Hosts on that CPU will run it under emulation."
-              exit 1
-            }
-          done
-
-  # ---------------------------------------------------------------------------
-  # Publish marker — sets the `build-one/publish` commit status on the tag's commit
-  # once the image jobs finish (see publish.yml for the rationale).
-  # ---------------------------------------------------------------------------
-  mark-publish-status:
-    name: Mark publish commit status
-    needs:
-      - version
-      - publish-app-server-ts
-      - publish-web-app
-    if: always() && needs.version.result == 'success'
-    runs-on: ubuntu-24.04
-    env:
-      VERSION: ${{ needs.version.outputs.version }}
-    steps:
-      - uses: actions/checkout@v6
-        with:
-          ref: ${{ needs.version.outputs.version }}
-      - name: Set build-one/publish commit status
-        env:
-          GH_TOKEN: ${{ github.token }}
-          # `version` is 'success' here (gated by the `if`), so it never flips STATE.
-          RESULTS: ${{ join(needs.*.result, ',') }}
-        run: |
-          SHA=$(git rev-parse HEAD)
-          if echo "$RESULTS" | grep -qE 'failure|cancelled'; then
-            STATE=failure
-          else
-            STATE=success
-          fi
-          echo "Images ${STATE} for ${VERSION} (${SHA}); job results: ${RESULTS}"
-          gh api -X POST "repos/${{ github.repository }}/statuses/${SHA}" \
-            -f state="${STATE}" \
-            -f context="build-one/publish" \
-            -f description="Images ${STATE} for ${VERSION}"
+    permissions:
+      contents: read
+      statuses: write
+    uses: ./.github/workflows/publish-version.yml
+    with:
+      version: ${{ needs.version.outputs.version }}
+    secrets: inherit
