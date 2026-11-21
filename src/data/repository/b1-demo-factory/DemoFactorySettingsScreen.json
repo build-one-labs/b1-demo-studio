@@ -93,7 +93,7 @@
               },
               "instances": [
                 {
-                  "instanceName": "pane_auth",
+                  "instanceName": "pane_demo_user_form",
                   "objectInstanceGuid": "ae652d38-b5d3-43ad-8607-b23b8ec7f2ed",
                   "objectMasterGuid": "42d23280-0576-4959-b408-9360cf65764f",
                   "objectSequence": 2,
@@ -122,7 +122,7 @@
                   ]
                 },
                 {
-                  "instanceName": "pane_capabilities",
+                  "instanceName": "pane_host_info",
                   "objectInstanceGuid": "a9457554-7e0c-4b05-a6d8-69e0a22ce12b",
                   "objectMasterGuid": "42d23280-0576-4959-b408-9360cf65764f",
                   "objectSequence": 3,
