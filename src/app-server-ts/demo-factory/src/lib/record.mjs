@@ -6,6 +6,9 @@ import {ensureDir} from './files.mjs';
 import {seconds, step, warn} from './log.mjs';
 import {mediaDurationMs} from './media.mjs';
 import {executeAssertions, executeSceneActions, installDemoCursor, primeDemoCursor, resolveDemoUrl} from './actions.mjs';
+import {isClipScene, sceneBaseUrl} from '../schema.mjs';
+import {resetRepository} from './reset.mjs';
+import {clipTiming, cutSourceClip, resolveSourceVideo} from './source-video.mjs';
 
 const sleep = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
 
@@ -24,7 +27,7 @@ const existingFile = async (candidate) => {
 };
 
 export const recordScenes = async ({demo, manifest, sceneFilter = null}) => {
-  const baseUrl = process.env[demo.settings.baseUrl.env] || demo.settings.baseUrl.fallback;
+  const baseUrl = sceneBaseUrl(demo, {});
   const authState = await existingFile(process.env[demo.settings.authStateEnv]);
   // Second way to authenticate a take, for workspaces whose auth server has no
   // x-api-key handoff branch (so `auth:workspace` cannot mint a storage state)
@@ -42,18 +45,33 @@ export const recordScenes = async ({demo, manifest, sceneFilter = null}) => {
   // media.mjs: point at the binary and the pipeline uses it, leave it unset and
   // Playwright resolves its managed browser as before.
   const executablePath = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH || undefined;
-  const browser = await chromium.launch({headless: envBoolean(demo.settings.headlessEnv, true), executablePath});
+  // A demo made from the author's own screen recording has nothing to film:
+  // its clip scenes are cut out of the upload, and no browser is started
+  // unless some selected scene still needs one.
+  const filmed = demo.scenes.filter((scene) => !isClipScene(scene) && (!sceneFilter || sceneFilter.has(scene.id)));
+  const browser = filmed.length ? await chromium.launch({headless: envBoolean(demo.settings.headlessEnv, true), executablePath}) : null;
   const recordedScenes = [];
   // How the take was authenticated is the first thing to check when a scene
   // records the sign-in screen instead of the app, so it is on the record.
-  step(`Recording ${demo.id} against ${baseUrl} (${authState ? `storage state ${authState}` : apiKey ? 'x-api-key header' : 'no credentials'})`);
+  if (browser) step(`Recording ${demo.id} against ${baseUrl} (${authState ? `storage state ${authState}` : apiKey ? 'x-api-key header' : 'no credentials'})`);
+  else step(`Cutting ${demo.id} from its source video ${demo.source?.video ?? ''}`);
+
+  // Before anything is filmed: the environment back to its delivered state.
+  // A failed reset stops the take — filming on top of an unknown state is
+  // exactly what the setting is there to prevent.
+  if (browser && demo.settings.resetRepository) {
+    step(`Resetting the blueprint repository of ${new URL(baseUrl).origin} before recording`);
+    const startedAt = Date.now();
+    await resetRepository({browser, appUrl: baseUrl, authState, apiKey});
+    step(`Repository reset in ${seconds(Date.now() - startedAt)}`);
+  }
 
   try {
     // The setup block: same actions as a scene, no camera. It runs before a
     // full take so the environment starts from a known state (a repository
     // reset, seed data, a dismissed dialog). A partial re-record skips it —
     // whoever re-records one scene wants the state the other scenes left.
-    if (demo.setup && !sceneFilter) {
+    if (demo.setup && !sceneFilter && browser) {
       const context = await browser.newContext({
         viewport: demo.settings.viewport,
         storageState: authState,
@@ -90,6 +108,10 @@ export const recordScenes = async ({demo, manifest, sceneFilter = null}) => {
         continue;
       }
       const sourceScene = demo.scenes.find((scene) => scene.id === preparedScene.id);
+      if (isClipScene(sourceScene)) {
+        recordedScenes.push(await cutClipScene({demo, preparedScene, sourceScene, clipsDir, position}));
+        continue;
+      }
       const context = await browser.newContext({
         viewport: demo.settings.viewport,
         screen: demo.settings.viewport,
@@ -104,8 +126,11 @@ export const recordScenes = async ({demo, manifest, sceneFilter = null}) => {
       const recordingStartedAt = Date.now();
       const video = page.video();
 
+      // A scene may run in another application than the demo's (a change
+      // request made in one app, shown in the platform that received it).
+      const appUrl = sceneBaseUrl(demo, sourceScene);
       try {
-        const url = resolveDemoUrl(sourceScene.route, baseUrl);
+        const url = resolveDemoUrl(sourceScene.route, appUrl);
         step(`Scene ${position}: ${sourceScene.id} — opening ${url}`);
         await page.goto(url, {waitUntil: 'networkidle', timeout: 30_000});
         // The framework's shell row is the fallback ready signal: a deployed
@@ -118,7 +143,7 @@ export const recordScenes = async ({demo, manifest, sceneFilter = null}) => {
         await primeDemoCursor({page, scene, cursor: demo.settings.cursor});
         await sleep(demo.settings.holdBeforeMs);
         const narrationStartTime = Date.now();
-        const {timelapses} = await executeSceneActions({page, scene, baseUrl, narrationStartTime, cursor: demo.settings.cursor});
+        const {timelapses} = await executeSceneActions({page, scene, baseUrl: appUrl, narrationStartTime, cursor: demo.settings.cursor});
         await executeAssertions({page, assertions: sourceScene.assertions});
         // Keep recording until the narration fits the COMPOSED timeline, not
         // the wall clock. Every compressed wait removes footage from the final
@@ -174,8 +199,47 @@ export const recordScenes = async ({demo, manifest, sceneFilter = null}) => {
       }
     }
   } finally {
-    await browser.close();
+    await browser?.close();
   }
 
   return {...manifest, baseUrl, scenes: recordedScenes, recordedAt: new Date().toISOString()};
+};
+
+/**
+ * A clip scene: its range of the source video, retimed to the new narration
+ * (see clipTiming). The narration starts after holdBeforeMs, exactly like a
+ * filmed scene, and the clip is measured with ffprobe afterwards because the
+ * encoder, not the arithmetic, decides its final length.
+ */
+const cutClipScene = async ({demo, preparedScene, sourceScene, clipsDir, position}) => {
+  const source = resolveSourceVideo(demo.source);
+  await access(source).catch(() => {
+    throw new Error(`Scene ${sourceScene.id}: the source video ${demo.source.video} is not on this host — upload it again`);
+  });
+  const {startMs} = sourceScene.clip;
+  const endMs = demo.source.durationMs ? Math.min(sourceScene.clip.endMs, demo.source.durationMs) : sourceScene.clip.endMs;
+  const narrationMs = preparedScene.narrationDurationMs || 0;
+  const timing = clipTiming({
+    sourceMs: endMs - startMs,
+    narrationMs,
+    holdBeforeMs: demo.settings.holdBeforeMs,
+    holdAfterMs: demo.settings.holdAfterMs,
+    voiceAtMs: sourceScene.clip.voiceAtMs,
+  });
+  const clipFile = path.join(clipsDir, `${sourceScene.id}.mp4`);
+  step(`Scene ${position}: ${sourceScene.id} — cutting ${seconds(startMs)}–${seconds(endMs)} at ${timing.speed.toFixed(2)}×${timing.timelapse ? `, ${seconds(timing.timelapse.toMs)} silent lead-in fast-forwarded to ${seconds(timing.timelapse.targetMs)}` : ''}${timing.freezeMs ? `, holding the last frame ${seconds(timing.freezeMs)}` : ''}`);
+  await cutSourceClip({source, startMs, endMs, timing, target: clipFile, backgroundColor: demo.settings.branding.backgroundColor, fps: demo.settings.fps});
+  const recordedDurationMs = await mediaDurationMs(clipFile, {trimMs: 0});
+  const compressedMs = timing.timelapse ? timing.timelapse.toMs - timing.timelapse.targetMs : 0;
+  if (narrationMs && recordedDurationMs - compressedMs < timing.narrationOffsetMs + narrationMs) {
+    warn(`Scene ${position}: ${sourceScene.id} — the clip (${seconds(recordedDurationMs - compressedMs)}) is shorter than its narration (${seconds(narrationMs)})`);
+  }
+  return {
+    ...preparedScene,
+    clipFile,
+    narrationOffsetMs: timing.narrationOffsetMs,
+    recordedDurationMs,
+    timelapses: timing.timelapse ? [timing.timelapse] : [],
+    sourceRange: {startMs, endMs, speed: timing.speed, freezeMs: timing.freezeMs},
+  };
 };

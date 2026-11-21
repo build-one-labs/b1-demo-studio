@@ -9,13 +9,19 @@
  * the thing that rots between runs.
  */
 import {spawn} from 'node:child_process';
-import {existsSync} from 'node:fs';
+import {existsSync, readFileSync} from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {resolveApiKey} from '../src/lib/env.mjs';
+import {loadDemo} from '../src/lib/files.mjs';
+import {isClipScene, sceneBaseUrl} from '../src/schema.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const demoId = process.argv[2] || 'sales-tour-planning';
+// `--stages=convert` runs the conversion of a video demo instead of the
+// production stages — the same sign-in first, because its trial run films.
+const stagesFlag = process.argv.find((arg) => arg.startsWith('--stages='));
+const stages = stagesFlag ? stagesFlag.slice('--stages='.length).split(',') : ['prepare', 'record', 'render'];
 const baseUrl = process.env.B1_BASE_URL || 'http://localhost:8080/';
 const authState = process.env.B1_AUTH_STATE || path.join(root, 'playwright', '.auth', 'b1-demo-user.json');
 
@@ -25,7 +31,7 @@ const authState = process.env.B1_AUTH_STATE || path.join(root, 'playwright', '.a
 const concurrency = process.env.REMOTION_CONCURRENCY || '1';
 const offthreadCacheMb = process.env.REMOTION_OFFTHREADVIDEO_CACHE_MB || '512';
 
-const run = (args) => new Promise((resolve, reject) => {
+const run = (args, extraEnv = {}) => new Promise((resolve, reject) => {
   const child = spawn(process.execPath, args, {
     cwd: root,
     env: {
@@ -34,6 +40,7 @@ const run = (args) => new Promise((resolve, reject) => {
       B1_AUTH_STATE: authState,
       REMOTION_CONCURRENCY: concurrency,
       REMOTION_OFFTHREADVIDEO_CACHE_MB: offthreadCacheMb,
+      ...extraEnv,
     },
     stdio: 'inherit',
   });
@@ -42,6 +49,20 @@ const run = (args) => new Promise((resolve, reject) => {
 });
 
 await run(['src/cli.mjs', 'validate', demoId]);
+
+// A demo cut from the author's own screen recording films nothing, so there
+// is no browser to sign in.
+const {demo} = await loadDemo(demoId);
+const converting = stages.includes('convert') || stages.includes('inspect');
+const filmsInBrowser = converting || demo.scenes.some((scene) => !isClipScene(scene));
+// Every application a take opens — the demo's own and any a scene names (see
+// sceneBaseUrl): the sign-in below needs a session for each.
+// An inspection may open an application no scene names yet (its request's url or baseUrl).
+const requestFlag = process.argv.find((arg) => arg.startsWith('--request='));
+const inspected = stages.includes('inspect') && requestFlag
+  ? (({url, baseUrl: requested}) => [url, requested].filter(Boolean).map((href) => new URL(href).origin))(JSON.parse(readFileSync(requestFlag.slice('--request='.length), 'utf8')))
+  : [];
+const appUrls = [...new Set([...[{}, ...demo.scenes].map((scene) => new URL(sceneBaseUrl(demo, scene, {...process.env, B1_BASE_URL: baseUrl})).origin), ...inspected])];
 
 // A minted storage state is the best take — a real session cookie, exactly
 // what a customer's browser carries. It is not always obtainable: the mint
@@ -52,25 +73,32 @@ await run(['src/cli.mjs', 'validate', demoId]);
 // attempted, and a failure is reported rather than fatal, as long as the take
 // can still be signed in some other way. With neither, the recording would be
 // of the sign-in page, which is worth stopping for.
-if (existsSync(authState)) {
+if (!filmsInBrowser) {
+  console.log('Every scene is a clip of the source video — no browser sign-in needed.');
+} else if (existsSync(authState)) {
   console.log(`Reusing the auth state at ${authState}; it is refreshed below if this workspace can mint one.`);
 }
-try {
-  await run(['tools/b1-auth-state.mjs']);
-} catch (error) {
-  if (!existsSync(authState) && !resolveApiKey()) {
-    throw new Error(
-      `Cannot sign the recording in: ${error.message}\n` +
-        'This host has no auth state and no user API key. Capture one interactively with ' +
-        '`yarn demo:auth:b1`, or set the key for this auth server — ' +
-        `B1_USER_API_KEY__<AUTH HOST> (${process.env.AUTH_URL || 'AUTH_URL unset'}) or B1_USER_API_KEY — ` +
-        'so the recording can authenticate by header.',
-    );
+if (filmsInBrowser) {
+  try {
+    await run(['tools/b1-auth-state.mjs'], {B1_BASE_URLS: appUrls.join(',')});
+  } catch (error) {
+    if (!existsSync(authState) && !resolveApiKey()) {
+      throw new Error(
+        `Cannot sign the recording in: ${error.message}\n` +
+          'This host has no auth state and no user API key. Capture one interactively with ' +
+          '`yarn demo:auth:b1`, or set the key for this auth server — ' +
+          `B1_USER_API_KEY__<AUTH HOST> (${process.env.AUTH_URL || 'AUTH_URL unset'}) or B1_USER_API_KEY — ` +
+          'so the recording can authenticate by header.',
+      );
+    }
+    console.warn(`Could not mint a fresh auth state (${error.message}).`);
+    console.warn(existsSync(authState) ? 'Recording with the stored state.' : 'Recording with the API key header.');
   }
-  console.warn(`Could not mint a fresh auth state (${error.message}).`);
-  console.warn(existsSync(authState) ? 'Recording with the stored state.' : 'Recording with the API key header.');
 }
 
-await run(['src/cli.mjs', 'prepare', demoId]);
-await run(['src/cli.mjs', 'record', demoId]);
-await run(['src/cli.mjs', 'render', demoId]);
+// Flags for a stage (`--request=`, `--out=` of inspect) pass through to the CLI.
+const passThrough = process.argv.slice(3).filter((arg) => /^--(request|out|scenes)=/.test(arg));
+for (const stage of stages) {
+  if (!['convert', 'inspect', 'prepare', 'record', 'render'].includes(stage)) throw new Error(`Unknown stage ${stage}`);
+  await run(['src/cli.mjs', stage, demoId, ...passThrough]);
+}

@@ -36,6 +36,7 @@
     "database:seed": "APP_DATABASE_URL=$(echo \"${APP_DATABASE_URL}\" | sed 's/app_db_server:5432/127.0.0.1:15432/') node dist/seed.js"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^1.12.0",
     "@buildone/app-server-tslib": "24.3.0-VG.530",
     "@buildone/swat-data": "24.3.0-VG.530",
     "@nestjs/axios": "^4.0.1",

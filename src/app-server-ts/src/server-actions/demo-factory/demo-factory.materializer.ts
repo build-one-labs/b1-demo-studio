@@ -66,6 +66,26 @@ export class DemoFactoryMaterializer implements IServerEventsHandler<DemoRow | S
     return this.cls.isActive() && this.cls.get(INTERNAL_WRITE) === true;
   }
 
+  // ---- After fetch: what a demo row shows but does not store ----------------
+
+  /**
+   * `demoUserLabel` is the name of the demo user a demo signs in as
+   * (`settings.demoUser`) — the display column of the "Sign in as" select. It
+   * is looked up on every read and stripped again on write (onBeforeUpdate),
+   * so renaming a demo user shows everywhere at once.
+   */
+  async onAfterFetch(records: (DemoRow | SceneRow)[]): Promise<void> {
+    const demos = records.filter((record): record is DemoRow => !('sceneId' in record));
+    if (demos.length === 0) return;
+    const users = new Map(
+      (await this.store.read<{ id: string; label: string }>(DSO.demoUser)).map((user) => [user.id, user.label])
+    );
+    for (const demo of demos) {
+      const id = String((demo.settings as { demoUser?: unknown } | undefined)?.demoUser ?? '');
+      (demo as DemoRow & { demoUserLabel?: string }).demoUserLabel = id ? (users.get(id) ?? id) : '';
+    }
+  }
+
   // ---- Before hooks: validate, and stamp the demo row -----------------------
 
   async onBeforeCreate(record: DemoRow | SceneRow): Promise<DemoRow | SceneRow> {
@@ -95,8 +115,10 @@ export class DemoFactoryMaterializer implements IServerEventsHandler<DemoRow | S
       return record;
     }
 
-    const { hash } = await this.materialize(record.id, record);
-    return { ...record, updatedAt: new Date().toISOString(), sourceHash: hash ?? record.sourceHash };
+    // Display only — see onAfterFetch.
+    const { demoUserLabel: _shown, ...row } = record as DemoRow & { demoUserLabel?: string };
+    const { hash } = await this.materialize(row.id, row);
+    return { ...row, updatedAt: new Date().toISOString(), sourceHash: hash ?? row.sourceHash };
   }
 
   /**

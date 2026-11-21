@@ -13,7 +13,7 @@ import {
   ALLOWED_ENV_KEYS,
   HostCapabilities,
   JOB_ACTIONS,
-  JobAction,
+  StageAction,
   projectRootFrom,
   readProvisionedEnv,
   resolveApiKey,
@@ -318,7 +318,7 @@ const FFPROBE_PATHS = ['/usr/bin/ffprobe', '/usr/local/bin/ffprobe', 'ffprobe'];
  * screen, so a stage row is complete on its own and a screen that lists them
  * needs no table of its own to decode the ids.
  */
-export const STAGE_LABELS: Record<JobAction, { label: string; hint: string }> = {
+export const STAGE_LABELS: Record<StageAction, { label: string; hint: string }> = {
   validate: { label: 'Validate', hint: 'Schema and cues' },
   prepare: { label: 'Prepare', hint: 'Voice and timing' },
   record: { label: 'Record', hint: 'Drives a browser' },

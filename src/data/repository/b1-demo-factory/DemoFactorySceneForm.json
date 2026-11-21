@@ -3,7 +3,7 @@
   "createdBy": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
   "howToUse": "",
   "label": "",
-  "objectDescription": "Scene tab of the native Studio inspector, over DemoFactorySceneDSO: what the scene is (title, route, ids, position) on the left and its narration with [cue:…] markers on the right. Edits the row the scene grid selects; saved through the Save toolbar. Replaces the Scene tab of the former DemoFactoryStudio component (issue #17, step 2).",
+  "objectDescription": "Scene tab of the native Studio inspector, over DemoFactorySceneDSO: what the scene is (title, route or — in a video demo — the clip of the source video, ids, position) on the left and its narration with [cue:…] markers on the right. Edits the row the scene grid selects; saved through the Save toolbar. A filmed scene needs a route, a clip scene a clip; the schema decides per scene. Replaces the Scene tab of the former DemoFactoryStudio component (issue #17, step 2).",
   "objectMasterGuid": "a5b1a8b8-43fb-4031-9e31-4b41b18a2688",
   "objectName": "DemoFactorySceneForm",
   "objectTypeGuid": "130726b3-7c42-4f22-a324-cc07f3d21feb",
@@ -43,13 +43,71 @@
               "instances": []
             },
             {
-              "instanceName": "route",
-              "objectInstanceGuid": "fef68173-0582-4794-96b1-776bfee6f5b1",
+              "instanceName": "baseUrl",
+              "objectInstanceGuid": "c4ce1a57-1162-4ab6-a257-92cc74b4f6ca",
               "objectMasterGuid": "81756e31-509d-46ef-a774-1c52876e0a11",
               "objectSequence": 2,
               "attributes": {
-                "label": "Route",
-                "required": true
+                "label": "Application URL — blank: the demo's base URL (e.g. https://platform.demo.build.one/)",
+                "required": false
+              },
+              "instances": []
+            },
+            {
+              "instanceName": "mode",
+              "objectInstanceGuid": "6475529b-0fad-458e-ab1f-69b34cbaa6b7",
+              "objectMasterGuid": "b1b73251-5116-37b7-e314-de2cc0dc4ddb",
+              "objectSequence": 3,
+              "attributes": {
+                "label": "Footage — clip: cut from the recording, film: Playwright performs the actions, auto: clip when there is one",
+                "optionsList": "auto,clip,film"
+              },
+              "instances": []
+            },
+            {
+              "instanceName": "route",
+              "objectInstanceGuid": "fef68173-0582-4794-96b1-776bfee6f5b1",
+              "objectMasterGuid": "81756e31-509d-46ef-a774-1c52876e0a11",
+              "objectSequence": 1,
+              "attributes": {
+                "label": "Route — where the scene opens in its application (needed to film; for a clip: where the recording is)",
+                "required": false
+              },
+              "instances": []
+            },
+            {
+              "instanceName": "clip",
+              "objectInstanceGuid": "c56f7d91-70ce-4d2e-b76c-04a5088c63f1",
+              "objectMasterGuid": "531100c8-2ec2-4e63-9195-1e2663071e94",
+              "objectSequence": 5,
+              "attributes": {
+                "dataType": "json",
+                "label": "Clip of the source video — video demos only (JSON: startMs, endMs, voiceAtMs in ms)",
+                "rows": 5
+              },
+              "instances": []
+            },
+            {
+              "instanceName": "conversion.status",
+              "objectInstanceGuid": "788da691-8ac3-4f18-ace3-7818726e1774",
+              "objectMasterGuid": "81756e31-509d-46ef-a774-1c52876e0a11",
+              "objectSequence": 6,
+              "attributes": {
+                "enabled": false,
+                "label": "Last conversion",
+                "placeholder": "— never converted —"
+              },
+              "instances": []
+            },
+            {
+              "instanceName": "conversion.message",
+              "objectInstanceGuid": "dfefaaaf-db87-4077-9139-c3e370a16536",
+              "objectMasterGuid": "531100c8-2ec2-4e63-9195-1e2663071e94",
+              "objectSequence": 7,
+              "attributes": {
+                "enabled": false,
+                "label": "What the conversion says about this scene",
+                "rows": 3
               },
               "instances": []
             },
@@ -57,7 +115,7 @@
               "instanceName": "sceneId",
               "objectInstanceGuid": "6dc5afd4-29f3-495a-8be3-697713af4074",
               "objectMasterGuid": "81756e31-509d-46ef-a774-1c52876e0a11",
-              "objectSequence": 3,
+              "objectSequence": 8,
               "attributes": {
                 "enabled": false,
                 "label": "Scene id"
@@ -68,7 +126,7 @@
               "instanceName": "sequence",
               "objectInstanceGuid": "8517ddec-e3d1-4be7-8391-b580620d8316",
               "objectMasterGuid": "81756e31-509d-46ef-a774-1c52876e0a11",
-              "objectSequence": 4,
+              "objectSequence": 9,
               "attributes": {
                 "dataType": "integer",
                 "label": "Position",

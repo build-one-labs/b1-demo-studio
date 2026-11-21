@@ -2,7 +2,7 @@ import {createHash} from 'node:crypto';
 import {mkdir, readFile, writeFile} from 'node:fs/promises';
 import path from 'node:path';
 import YAML from 'yaml';
-import {demoSchema} from '../schema.mjs';
+import {demoSchema, isClipScene} from '../schema.mjs';
 
 export const projectRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname.replace(/^\/(.:)/, '$1')), '..', '..');
 
@@ -32,6 +32,18 @@ export const validateDemoSemantics = (demo) => {
   for (const scene of demo.scenes) {
     if (sceneIds.has(scene.id)) throw new Error(`Duplicate scene id: ${scene.id}`);
     sceneIds.add(scene.id);
+    if (scene.clip) {
+      if (!demo.source) throw new Error(`Scene ${scene.id}: a clip needs the demo's source video (source.video)`);
+      if (demo.source.durationMs && scene.clip.startMs >= demo.source.durationMs) throw new Error(`Scene ${scene.id}: clip starts after the end of the source video`);
+    }
+    if (isClipScene(scene)) {
+      // Footage, not a browser session. Actions a conversion proposed but
+      // could not prove stay on the scene as an inert draft for the author.
+      if (!scene.clip) throw new Error(`Scene ${scene.id}: mode clip needs a clip of the source video`);
+      continue;
+    }
+    if (!scene.route) throw new Error(`Scene ${scene.id}: route is required to film the scene (or a clip of the source video)`);
+    if (!scene.narration.trim()) throw new Error(`Scene ${scene.id}: narration is required`);
     const cueIds = new Set([...scene.narration.matchAll(/\[cue:([a-zA-Z0-9_-]+)\]/g)].map((match) => match[1]));
     for (const action of scene.actions) {
       if (action.atCue && !cueIds.has(action.atCue)) {

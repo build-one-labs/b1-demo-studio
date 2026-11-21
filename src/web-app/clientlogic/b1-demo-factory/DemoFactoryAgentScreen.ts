@@ -10,6 +10,8 @@
  */
 import {
   closeScreen,
+  conversationScreenPayload,
+  DEFAULT_CONVERSATION_SCREEN,
   displayError,
   displayWarning,
   invokeServerTask,
@@ -27,8 +29,14 @@ interface AgentPayload {
   sceneSequence?: number;
 }
 
+interface CreatedConversation {
+  conversationId: string;
+  /** The agent's own chat screen (b1_agent.chatScreen), when it names one. */
+  chatScreen?: string;
+}
+
 /** Create a chat with explicit record context; the agent reads the saved definition through its tools. */
-export async function createDemoConversation(prompt: string, payload: AgentPayload): Promise<string> {
+export async function createDemoConversation(prompt: string, payload: AgentPayload): Promise<CreatedConversation> {
   const result = (await invokeServerTask({
     name: 'agent-proxy',
     methodName: 'agent-server-proxy-actions/create-conversation',
@@ -43,13 +51,27 @@ export async function createDemoConversation(prompt: string, payload: AgentPaylo
           }
         : {})
     }
-  })) as Record<string, unknown>;
-  const conversationId = String(result?.conversationId ?? result?.conversation_id ?? result?.id ?? '').replaceAll(
-    '-',
-    ''
-  );
+  })) as { request?: { conversation_id?: string }; conversation_id?: string; id?: string; chatScreen?: string };
+  // The proxy mints the id and returns it as `request.conversation_id` (the
+  // conversation itself comes up in the background; the chat waits for it).
+  const conversationId = String(result?.request?.conversation_id ?? result?.conversation_id ?? result?.id ?? '');
   if (!conversationId) throw new Error('The conversation was created but its id was not returned');
-  return conversationId;
+  return { conversationId, chatScreen: result?.chatScreen };
+}
+
+/**
+ * Open the chat of a just-created conversation: the agent's own screen, with
+ * the payload the framework's start flow uses — the prompt travels along so the
+ * chat shows it while the sandbox boots.
+ */
+export async function openDemoConversation(
+  { conversationId, chatScreen }: CreatedConversation,
+  prompt: string
+): Promise<void> {
+  await launchScreen(
+    chatScreen?.trim() || DEFAULT_CONVERSATION_SCREEN,
+    conversationScreenPayload(conversationId, prompt)
+  );
 }
 
 export async function startConversation(eventSource: ObjectInstance): Promise<void> {
@@ -66,9 +88,9 @@ export async function startConversation(eventSource: ObjectInstance): Promise<vo
   }
   const payload = (screen.payload?.data ?? eventSource.screen?.payload?.data ?? {}) as AgentPayload;
   try {
-    const conversationId = await createDemoConversation(prompt, payload);
+    const created = await createDemoConversation(prompt, payload);
     closeScreen(screen);
-    await launchScreen('agentChatScreen', { repositionTo: conversationId, data: { conversationId } });
+    await openDemoConversation(created, prompt);
   } catch (error) {
     displayError(errorMessage(error));
   }

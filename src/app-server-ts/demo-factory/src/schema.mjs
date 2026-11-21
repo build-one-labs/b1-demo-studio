@@ -9,7 +9,7 @@ const targetSchema = z.object({
   css: z.string().optional(),
 }).refine((target) => Object.values(target).some(Boolean), 'A target selector is required');
 
-const actionSchema = z.object({
+export const actionSchema = z.object({
   action: z.enum(['goto', 'click', 'dblclick', 'fill', 'type', 'press', 'hover', 'highlight', 'callout', 'waitFor', 'screenshot']),
   atCue: z.string().optional(),
   atMs: z.number().int().nonnegative().optional(),
@@ -50,18 +50,83 @@ const actionSchema = z.object({
 }).refine((action) => (!action.timelapse && !action.stableMs && !action.retry) || action.action === 'waitFor', {message: 'timelapse, stableMs and retry are only valid on waitFor actions'})
   .refine((action) => action.action !== 'callout' || typeof action.value === 'string', {message: 'callout requires value (empty string clears the banner)'});
 
-const assertionSchema = z.union([
+export const assertionSchema = z.union([
   z.object({visible: targetSchema}),
   z.object({textContains: z.object({target: targetSchema, value: z.string()})}),
 ]);
 
+/**
+ * A time range of the demo's source video (milliseconds). A scene with a clip
+ * is cut out of the author's own screen recording instead of being filmed by
+ * Playwright — see `src/lib/source-video.mjs`.
+ */
+const clipSchema = z.object({
+  startMs: z.number().int().nonnegative(),
+  endMs: z.number().int().positive(),
+  /**
+   * Where in the clip the voice-over starts (ms from startMs) — where the
+   * author began speaking. Silence before it longer than a few seconds plays
+   * fast-forwarded. Absent: the voice-over starts after holdBeforeMs.
+   */
+  voiceAtMs: z.number().int().nonnegative().optional(),
+}).refine((clip) => clip.endMs > clip.startMs, {message: 'clip.endMs must be after clip.startMs'})
+  .refine((clip) => clip.voiceAtMs === undefined || clip.voiceAtMs < clip.endMs - clip.startMs, {message: 'clip.voiceAtMs must lie inside the clip'});
+
+/**
+ * What a converted scene remembers of its conversion (`cli.mjs convert`): an
+ * author reads it to see why a scene stayed a clip, or what to check.
+ */
+const conversionSchema = z.object({
+  status: z.enum(['filmed', 'failed']),
+  message: z.string().default(''),
+  at: z.string().optional(),
+  model: z.string().optional(),
+});
+
 const sceneSchema = z.object({
   id: z.string().regex(/^[a-z0-9][a-z0-9-]*$/),
   title: z.string().min(1),
-  route: z.string().startsWith('/'),
-  narration: z.string().min(1),
+  /**
+   * The application this scene runs in, when it is not the demo's own
+   * (settings.baseUrl) — a demo that starts in one app and shows the result in
+   * another. An absolute URL; `route` is resolved against it.
+   */
+  baseUrl: z.string().url().optional(),
+  /** Where the browser opens — required for a filmed scene; for a clip scene, where the recording shows. */
+  route: z.string().startsWith('/').optional(),
+  /** May be empty only in a clip scene: a stretch of the recording without voice-over. */
+  narration: z.string(),
+  clip: clipSchema.optional(),
+  /**
+   * How the scene becomes footage: `clip` cuts it out of the source video,
+   * `film` has Playwright perform its actions. Absent: clip when the scene has
+   * a clip, film otherwise. A converted scene keeps its clip as the fallback.
+   */
+  mode: z.enum(['clip', 'film']).optional(),
+  conversion: conversionSchema.optional(),
   actions: z.array(actionSchema).default([]),
   assertions: z.array(assertionSchema).default([]),
+});
+
+/** Whether a scene is cut out of the source video rather than filmed. */
+export const isClipScene = (scene) => (scene.mode ? scene.mode === 'clip' : Boolean(scene.clip));
+
+/** The application a scene runs in: its own, else the demo's (an environment variable wins over the fallback). */
+export const sceneBaseUrl = (demo, scene, env = process.env) =>
+  scene.baseUrl || (demo.settings.baseUrl.env && env[demo.settings.baseUrl.env]) || demo.settings.baseUrl.fallback;
+
+/**
+ * The screen recording a video demo was made from. `video` is
+ * `<upload-id>/<file>` under `<output>/uploads/`; the rest is what the analysis
+ * measured, kept for the Studio and for re-analysis.
+ */
+const sourceSchema = z.object({
+  video: z.string().regex(/^[a-z0-9][a-z0-9-]*\/[\w.-]+$/, 'source.video is <upload-id>/<file>'),
+  durationMs: z.number().int().positive().optional(),
+  width: z.number().int().positive().optional(),
+  height: z.number().int().positive().optional(),
+  language: z.string().optional(),
+  analyzedAt: z.string().optional(),
 });
 
 /**
@@ -88,6 +153,19 @@ export const demoSchema = z.object({
     baseUrl: z.object({env: z.string(), fallback: z.string().url()}),
     authStateEnv: z.string().default('B1_AUTH_STATE'),
     headlessEnv: z.string().default('DEMO_HEADLESS'),
+    /**
+     * Reset the blueprint repository of the demo's application (settings.baseUrl)
+     * before every recording and conversion — the changesSearch screen's "Reset
+     * repository": the take starts from the environment's delivered state.
+     * Applications that only some scenes name are not reset.
+     */
+    resetRepository: z.boolean().default(false),
+    /**
+     * The demo user takes are signed in as — the id of a Studio demo user
+     * (Settings → Demo users), whose API key the server hands to the job.
+     * Absent: the host's own key.
+     */
+    demoUser: z.string().regex(/^[a-z0-9][a-z0-9-]*$/).optional(),
     holdBeforeMs: z.number().int().nonnegative().default(500),
     holdAfterMs: z.number().int().nonnegative().default(1000),
     cursor: z.object({
@@ -149,5 +227,6 @@ export const demoSchema = z.object({
     }),
   }),
   setup: setupSchema.optional(),
+  source: sourceSchema.optional(),
   scenes: z.array(sceneSchema).min(1),
 });

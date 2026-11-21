@@ -1,0 +1,235 @@
+{
+  "createdAt": "2026-11-21 18:26:02.625204",
+  "createdBy": "mp1kR5wQmWEa3mwRuVe86SkKtgdp8A4C",
+  "howToUse": "",
+  "label": "",
+  "objectDescription": "Edit a demo user on the Settings screen: id, label, the application it is meant for, and — once, when adding it or replacing its key — the API key of that account (Account → API keys while signed in as the demo user). Save calls save-demo-user, which writes the key to the secret store (organization level, demo-factory-user-<id>) and keeps only id, label and application in DemoFactoryDemoUserDSO; the key field is cleared right after. Not bound to a data source: DemoFactoryDemoUsersGrid's selection fills it.",
+  "objectMasterGuid": "589011a7-6c05-4a5f-8cff-47b224091407",
+  "objectName": "DemoFactoryDemoUserForm",
+  "objectTypeGuid": "130726b3-7c42-4f22-a324-cc07f3d21feb",
+  "owner": "mp1kR5wQmWEa3mwRuVe86SkKtgdp8A4C",
+  "productGuid": "94328e98-6f1d-4d15-b86d-f62fff77d705",
+  "status": "Active",
+  "templateObject": false,
+  "attributes": {
+    "headerLabel": ""
+  },
+  "instances": [
+    {
+      "instanceName": "demoUserHelp",
+      "objectInstanceGuid": "e6346ea9-d662-454e-acbc-84aafc8415d6",
+      "objectMasterGuid": "ec630cb7-644c-47e2-85a1-d8513048a915",
+      "objectSequence": 1,
+      "attributes": {
+        "text": "Paste an API key of the demo user (Account → API keys while signed in as it). It goes to the organization's secret store and is never shown again.",
+        "variant": "caption"
+      },
+      "instances": []
+    },
+    {
+      "instanceName": "demoUserFieldset",
+      "objectInstanceGuid": "f67b22d2-a69e-4073-8035-5edaf2920d25",
+      "objectMasterGuid": "4002bae8-5bac-45f1-82b3-0d91f7381296",
+      "objectSequence": 2,
+      "attributes": {
+        "label": "Demo user"
+      },
+      "instances": [
+        {
+          "instanceName": "demoUserRow1",
+          "objectInstanceGuid": "cf832391-46de-4963-bb3e-8a1284e4379f",
+          "objectMasterGuid": "c5c097d5-52c4-4b2d-8e1a-90d3e4af5626",
+          "objectSequence": 1,
+          "attributes": {
+            "htmlClass": "flex flex-col md:flex-row gap-4"
+          },
+          "instances": [
+            {
+              "instanceName": "demoUserIdCol",
+              "objectInstanceGuid": "c4eecfa9-308a-4739-b99d-4a18c394d864",
+              "objectMasterGuid": "c5c097d5-52c4-4b2d-8e1a-90d3e4af5626",
+              "objectSequence": 1,
+              "attributes": {
+                "htmlClass": "flex-1 min-w-0"
+              },
+              "instances": [
+                {
+                  "instanceName": "id",
+                  "objectInstanceGuid": "71a31cab-8a51-4b43-bd2b-90c8247a3aa4",
+                  "objectMasterGuid": "81756e31-509d-46ef-a774-1c52876e0a11",
+                  "objectSequence": 1,
+                  "attributes": {
+                    "label": "Id",
+                    "placeholder": "samples-demo",
+                    "required": true
+                  },
+                  "instances": []
+                }
+              ]
+            },
+            {
+              "instanceName": "demoUserColumnBreak1",
+              "objectInstanceGuid": "ed3c098c-55ab-4000-b39f-653dac8e1745",
+              "objectMasterGuid": "4b2a1744-b061-4616-a5bd-ac8f9ebd5d01",
+              "objectSequence": 2,
+              "attributes": {},
+              "instances": []
+            },
+            {
+              "instanceName": "demoUserLabelCol",
+              "objectInstanceGuid": "9816c3b2-31fd-4033-90ab-ad90635c9291",
+              "objectMasterGuid": "c5c097d5-52c4-4b2d-8e1a-90d3e4af5626",
+              "objectSequence": 3,
+              "attributes": {
+                "htmlClass": "flex-1 min-w-0"
+              },
+              "instances": [
+                {
+                  "instanceName": "label",
+                  "objectInstanceGuid": "6bedd2a7-192f-43ec-abf6-d8cd4799ac99",
+                  "objectMasterGuid": "81756e31-509d-46ef-a774-1c52876e0a11",
+                  "objectSequence": 1,
+                  "attributes": {
+                    "label": "Name",
+                    "placeholder": "Samples demo user"
+                  },
+                  "instances": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "instanceName": "demoUserRow2",
+          "objectInstanceGuid": "c02bffe3-c5eb-4fc1-b90f-91b20d24d32e",
+          "objectMasterGuid": "c5c097d5-52c4-4b2d-8e1a-90d3e4af5626",
+          "objectSequence": 2,
+          "attributes": {
+            "htmlClass": "flex flex-col md:flex-row gap-4"
+          },
+          "instances": [
+            {
+              "instanceName": "demoUserUrlCol",
+              "objectInstanceGuid": "cff3c890-182e-4d9d-8a8f-35c7a3c5109a",
+              "objectMasterGuid": "c5c097d5-52c4-4b2d-8e1a-90d3e4af5626",
+              "objectSequence": 1,
+              "attributes": {
+                "htmlClass": "flex-1 min-w-0"
+              },
+              "instances": [
+                {
+                  "instanceName": "appUrl",
+                  "objectInstanceGuid": "105d2fe6-faf4-4fc1-b7c0-6fbce2f9ebb0",
+                  "objectMasterGuid": "81756e31-509d-46ef-a774-1c52876e0a11",
+                  "objectSequence": 1,
+                  "attributes": {
+                    "label": "Meant for",
+                    "placeholder": "https://samples.demo.build.one/"
+                  },
+                  "instances": []
+                }
+              ]
+            },
+            {
+              "instanceName": "demoUserColumnBreak2",
+              "objectInstanceGuid": "7e1f84a4-bace-40c2-8c36-d937397a24e4",
+              "objectMasterGuid": "4b2a1744-b061-4616-a5bd-ac8f9ebd5d01",
+              "objectSequence": 2,
+              "attributes": {},
+              "instances": []
+            },
+            {
+              "instanceName": "demoUserKeyCol",
+              "objectInstanceGuid": "dc901eb0-6d34-4489-89fb-50429d7187fd",
+              "objectMasterGuid": "c5c097d5-52c4-4b2d-8e1a-90d3e4af5626",
+              "objectSequence": 3,
+              "attributes": {
+                "htmlClass": "flex-1 min-w-0"
+              },
+              "instances": [
+                {
+                  "instanceName": "apiKey",
+                  "objectInstanceGuid": "a4d4decb-deb2-4489-a213-b929cda3d0cf",
+                  "objectMasterGuid": "81756e31-509d-46ef-a774-1c52876e0a11",
+                  "objectSequence": 1,
+                  "attributes": {
+                    "label": "API key — only to add or replace it",
+                    "placeholder": "empty: keep the stored key"
+                  },
+                  "instances": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "instanceName": "demoUserButtons",
+      "objectInstanceGuid": "cd289223-14f7-43da-b1ba-0a56dc8cfecb",
+      "objectMasterGuid": "c5c097d5-52c4-4b2d-8e1a-90d3e4af5626",
+      "objectSequence": 3,
+      "attributes": {
+        "htmlClass": "flex flex-row gap-2"
+      },
+      "instances": [
+        {
+          "instanceName": "newDemoUserButton",
+          "objectInstanceGuid": "afee9aac-9370-4061-b3b1-792406f2bd98",
+          "objectMasterGuid": "efc1a521-3c11-4af2-bfaa-83b1f9c07abf",
+          "objectSequence": 1,
+          "attributes": {
+            "eventClick": "#.newDemoUser(eventSource)",
+            "htmlClass": "p-button-text",
+            "label": "New"
+          },
+          "instances": []
+        },
+        {
+          "instanceName": "deleteDemoUserButton",
+          "objectInstanceGuid": "8bff892f-a7f2-4615-9a22-585342b717e0",
+          "objectMasterGuid": "efc1a521-3c11-4af2-bfaa-83b1f9c07abf",
+          "objectSequence": 3,
+          "attributes": {
+            "eventClick": "#.deleteDemoUser(eventSource)",
+            "htmlClass": "p-button-text",
+            "label": "Delete"
+          },
+          "instances": []
+        },
+        {
+          "instanceName": "saveDemoUserButton",
+          "objectInstanceGuid": "6bc311f2-4719-4c2a-bf4d-ec86f7dcad1b",
+          "objectMasterGuid": "efc1a521-3c11-4af2-bfaa-83b1f9c07abf",
+          "objectSequence": 5,
+          "attributes": {
+            "eventClick": "#.saveDemoUser(eventSource)",
+            "label": "Save demo user"
+          },
+          "instances": []
+        },
+        {
+          "instanceName": "demoUserButtonBreak1",
+          "objectInstanceGuid": "47cb7243-cc28-4bd9-9432-546766eb178f",
+          "objectMasterGuid": "4b2a1744-b061-4616-a5bd-ac8f9ebd5d01",
+          "objectSequence": 2,
+          "attributes": {},
+          "instances": []
+        },
+        {
+          "instanceName": "demoUserButtonBreak2",
+          "objectInstanceGuid": "b39af5bb-1234-4a24-a5ec-dfccc7d8583e",
+          "objectMasterGuid": "4b2a1744-b061-4616-a5bd-ac8f9ebd5d01",
+          "objectSequence": 4,
+          "attributes": {},
+          "instances": []
+        }
+      ]
+    }
+  ],
+  "links": [],
+  "tags": [],
+  "tenantId": null,
+  "validFrom": null,
+  "validUntil": null
+}

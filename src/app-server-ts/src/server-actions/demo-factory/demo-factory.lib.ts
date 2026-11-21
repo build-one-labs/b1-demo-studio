@@ -177,7 +177,14 @@ export const assertOperator = (userEmail: string | undefined, env = process.env)
 
 const ID_PATTERN = /^[\da-z][\da-z-]*$/;
 
-export type JobAction = 'validate' | 'prepare' | 'record' | 'render' | 'all';
+/** The pipeline stages a demo goes through — one button each on the screen. */
+export type StageAction = 'validate' | 'prepare' | 'record' | 'render' | 'all';
+
+/**
+ * Everything a job can be: the stages, plus `analyze`, which turns an uploaded
+ * screen recording into a demo and therefore runs before the demo exists.
+ */
+export type JobAction = StageAction | 'analyze' | 'convert';
 
 export interface JobCommand {
   script: string;
@@ -185,7 +192,7 @@ export interface JobCommand {
   step: JobAction;
 }
 
-export const JOB_ACTIONS: readonly JobAction[] = ['validate', 'prepare', 'record', 'render', 'all'];
+export const JOB_ACTIONS: readonly StageAction[] = ['validate', 'prepare', 'record', 'render', 'all'];
 
 /** What the host running the pipeline can actually do. */
 export interface HostCapabilities {
@@ -208,29 +215,69 @@ export interface HostCapabilities {
  * everything the individual stages need — plus a way to sign the recording
  * browser in, which is the one requirement no single stage has.
  */
-export const stageBlockedReason = (action: JobAction, host: HostCapabilities): string | null => {
+/**
+ * `filmsInBrowser` is false for a demo cut entirely from an uploaded screen
+ * recording: its record stage is ffmpeg cutting clips, so it needs no browser
+ * and nobody to sign in — but it does need ffmpeg, as `analyze` does.
+ */
+export const stageBlockedReason = (
+  action: JobAction,
+  host: HostCapabilities,
+  { filmsInBrowser = true, hasDemoUser = false }: { filmsInBrowser?: boolean; hasDemoUser?: boolean } = {}
+): string | null => {
   if (!host.hasFactory) return 'The demo factory is not installed on this host';
   if (!host.hasDependencies) {
     return 'The Demo Factory dependencies are not installed on this host — run `yarn install` at the repository root';
   }
-  if ((action === 'record' || action === 'all') && !host.canRecord) {
+  if (
+    (action === 'record' || action === 'all' || action === 'convert') &&
+    (filmsInBrowser || action === 'convert') &&
+    !host.canRecord
+  ) {
     return 'This host has no browser for Playwright to drive';
   }
-  if ((action === 'render' || action === 'all') && !host.canRender) {
-    return 'This host has no ffmpeg and ffprobe for the renderer to measure and compose clips with';
+  const needsFfmpeg =
+    action === 'render' ||
+    action === 'all' ||
+    action === 'analyze' ||
+    action === 'convert' ||
+    (action === 'record' && !filmsInBrowser);
+  if (needsFfmpeg && !host.canRender) {
+    return action === 'analyze' || action === 'record' || action === 'convert'
+      ? 'This host has no ffmpeg and ffprobe to analyze and cut the uploaded video with'
+      : 'This host has no ffmpeg and ffprobe for the renderer to measure and compose clips with';
   }
-  if (action === 'all' && !host.canAuthenticate) {
+  // A demo with its own demo user brings its key; only the host's is checked here.
+  if (((action === 'all' && filmsInBrowser) || action === 'convert') && !hasDemoUser && !host.canAuthenticate) {
     return 'No user API key for this auth server on this host, so the recording browser cannot be signed in — set B1_USER_API_KEY__<AUTH HOST> on the container, or paste a key into Settings';
   }
   return null;
 };
 
 /** The blocked reason for every stage, for a screen that wants to explain itself. */
-export const stageBlockedReasons = (host: HostCapabilities): Record<JobAction, string | null> =>
+export const stageBlockedReasons = (host: HostCapabilities): Record<StageAction, string | null> =>
   Object.fromEntries(JOB_ACTIONS.map((action) => [action, stageBlockedReason(action, host)])) as Record<
-    JobAction,
+    StageAction,
     string | null
   >;
+
+/** An upload's id: a timestamp and a random suffix, lowercase, safe as a directory name. */
+export const UPLOAD_ID_PATTERN = /^[\da-z][\da-z-]*$/;
+
+/** What may be uploaded as a screen recording. */
+export const VIDEO_EXTENSIONS = new Set(['.mp4', '.mov', '.webm', '.mkv', '.m4v']);
+
+/** Large enough for an hour of 1080p screen recording, small enough to stop a mistake. */
+export const MAX_UPLOAD_BYTES = 4 * 1024 * 1024 * 1024;
+
+/**
+ * The largest slice of a chunked upload. Below the ~15 MB request limit of
+ * GitHub Codespaces' port forwarding, with room for any proxy that allows 10 MB.
+ */
+export const MAX_UPLOAD_CHUNK_BYTES = 8 * 1024 * 1024;
+
+export const newUploadId = (now = new Date()): string =>
+  `${now.toISOString().replace(/\D/g, '').slice(0, 14)}-${Math.random().toString(36).slice(2, 8)}`;
 
 export const assertSafeId = (value: string, label = 'id'): string => {
   if (!ID_PATTERN.test(value || '')) throw new Error(`Invalid ${label}`);
@@ -270,22 +317,30 @@ export const publicSettings = (values: Record<string, string>): Record<string, P
  * The only commands this service will ever spawn.
  *
  * Everything is an explicit argv against a fixed script — no shell, no
- * interpolation of user text into a command line. `source-import` and
- * `source-render` from upstream are omitted: their tools drive a pre-recorded
- * source video that this repository does not carry.
+ * interpolation of user text into a command line. The one free text that
+ * reaches an argv, an analyzed demo's title, travels as a single `--title=`
+ * element of it, which no shell ever splits. Upstream's `source-import` and
+ * `source-render` tools are replaced by `analyze` plus clip scenes, which the
+ * ordinary record and render stages handle.
  */
 export const buildJobCommand = ({
   action,
   demoId,
   scenes = [],
   voice,
-  runId
+  runId,
+  uploadId,
+  title,
+  language
 }: {
   action: JobAction;
   demoId: string;
   scenes?: string[];
   voice?: string;
   runId?: string;
+  uploadId?: string;
+  title?: string;
+  language?: string;
 }): JobCommand => {
   assertSafeId(demoId, 'demo id');
   const sceneIds = scenes.map((scene) => assertSafeId(scene, 'scene id'));
@@ -311,6 +366,21 @@ export const buildJobCommand = ({
       return { script: 'src/cli.mjs', args: ['render', demoId, ...(runId ? [`--run=${runId}`] : [])], step: 'render' };
     case 'all':
       return { script: 'tools/run-demo.mjs', args: [demoId], step: 'all' };
+    case 'convert':
+      // Through run-demo.mjs for its sign-in: the conversion's trial runs film.
+      return { script: 'tools/run-demo.mjs', args: [demoId, '--stages=convert'], step: 'convert' };
+    case 'analyze': {
+      if (!uploadId || !UPLOAD_ID_PATTERN.test(uploadId)) throw new Error('Invalid upload id');
+      if (language && !/^[a-z]{2,3}$/.test(language)) throw new Error('Invalid language code');
+      const args = ['analyze', demoId, `--upload=${uploadId}`];
+      const cleanTitle = (title ?? '')
+        .replace(/[\n\r]+/g, ' ')
+        .trim()
+        .slice(0, 200);
+      if (cleanTitle) args.push(`--title=${cleanTitle}`);
+      if (language) args.push(`--language=${language}`);
+      return { script: 'src/cli.mjs', args, step: 'analyze' };
+    }
     default:
       throw new Error('Unsupported job action');
   }

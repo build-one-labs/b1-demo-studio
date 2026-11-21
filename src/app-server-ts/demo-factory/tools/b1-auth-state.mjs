@@ -37,11 +37,22 @@ const sessionModule = sessionCandidates.find((candidate) => existsSync(candidate
 if (!sessionModule) throw new Error(`browser-session.mjs not found. Looked in:\n  ${sessionCandidates.join('\n  ')}`);
 const {browserSessionUrl} = await import(pathToFileURL(sessionModule).href);
 
-const baseUrl = (process.env.B1_BASE_URL || 'http://localhost:8080').replace(/\/+$/, '');
-const authFile = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', 'playwright', '.auth', 'b1-demo-user.json');
+// Every application the demo opens: a demo may start in one app and show the
+// result in another (B1_BASE_URLS, comma-separated, from run-demo.mjs). One
+// browser context signs in to each in turn, so the one storage state written
+// at the end carries a session cookie for every origin.
+const baseUrls = [...new Set(
+  (process.env.B1_BASE_URLS || process.env.B1_BASE_URL || 'http://localhost:8080')
+    .split(',')
+    .map((url) => url.trim().replace(/\/+$/, ''))
+    .filter(Boolean),
+)];
+// The file the take will read: a demo with its own demo user gets its own file
+// (B1_AUTH_STATE from the server), so one user's session never signs in another's take.
+const authFile = process.env.B1_AUTH_STATE
+  ? path.resolve(process.env.B1_AUTH_STATE)
+  : path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', 'playwright', '.auth', 'b1-demo-user.json');
 await mkdir(path.dirname(authFile), {recursive: true});
-
-const {url, keyVar} = await browserSessionUrl({appUrl: baseUrl, target: '/'});
 
 // The same rule as record.mjs and render.mjs: a slim container cannot run
 // Playwright's managed download, so it ships one system Chromium and every
@@ -50,21 +61,31 @@ const {url, keyVar} = await browserSessionUrl({appUrl: baseUrl, target: '/'});
 // …/.cache/ms-playwright/chromium_headless_shell-…" on a host where the
 // recording it exists to authenticate runs perfectly well.
 const browser = await chromium.launch({executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH || undefined});
+const failures = [];
 try {
   const context = await browser.newContext();
   const page = await context.newPage();
-  await page.goto(url, {waitUntil: 'networkidle'});
-  if (/\/sign-in/.test(page.url())) throw new Error(`The handoff landed on the sign-in page (${keyVar} rejected?)`);
+  for (const baseUrl of baseUrls) {
+    try {
+      const {url, keyVar} = await browserSessionUrl({appUrl: baseUrl, target: '/'});
+      await page.goto(url, {waitUntil: 'networkidle'});
+      if (/\/sign-in/.test(page.url())) throw new Error(`the handoff landed on the sign-in page (${keyVar} rejected?)`);
 
-  // The customer app gates un-onboarded users into /onboarding; a demo that
-  // opens on the onboarding wizard instead of its screen is a ruined take.
-  const onboarded = await page.request.post(`${baseUrl}/service/swat/server-actions/user-profile/set-custom-property`, {
-    data: {Context: 'onboarding', CustomPropertyObject: {onboardingCompleted: true}},
-  });
-  if (!onboarded.ok()) throw new Error(`Could not mark the demo user as onboarded (${onboarded.status()})`);
-
+      // The customer app gates un-onboarded users into /onboarding; a demo that
+      // opens on the onboarding wizard instead of its screen is a ruined take.
+      const onboarded = await page.request.post(`${baseUrl}/service/swat/server-actions/user-profile/set-custom-property`, {
+        data: {Context: 'onboarding', CustomPropertyObject: {onboardingCompleted: true}},
+      });
+      if (!onboarded.ok()) throw new Error(`could not mark the demo user as onboarded (${onboarded.status()})`);
+      console.log(`Signed in to ${baseUrl} via ${keyVar}`);
+    } catch (error) {
+      failures.push(`${baseUrl}: ${error.message}`);
+      console.warn(`Could not sign in to ${baseUrl}: ${error.message}`);
+    }
+  }
+  if (failures.length === baseUrls.length) throw new Error(failures.join('; '));
   await context.storageState({path: authFile});
-  console.log(`Auth state written to ${authFile} (signed in via ${keyVar})`);
+  console.log(`Auth state written to ${authFile} (${baseUrls.length - failures.length} of ${baseUrls.length} applications)`);
 } finally {
   await browser.close();
 }
