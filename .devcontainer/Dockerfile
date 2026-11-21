@@ -53,3 +53,15 @@ RUN set -eux; \
     > /usr/local/share/zsh/site-functions/_aws; \
   rm -rf /tmp/awscli.zip /tmp/awscli.zip.sig /tmp/awscli-dist /tmp/awscli-team.gpg.asc "${GNUPGHOME}"; \
   aws --version
+
+# Git's SSH transport for the local dev container (remoteEnv.GIT_SSH_COMMAND in
+# .devcontainer/local/devcontainer.json). It runs from the image, not the work
+# tree: checking out a commit that lacks .devcontainer/setup/b1-local-git-ssh.sh
+# (an older branch or tag, a step of `git bisect`) would otherwise break every
+# Git operation over SSH, including the fetch back to a commit that has it
+# (B1-1609). A change to the script reaches Git when the container is rebuilt.
+# Last, so a change to it rebuilds these layers only. The mode is set apart from
+# the COPY, which keeps the work tree's (world-writable on some hosts), because
+# COPY --chmod needs BuildKit.
+COPY setup/b1-local-git-ssh.sh /usr/local/bin/b1-local-git-ssh.sh
+RUN chmod 0755 /usr/local/bin/b1-local-git-ssh.sh

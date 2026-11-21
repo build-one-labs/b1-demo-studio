@@ -1,0 +1,93 @@
+name: Data check
+
+# Fails a pull request that leaves blueprint data `b1 import` would refuse, fail
+# on, lose, or import as references to nothing: files in an older repository
+# format, unparsable JSON, a guid in two files, names that clash with the
+# framework's, instances of objects that do not exist.
+#
+# Runs `b1 check-data`, which reads the blueprint JSON, the migration ledger and
+# git — no stack, no database. Problems that make the import fail are errors
+# wherever they are; the others are errors only in files the pull request adds
+# or changes, and warnings elsewhere. Run this workflow by hand to check the
+# whole repository strictly: it then fails on every finding.
+# See node_modules/@buildone/swat-cli/knowledge/blueprint_dsl/data-check.md.
+
+on:
+  pull_request:
+    paths:
+      - 'src/data/**'
+      - '.b1/migrations.json'
+      - '.build/migrations.json'
+      # A framework update (b1 update) changes which framework objects the
+      # project's references resolve against, and which migrations the ledger
+      # has to list. app-server-ts is the workspace that depends on
+      # @buildone/swat-data and @buildone/app-server-tslib, where the rules are.
+      - 'package.json'
+      - 'src/app-server-ts/package.json'
+      - 'yarn.lock'
+      - '.github/workflows/data-check.yml'
+      # The actions the check runs on, so a change that breaks one fails here and
+      # not on the next pull request that touches blueprint data.
+      - '.github/actions/b1-check-gate/**'
+      - '.github/actions/b1-secrets/**'
+      - '.github/actions/setup-node/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: data-check-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    steps:
+      # Depth 2 for HEAD^1, the merge commit's first parent: exactly what this pull
+      # request was merged with, even in a re-run after the base branch has moved.
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 2
+
+      # Without the credentials the CLI cannot be installed, and GitHub counts a job
+      # whose steps were skipped as passed. The gate gives an unprovisioned repository a
+      # notice, and fails a pull request from a fork or Dependabot (which GitHub gives no
+      # Actions secrets) that changes blueprint data, because nothing checked it. See
+      # node_modules/@buildone/swat-cli/knowledge/blueprint_dsl/data-check.md.
+      - name: Decide whether the check can run
+        id: gate
+        uses: ./.github/actions/b1-check-gate
+        with:
+          title: Data check
+          # Whether this run has the two secrets, not their values.
+          credentials: ${{ secrets.AUTH_URL != '' && secrets.B1_ORG_API_KEY != '' && 'present' || 'missing' }}
+          paths: src/data .b1/migrations.json .build/migrations.json
+          subject: blueprint data
+          # A framework update changes what the blueprint data resolves against.
+          framework: true
+          command: yarn b1 check-data --base <base branch>
+
+      - name: Fetch this repository's secrets
+        if: steps.gate.outputs.run == 'true'
+        uses: ./.github/actions/b1-secrets
+        with:
+          auth-url: ${{ secrets.AUTH_URL }}
+          api-key: ${{ secrets.B1_ORG_API_KEY }}
+          require: B1_ACCESS_KEY_ID B1_SECRET_ACCESS_KEY
+
+      - uses: ./.github/actions/setup-node
+        if: steps.gate.outputs.run == 'true'
+        with:
+          aws-access-key-id: ${{ env.B1_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.B1_SECRET_ACCESS_KEY }}
+          # app-server-ts brings @buildone/swat-data, the framework's objects, and
+          # @buildone/app-server-tslib, the rules. Without them the check fails.
+          focus-workspaces: app app-server-ts data
+
+      - name: Check that the blueprint data imports cleanly
+        if: steps.gate.outputs.run == 'true'
+        env:
+          WORKSPACE_ROOT: ${{ github.workspace }}
+          SCOPE: ${{ github.event_name == 'pull_request' && '--base HEAD^1' || '--all' }}
+        run: yarn b1 check-data ${SCOPE}

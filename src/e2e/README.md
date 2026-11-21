@@ -71,11 +71,13 @@ Signing in has two paths, tried in order:
    60-second handoff code (`/api/auth/mcp/handoff/issue`), and the app server's
    `/service/swat/mcp/sso` endpoint redeems it and forwards the `Set-Cookie`.
    This is the only path that works in a **default workspace**, where
-   `AUTHENTICATION_SERVER_TYPE` is `remote` and `B1_SYSTEM_USER_PASSWORD` is
-   generated locally — so it matches no user on the shared auth server.
-2. **The system-user form login**, via `LoginPage`. Right for a workspace
-   running its **own** auth server, and for anyone holding real credentials for
-   the environment they are pointing at.
+   `B1_AUTHENTICATION_SERVER_TYPE` is `remote`, so a password matches no user on
+   the shared auth server.
+2. **The test user's form login**, via `LoginPage`, with `B1_E2E_USER_EMAIL`
+   (default `e2e_test@build.one`) and `B1_E2E_USER_PASSWORD`. Right for a
+   workspace running its **own** auth server, which seeds the test user from
+   them, and for anyone holding real credentials for the environment they are
+   pointing at.
 
 If both fail the error names each attempt and why — including the API-key
 variable it resolved and the status the auth server answered.

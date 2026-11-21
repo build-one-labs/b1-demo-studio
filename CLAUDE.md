@@ -18,6 +18,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - The usual good reason is a **dashboard screen**: a custom layout of KPI tiles, summaries and visualisations that no object type composes the way the screen needs. A native component is **not** a replacement for an existing b1 object type — never swap a screen's `b1_grid` (or `b1_form`, …) for a hand-written Vue table or form. When the object type falls short, configure it (columns, templates, attributes), or extend the object type itself.
 - When you do create one, state which of the two applies, and why, in the conversation and in the pull request description, so a reviewer can check it. "Writing the Vue was quicker" is not a reason. App help pages built from the `Help*` kit (`help-screens.md`) are native components by design and need no further justification.
 
+### Credentials Live in the Secret Store
+- A credential (an API key, a token, a password, a client secret) never goes into the repository, a blueprint attribute, an application setting or a tracked `.env`: it is a **secret in the auth server's store**, and the app reads it at runtime with `SecretResolver` (`await secrets.resolve('hubspot-api-key')`), as the signed-in user unless it belongs to the deployment itself.
+- When a feature needs one, follow `node_modules/@buildone/swat-cli/knowledge/architecture_info/secrets.md` → "Adding a secret": name it lowercase with dashes, vendor first (`hubspot-api-key`); store it at **organization** level unless it acts as one person; read it in code; document it with the feature. Ask the user for the value and the level. Never invent, commit or print a value, and check that nothing is stored under the name before writing one.
+- The stack passes the app server no credential, so do not add one to it. Any credential can be overridden by an environment variable of its name that reaches the app server; add one only on purpose, in a stack overlay of the repository's own. Values only workspace tooling needs (scripts, the coding agent's MCP servers) arrive in the workspace's environment from the same store; read those from `process.env` there, never in the app.
+
 ## About This Repository
 
 This repository is based on the Build.One Starter GitHub template. When working with this codebase:
