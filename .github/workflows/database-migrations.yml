@@ -19,6 +19,11 @@ on:
       - 'src/app-server-ts/drizzle/**'
       - 'src/app-server-ts/src/drizzle/**'
       - '.github/workflows/database-migrations.yml'
+      # The actions the check runs on, so a change that breaks one fails here and
+      # not on the next pull request that touches a migration.
+      - '.github/actions/b1-check-gate/**'
+      - '.github/actions/b1-secrets/**'
+      - '.github/actions/setup-node/**'
 
 permissions:
   contents: read
@@ -28,32 +33,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # Installing the CLI needs the package registry, and its credentials come from
-  # the secret store through two Actions secrets. A repository that has not been
-  # provisioned yet gets a notice here instead of a red check on every pull
-  # request. A step `if:` cannot read the `secrets` context, hence a job.
-  preflight:
-    runs-on: ubuntu-latest
-    outputs:
-      ready: ${{ steps.check.outputs.ready }}
-    env:
-      AUTH_URL: ${{ secrets.AUTH_URL }}
-      B1_ORG_API_KEY: ${{ secrets.B1_ORG_API_KEY }}
-    steps:
-      - name: Check the credentials this run needs
-        id: check
-        run: |
-          if [[ -n "${AUTH_URL}" && -n "${B1_ORG_API_KEY}" ]]; then
-            echo "ready=true" >> "${GITHUB_OUTPUT}"
-          else
-            echo "::notice title=Database migrations skipped::AUTH_URL and B1_ORG_API_KEY are not set for this repository, so the CLI cannot be installed."
-            echo "ready=false" >> "${GITHUB_OUTPUT}"
-          fi
-
   check:
-    needs: preflight
-    if: needs.preflight.outputs.ready == 'true'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     services:
       # Throwaway: the migrations are applied here and the databases dropped afterwards.
       postgres:
@@ -70,11 +51,28 @@ jobs:
     steps:
       # Depth 2 for HEAD^1, the merge commit's first parent: exactly what this pull
       # request was merged with, even in a re-run after develop has moved.
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 2
 
+      # Installing the CLI needs AUTH_URL and B1_ORG_API_KEY, and GitHub counts a job
+      # whose steps were skipped as passed. The gate gives an unprovisioned repository a
+      # notice, and fails a pull request from a fork or Dependabot (which GitHub gives no
+      # Actions secrets) that changes a migration or the schema, because nothing checked
+      # it. See node_modules/@buildone/swat-cli/knowledge/architecture_info/database-migrations.md.
+      - name: Decide whether the check can run
+        id: gate
+        uses: ./.github/actions/b1-check-gate
+        with:
+          title: Database migrations
+          # Whether this run has the two secrets, not their values.
+          credentials: ${{ secrets.AUTH_URL != '' && secrets.B1_ORG_API_KEY != '' && 'present' || 'missing' }}
+          paths: src/app-server-ts/drizzle src/app-server-ts/src/drizzle
+          subject: the database migrations or schema
+          command: yarn b1 check-migrations --base <base branch>
+
       - name: Fetch this repository's secrets
+        if: steps.gate.outputs.run == 'true'
         uses: ./.github/actions/b1-secrets
         with:
           auth-url: ${{ secrets.AUTH_URL }}
@@ -82,12 +80,14 @@ jobs:
           require: B1_ACCESS_KEY_ID B1_SECRET_ACCESS_KEY
 
       - uses: ./.github/actions/setup-node
+        if: steps.gate.outputs.run == 'true'
         with:
-          aws-access-key-id: ${{ env.B1_ACCESS_KEY_ID || secrets.B1_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ env.B1_SECRET_ACCESS_KEY || secrets.B1_SECRET_ACCESS_KEY }}
+          aws-access-key-id: ${{ env.B1_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.B1_SECRET_ACCESS_KEY }}
           focus-workspaces: app app-server-ts data
 
       - name: Check the migrations
+        if: steps.gate.outputs.run == 'true'
         env:
           WORKSPACE_ROOT: ${{ github.workspace }}
           B1_PR_TITLE: ${{ github.event.pull_request.title }}

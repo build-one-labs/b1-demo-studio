@@ -1,0 +1,110 @@
+name: B1 check gate
+description: >-
+  Decides whether a check that installs the Build.One CLI can run, and fails the run when it
+  cannot and the pull request changes what the check judges. Shipped by Build.One (B1-1645).
+
+# The check workflows (Data check, Framework objects, Database migrations) need the Actions
+# secrets AUTH_URL and B1_ORG_API_KEY to install the CLI. GitHub counts a job whose steps
+# were skipped as passed, even for a required check, so a check that cannot run must decide
+# here whether that is acceptable:
+#
+# - With the credentials: `run=true`, and the check runs.
+# - Without them, in a repository that has not been provisioned yet: a notice, `run=false`,
+#   and the run passes, so it does not put a red check on every pull request.
+# - Without them because GitHub withholds Actions secrets (a pull request from a fork, or a
+#   run Dependabot starts): such a run cannot tell whether the repository has the secrets.
+#   If the pull request changes what the check judges, nothing checked it, so it fails.
+#   Otherwise a notice, and it passes.
+#
+# The caller checks out with `fetch-depth: 2`: on a pull request, HEAD is the merge commit
+# and HEAD^1 what the pull request was merged with.
+#
+# Call it as the step after the checkout, with `id: gate`, and give every later step
+# `if: steps.gate.outputs.run == 'true'`.
+
+inputs:
+  title:
+    description: The check's name, as its notices and errors show it (e.g. "Data check").
+    required: true
+  credentials:
+    description: >-
+      `present` when the run has AUTH_URL and B1_ORG_API_KEY, `missing` otherwise. The
+      caller computes it from the secrets context, so the secret values never reach this
+      action.
+    required: true
+  paths:
+    description: >-
+      The paths whose change the check judges, separated by spaces or newlines, as a git
+      pathspec. A withheld run that changes one of them fails.
+    required: true
+  subject:
+    description: What those paths hold, as the messages name it (e.g. "blueprint data").
+    required: true
+  framework:
+    description: >-
+      `true` when a change to a `@buildone/*` version in package.json,
+      src/app-server-ts/package.json or yarn.lock counts too, because a framework update
+      changes what the check judges against.
+    required: false
+    default: 'false'
+  command:
+    description: >-
+      How to run the check by hand on a checkout of the pull request, named in the error
+      (e.g. "yarn b1 check-data --base <base branch>").
+    required: true
+
+outputs:
+  run:
+    description: '`true` when the check can run, `false` otherwise.'
+    value: ${{ steps.gate.outputs.run }}
+
+runs:
+  using: composite
+  steps:
+    - name: Decide whether the check can run
+      id: gate
+      shell: bash
+      env:
+        TITLE: ${{ inputs.title }}
+        CREDENTIALS: ${{ inputs.credentials }}
+        PATHS: ${{ inputs.paths }}
+        SUBJECT: ${{ inputs.subject }}
+        FRAMEWORK: ${{ inputs.framework }}
+        COMMAND: ${{ inputs.command }}
+        # GitHub gives no Actions secrets to a pull request from a fork, nor to a run
+        # Dependabot starts (keyed on github.actor; the author covers a re-run of one).
+        WITHHELD: ${{ github.event_name == 'pull_request' && (github.event.pull_request.head.repo.full_name != github.repository || github.actor == 'dependabot[bot]' || github.event.pull_request.user.login == 'dependabot[bot]') }}
+      run: |
+        if [[ "${CREDENTIALS}" == "present" ]]; then
+          echo "run=true" >> "${GITHUB_OUTPUT}"
+          exit 0
+        fi
+        echo "run=false" >> "${GITHUB_OUTPUT}"
+        if [[ "${WITHHELD}" != "true" ]]; then
+          echo "::notice title=${TITLE} skipped::AUTH_URL and B1_ORG_API_KEY are not set for this repository, so the CLI cannot be installed."
+          exit 0
+        fi
+        if ! git rev-parse --quiet --verify HEAD^1 > /dev/null; then
+          echo "::error title=${TITLE} could not run::GitHub gives this pull request no Actions secrets, and the gate cannot see what it changes: HEAD^1 is missing. Check out with fetch-depth: 2."
+          exit 1
+        fi
+        # The pathspec, word by word, without expanding a glob against the checkout.
+        set -f
+        read -r -d '' -a pathspec <<< "${PATHS}" || true
+        set +f
+        changed=$(git diff --name-only HEAD^1 HEAD -- "${pathspec[@]}")
+        framework=""
+        if [[ "${FRAMEWORK}" == "true" ]]; then
+          framework=$(git diff HEAD^1 HEAD -- package.json src/app-server-ts/package.json yarn.lock | grep -E '^[-+].*@buildone/' || true)
+          what="${SUBJECT} or the framework version"
+          neither="neither ${SUBJECT} nor the framework version"
+        else
+          what="${SUBJECT}"
+          neither="nothing in ${SUBJECT}"
+        fi
+        if [[ -z "${changed}" && -z "${framework}" ]]; then
+          echo "::notice title=${TITLE} skipped::GitHub gives this pull request no Actions secrets (it comes from a fork, or from Dependabot), and it changes ${neither}."
+          exit 0
+        fi
+        echo "::error title=${TITLE} could not run::This pull request changes ${what}, but GitHub gives it no Actions secrets (it comes from a fork, or from Dependabot), so the CLI cannot be installed and nothing checked it. Run '${COMMAND}' on a checkout of it, or push the branch to this repository."
+        exit 1

@@ -1,6 +1,6 @@
 import { test as setup, expect } from '@playwright/test';
 import { LoginPage } from '../pages/LoginPage';
-import { getBaseURL, getSystemUserEmail, getSystemUserPassword } from '../utils/env';
+import { getBaseURL, getE2eUserEmail, getE2eUserPassword } from '../utils/env';
 import { browserSessionUrl, getSignedInEmail } from '../utils/session';
 
 const STORAGE_STATE = '.auth/user.json';
@@ -11,16 +11,17 @@ const STORAGE_STATE = '.auth/user.json';
  *
  * Two ways in, in order:
  *
- *   1. The workspace API key, exchanged for a session cookie through the auth
- *      server's handoff endpoint. This is the only one that works in a default
- *      workspace: B1_SYSTEM_USER_PASSWORD is generated locally into
- *      .b1/env/.env.local while AUTHENTICATION_SERVER_TYPE is `remote`, so it
- *      matches no user on the shared auth server and the form login below
- *      simply 401s.
- *   2. The system-user form login, which is still exactly right for a workspace
- *      running its own auth server — there the generated password *is* the
- *      local system user's — and for anyone pointing the suite at an
- *      environment where they hold real credentials.
+ *   1. The dedicated test user's API key, exchanged for a session cookie
+ *      through the auth server's handoff endpoint. This is the only one that
+ *      works in a default workspace: B1_AUTHENTICATION_SERVER_TYPE is `remote`,
+ *      and B1_E2E_USER_PASSWORD, when set at all, is a local auth server's
+ *      account, so it matches no user on the shared auth server and the form
+ *      login below simply 401s.
+ *   2. That same user's form login, which is exactly right for a workspace
+ *      running its own auth server — there the provisioned password *is* the E2E
+ *      user's, because the auth server seeds the account from it — and for
+ *      anyone pointing the suite at an environment where they hold real
+ *      credentials.
  *
  * Both end in the same place: a cookie in storageState. Tests never know which
  * ran. `LoginPage` remains the way to exercise the login screen itself.
@@ -96,12 +97,12 @@ async function signInWithApiKey(page: import('@playwright/test').Page): Promise<
 
 /** The form login, for a workspace whose auth server knows this password. */
 async function signInWithPassword(page: import('@playwright/test').Page): Promise<boolean> {
-  const password = getSystemUserPassword();
-  if (!password) throw new Error('B1_SYSTEM_USER_PASSWORD is not set');
+  const password = getE2eUserPassword();
+  if (!password) throw new Error('B1_E2E_USER_PASSWORD is not set');
 
   const loginPage = new LoginPage(page);
   await loginPage.open();
-  await loginPage.login(getSystemUserEmail(), password);
+  await loginPage.login(getE2eUserEmail(), password);
   await expect(page).not.toHaveURL(/\/sign-in/);
   return true;
 }

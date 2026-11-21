@@ -112,6 +112,21 @@
     "B1-1326-local-git-ssh-transport",
     "B1-1538-arch-aware-fga-cli",
     "B1-1539-forwarded-ssh-agent",
-    "B1-1545-repository-layout-check"
+    "B1-1545-repository-layout-check",
+    "B1-1584-data-check-workflow",
+    "B1-1587-sync-e2e-login-page",
+    "B1-1583-user-roles-not-exported",
+    "B1-1543-arch-aware-melange-cli",
+    "B1-1609-git-ssh-transport-in-image",
+    "B1-1612-checks-read-only-the-secret-store",
+    "B1-1611-openhands-token-key-value",
+    "B1-1607-fold-module-tags-into-app-tags",
+    "B1-1610-full-installs-save-yarn-cache",
+    "B1-1601-checks-fail-when-they-cannot-run",
+    "B1-1614-native-file-check-follows-symlinks",
+    "B1-1645-shared-check-gate",
+    "B1-1604-login-page-from-any-shipped-version",
+    "B1-1652-e2e-test-user-names",
+    "B1-1253-secrets-rule"
   ]
 }
