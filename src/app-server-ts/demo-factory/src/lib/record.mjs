@@ -1,4 +1,5 @@
 import {access, rm} from 'node:fs/promises';
+import {newTakeContext} from './credentials.mjs';
 import path from 'node:path';
 import {chromium} from '@playwright/test';
 import {envBoolean, resolveApiKey} from './env.mjs';
@@ -56,27 +57,25 @@ export const recordScenes = async ({demo, manifest, sceneFilter = null}) => {
   if (browser) step(`Recording ${demo.id} against ${baseUrl} (${authState ? `storage state ${authState}` : apiKey ? 'x-api-key header' : 'no credentials'})`);
   else step(`Cutting ${demo.id} from its source video ${demo.source?.video ?? ''}`);
 
-  // Before anything is filmed: the environment back to its delivered state.
-  // A failed reset stops the take — filming on top of an unknown state is
-  // exactly what the setting is there to prevent.
-  if (browser && demo.settings.resetRepository) {
-    step(`Resetting the blueprint repository of ${new URL(baseUrl).origin} before recording`);
-    const startedAt = Date.now();
-    await resetRepository({browser, appUrl: baseUrl, authState, apiKey});
-    step(`Repository reset in ${seconds(Date.now() - startedAt)}`);
-  }
-
   try {
+    // Before anything is filmed: the environment back to its delivered state.
+    // A failed reset stops the take — filming on top of an unknown state is
+    // exactly what the setting is there to prevent. Like the setup block it is
+    // part of a full take only: a partial re-record keeps the state the other
+    // scenes left.
+    if (browser && demo.settings.resetRepository && !sceneFilter) {
+      step(`Resetting the blueprint repository of ${new URL(baseUrl).origin} before recording`);
+      const startedAt = Date.now();
+      await resetRepository({browser, appUrl: baseUrl, authState, apiKey});
+      step(`Repository reset in ${seconds(Date.now() - startedAt)}`);
+    }
+
     // The setup block: same actions as a scene, no camera. It runs before a
     // full take so the environment starts from a known state (a repository
     // reset, seed data, a dismissed dialog). A partial re-record skips it —
     // whoever re-records one scene wants the state the other scenes left.
     if (demo.setup && !sceneFilter && browser) {
-      const context = await browser.newContext({
-        viewport: demo.settings.viewport,
-        storageState: authState,
-        ...(apiKey && !authState ? {extraHTTPHeaders: {'x-api-key': apiKey}} : {}),
-      });
+      const context = await newTakeContext(browser, {demo, authState, apiKey, viewport: demo.settings.viewport});
       const page = await context.newPage();
       try {
         const url = resolveDemoUrl(demo.setup.route, baseUrl);
@@ -112,14 +111,15 @@ export const recordScenes = async ({demo, manifest, sceneFilter = null}) => {
         recordedScenes.push(await cutClipScene({demo, preparedScene, sourceScene, clipsDir, position}));
         continue;
       }
-      const context = await browser.newContext({
+      const context = await newTakeContext(browser, {
+        demo,
+        authState,
+        apiKey,
         viewport: demo.settings.viewport,
         screen: demo.settings.viewport,
         deviceScaleFactor: 1,
         colorScheme: 'light',
         locale: demo.settings.language === 'de' ? 'de-DE' : demo.settings.language,
-        storageState: authState,
-        ...(apiKey && !authState ? {extraHTTPHeaders: {'x-api-key': apiKey}} : {}),
         recordVideo: {dir: clipsDir, size: demo.settings.viewport},
       });
       const page = await context.newPage();

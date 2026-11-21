@@ -1,0 +1,31 @@
+{
+  "productGuid": "df5d0f1a-7d37-44ea-8021-e868ac4a5aec",
+  "objectDescription": "The Portainer stack studio (https://studio.demo.build.one).",
+  "objectMasterGuid": "03a62ab1-ef97-47d0-92d9-577dc190c89e",
+  "objectName": "deploy-studio",
+  "objectTypeGuid": "dad9e58e-b637-4682-8f88-4f679a69afeb",
+  "status": "Active",
+  "templateObject": false,
+  "attributes": {
+    "adapter": "portainer",
+    "environment": "studio",
+    "profileId": "deploy-studio",
+    "adapterConfig": {
+      "stackRef": "b1-stack-standalone",
+      "stackName": "studio",
+      "endpointName": "b1-Demo",
+      "endpointId": 4,
+      "appUrl": "studio.demo.build.one",
+      "repository": "build-one-labs/b1-demo-studio",
+      "options": {},
+      "env": {},
+      "envSecrets": []
+    }
+  },
+  "instances": [],
+  "links": [],
+  "tags": [],
+  "tenantId": null,
+  "validFrom": null,
+  "validUntil": null
+}

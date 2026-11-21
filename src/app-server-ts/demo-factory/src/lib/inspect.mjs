@@ -22,6 +22,7 @@ import { z } from 'zod';
 import { actionSchema, assertionSchema, sceneBaseUrl } from '../schema.mjs';
 import { executeAssertions, executeSceneActions, resolveDemoUrl } from './actions.mjs';
 import { capturePage, openContext, waitForApp } from './convert.mjs';
+import { demoOrigins } from './credentials.mjs';
 import { envBoolean, resolveApiKey } from './env.mjs';
 import { writeJson } from './files.mjs';
 import { step } from './log.mjs';
@@ -39,11 +40,26 @@ export const inspectRequestSchema = z
   })
   .strict();
 
-/** Where the request opens: an absolute URL wins, else a route against the scene's or the demo's application. */
+/**
+ * Where the request opens: an absolute URL wins, else a route against the
+ * scene's or the demo's application. Only an application the demo names —
+ * its own base URL or a scene's — may be opened: the browser is signed in as
+ * the demo user there, and nowhere else should see that session or its key.
+ */
 export const inspectStartUrl = (demo, request, env = process.env) => {
-  if (request.url) return request.url;
   const appUrl = request.baseUrl || sceneBaseUrl(demo, {}, env);
-  return resolveDemoUrl(request.route || '/', appUrl);
+  const startUrl = request.url || resolveDemoUrl(request.route || '/', appUrl);
+  const allowed = demoOrigins(demo, env);
+  for (const href of new Set([startUrl, appUrl])) {
+    const { origin } = new URL(href);
+    if (!allowed.has(origin)) {
+      throw new Error(
+        `Invalid inspect request — ${origin} is not an application of this demo (${[...allowed].join(', ')}). ` +
+          "Set it as the demo's or a scene's baseUrl first."
+      );
+    }
+  }
+  return startUrl;
 };
 
 /**

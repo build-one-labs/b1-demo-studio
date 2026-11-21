@@ -129,6 +129,13 @@ class UploadStorage {
 export class DemoFactoryUpload {
   private readonly logger = new Logger(DemoFactoryUpload.name);
 
+  /**
+   * Uploads a chunk is being written to right now. The offset check and the
+   * append are not one step on disk, so a second chunk for the same upload —
+   * a retry, a second tab — waits its turn as a 409 and resumes from `status`.
+   */
+  private readonly writing = new Set<string>();
+
   constructor(
     private readonly host: DemoFactoryHost,
     private readonly ctx: RequestContext
@@ -214,6 +221,19 @@ export class DemoFactoryUpload {
     @Query('offset') offsetParam: string,
     @Req() request: Request
   ) {
+    if (this.writing.has(uploadId)) {
+      request.resume();
+      throw new ConflictException('Another chunk of this upload is being written — ask status and resume');
+    }
+    this.writing.add(uploadId);
+    try {
+      return await this.appendChunk(uploadId, offsetParam, request);
+    } finally {
+      this.writing.delete(uploadId);
+    }
+  }
+
+  private async appendChunk(uploadId: string, offsetParam: string, request: Request) {
     const { pending, target } = await this.pendingUpload(uploadId);
     const received = (await stat(target)).size;
     const offset = Number(offsetParam);

@@ -12,7 +12,7 @@ import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { demoRunManifests } from 'src/drizzle/schema';
 
 import { DemoFactoryHost } from './demo-factory.host';
-import { safeChildPath } from './demo-factory.lib';
+import { RESERVED_OUTPUT_DIRS, safeChildPath } from './demo-factory.lib';
 import { CaptionRow, DSO, manifestToRows, NarrationRow, RunManifest, RunRow, RunSceneRow } from './demo-factory.rows';
 import { DemoFactoryStore, diffRows } from './demo-factory.store';
 
@@ -134,8 +134,10 @@ export class DemoFactoryRunIngest {
 
   private async demoDirectories(root: string): Promise<string[]> {
     const entries = await readdir(root, { withFileTypes: true }).catch(() => []);
-    // `logs/` sits beside the demo directories and holds job transcripts, not runs.
-    return entries.filter((entry) => entry.isDirectory() && entry.name !== 'logs').map((entry) => entry.name);
+    // `logs/` and `uploads/` sit beside the demo directories and hold job transcripts and recordings, not runs.
+    return entries
+      .filter((entry) => entry.isDirectory() && !RESERVED_OUTPUT_DIRS.has(entry.name))
+      .map((entry) => entry.name);
   }
 
   /** Every run directory of one demo, newest first, as rows. */

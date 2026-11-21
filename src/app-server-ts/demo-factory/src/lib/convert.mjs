@@ -23,6 +23,7 @@
  * saves through its one validated write path.
  */
 import { execFile } from 'node:child_process';
+import { newTakeContext } from './credentials.mjs';
 import { readFile, mkdir } from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
@@ -222,13 +223,14 @@ const imageBlock = async (file, mediaType = 'image/jpeg') => ({
 // ---- The live application --------------------------------------------------------
 
 export const openContext = async ({ browser, demo, authState, apiKey }) =>
-  browser.newContext({
+  newTakeContext(browser, {
+    demo,
+    authState,
+    apiKey,
     viewport: demo.settings.viewport,
     deviceScaleFactor: 1,
     colorScheme: 'light',
-    locale: demo.settings.language === 'de' ? 'de-DE' : demo.settings.language,
-    storageState: authState,
-    ...(apiKey && !authState ? { extraHTTPHeaders: { 'x-api-key': apiKey } } : {})
+    locale: demo.settings.language === 'de' ? 'de-DE' : demo.settings.language
   });
 
 export const waitForApp = (page) =>

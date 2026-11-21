@@ -1,4 +1,4 @@
-import { buildJobCommand, newUploadId, stageBlockedReason, UPLOAD_ID_PATTERN } from './demo-factory.lib';
+import { assertSafeId, buildJobCommand, newUploadId, stageBlockedReason, UPLOAD_ID_PATTERN } from './demo-factory.lib';
 
 describe('render job selection', () => {
   const runId = '2026-10-01T10-50-19-979Z--b9f42092';
@@ -92,5 +92,15 @@ describe('video import', () => {
     const id = newUploadId(new Date('2026-11-21T10:15:00Z'));
     expect(id).toMatch(UPLOAD_ID_PATTERN);
     expect(id.startsWith('20261121101500-')).toBe(true);
+  });
+});
+
+describe('reserved output directories', () => {
+  it.each(['uploads', 'logs'])('%s is never a demo id, so no media route reaches it', (name) => {
+    expect(() => assertSafeId(name, 'demo id')).toThrow('Invalid demo id');
+  });
+
+  it('accepts an ordinary demo id', () => {
+    expect(assertSafeId('profile-menu-customize', 'demo id')).toBe('profile-menu-customize');
   });
 });

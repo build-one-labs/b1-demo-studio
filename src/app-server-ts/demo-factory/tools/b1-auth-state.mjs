@@ -83,9 +83,14 @@ try {
       console.warn(`Could not sign in to ${baseUrl}: ${error.message}`);
     }
   }
-  if (failures.length === baseUrls.length) throw new Error(failures.join('; '));
+  // All or nothing: a state signed in to only some of the demo's applications
+  // would win over the API-key header (record.mjs uses either, never both),
+  // and every scene in an application without a session would film its
+  // sign-in page. Without a new state the take signs in by header instead —
+  // in every application the demo names — or with the state stored earlier.
+  if (failures.length) throw new Error(failures.join('; '));
   await context.storageState({path: authFile});
-  console.log(`Auth state written to ${authFile} (${baseUrls.length - failures.length} of ${baseUrls.length} applications)`);
+  console.log(`Auth state written to ${authFile} (${baseUrls.length} application${baseUrls.length === 1 ? '' : 's'})`);
 } finally {
   await browser.close();
 }

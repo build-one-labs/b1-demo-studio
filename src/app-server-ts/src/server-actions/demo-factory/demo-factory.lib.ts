@@ -279,8 +279,15 @@ export const MAX_UPLOAD_CHUNK_BYTES = 8 * 1024 * 1024;
 export const newUploadId = (now = new Date()): string =>
   `${now.toISOString().replace(/\D/g, '').slice(0, 14)}-${Math.random().toString(36).slice(2, 8)}`;
 
+/**
+ * Directories of the output root that are not demos: the uploaded recordings
+ * and the job transcripts. Never an id, so no media route or run listing can
+ * reach them under a demo's name.
+ */
+export const RESERVED_OUTPUT_DIRS: ReadonlySet<string> = new Set(['uploads', 'logs']);
+
 export const assertSafeId = (value: string, label = 'id'): string => {
-  if (!ID_PATTERN.test(value || '')) throw new Error(`Invalid ${label}`);
+  if (!ID_PATTERN.test(value || '') || RESERVED_OUTPUT_DIRS.has(value)) throw new Error(`Invalid ${label}`);
   return value;
 };
 

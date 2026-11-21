@@ -146,6 +146,16 @@ export class DemoFactoryStudio {
   /** One live look at a time — each opens a browser. */
   private inspecting = false;
 
+  /**
+   * Set while a job is being started: between the "nothing is running" check
+   * and launch() lie several awaits, and a second request arriving there must
+   * not pass the same check (see exclusively).
+   */
+  private starting = false;
+
+  /** The demo as a conversion started from it — its result is saved only onto that same state. */
+  private convertBaseline: string | undefined;
+
   private activeChild: ReturnType<typeof spawn> | undefined;
 
   private jobLog: WriteStream | undefined;
@@ -254,15 +264,32 @@ export class DemoFactoryStudio {
     body: { action = 'validate', demoId = '', scenes = [], voice, runId } = {}
   }: B1ActionPayload<{ action?: JobAction; demoId?: string; scenes?: string[]; voice?: string; runId?: string }> = {}) {
     this.assertOperator();
-    if (this.job.status === 'running') throw new Error('Another job is already running');
     if (action === 'analyze') throw new Error('Analyze an uploaded video with import-video');
     if (action === 'convert') throw new Error('Convert a video demo with convert-video');
+    return this.exclusively(() => this.startStage({ action, demoId, scenes, voice, runId }));
+  }
+
+  private async startStage({
+    action,
+    demoId,
+    scenes,
+    voice,
+    runId
+  }: {
+    action: JobAction;
+    demoId: string;
+    scenes: string[];
+    voice?: string;
+    runId?: string;
+  }) {
     const command = buildJobCommand({ action, demoId, scenes, voice, runId });
 
     // The screen disables what this host cannot do, but it is not the only
     // caller and its capability snapshot is as old as its last fetch. Refuse
     // here too, with the reason, rather than spawn a child that cannot succeed.
-    const signIn = await this.demoUserEnv(demoId);
+    // Only the stages that open the application sign in; validate, prepare and
+    // render never need the demo user, so its missing key does not stop them.
+    const signIn = action === 'record' || action === 'all' ? await this.demoUserEnv(demoId) : {};
     const blocked = stageBlockedReason(action, await this.host.capabilities(), {
       filmsInBrowser: await this.filmsInBrowser(demoId),
       hasDemoUser: Boolean(signIn.DEMO_USER)
@@ -309,6 +336,31 @@ export class DemoFactoryStudio {
   private async filmsInBrowser(demoId: string): Promise<boolean> {
     const scenes = (await this.store.read<SceneRow>(DSO.scene)).filter((row) => row.demoId === demoId);
     return scenes.length === 0 || scenes.some((row) => row.mode === 'film' || (row.mode !== 'clip' && !row.clip));
+  }
+
+  /**
+   * Run the start of a job alone: the check that nothing runs and the launch
+   * it guards are one step for every other caller, however many awaits lie
+   * between them.
+   */
+  private async exclusively<T>(start: () => Promise<T>): Promise<T> {
+    if (this.job.status === 'running' || this.starting) throw new Error('Another job is already running');
+    if (this.inspecting) throw new Error('An inspection is running — start the job when it is done');
+    this.starting = true;
+    try {
+      return await start();
+    } finally {
+      this.starting = false;
+    }
+  }
+
+  /** A demo's rows as they stand: the demo and its scenes, in order. */
+  private async demoFingerprint(demoId: string): Promise<string> {
+    const demo = (await this.store.read<DemoRow>(DSO.demo)).find((row) => row.id === demoId);
+    const scenes = (await this.store.read<SceneRow>(DSO.scene))
+      .filter((row) => row.demoId === demoId)
+      .sort((a, b) => Number(a.sequence) - Number(b.sequence));
+    return JSON.stringify({ demo, scenes });
   }
 
   /** Start `command` as the current job and return at once; the screen polls jobStatus. */
@@ -425,6 +477,15 @@ export class DemoFactoryStudio {
       const file = safeChildPath(this.uploadsRoot(), uploadId, fileName);
       const document = JSON.parse(await readFile(file, 'utf8')) as DemoDocument;
       if (document.id !== demoId) throw new Error(`The job wrote demo ${document.id}, not ${demoId}`);
+      // The conversion read the demo as it was when it started and wrote it
+      // back whole; edits made meanwhile would be lost under it. Refuse, and
+      // keep the result where it is, rather than overwrite them.
+      if (verb === 'converted' && (await this.demoFingerprint(demoId)) !== this.convertBaseline) {
+        throw new Error(
+          `${demoId} was edited while the conversion ran, so its result was not saved over those edits. ` +
+            `Run Convert again (the result is kept at ${file}).`
+        );
+      }
       const { scenes } = await this.transfer.saveDocument(document);
       if (verb === 'created') {
         this.appendLog(`Demo ${demoId} created with ${scenes} scene${scenes === 1 ? '' : 's'}.`, 'stdout');
@@ -456,9 +517,22 @@ export class DemoFactoryStudio {
     body: { uploadId = '', demoId = '', title = '', language = '' } = {}
   }: B1ActionPayload<{ uploadId?: string; demoId?: string; title?: string; language?: string }> = {}) {
     this.assertOperator();
-    if (this.job.status === 'running') throw new Error('Another job is already running');
     assertSafeId(demoId, 'demo id');
     if (!UPLOAD_ID_PATTERN.test(uploadId)) throw new Error('Upload the video first');
+    return this.exclusively(() => this.startAnalysis({ uploadId, demoId, title, language }));
+  }
+
+  private async startAnalysis({
+    uploadId,
+    demoId,
+    title,
+    language
+  }: {
+    uploadId: string;
+    demoId: string;
+    title: string;
+    language: string;
+  }) {
     const command = buildJobCommand({
       action: 'analyze',
       demoId,
@@ -491,7 +565,10 @@ export class DemoFactoryStudio {
   })
   async convertVideo({ body: { demoId = '' } = {} }: B1ActionPayload<{ demoId?: string }> = {}) {
     this.assertOperator();
-    if (this.job.status === 'running') throw new Error('Another job is already running');
+    return this.exclusively(() => this.startConversion(demoId));
+  }
+
+  private async startConversion(demoId: string) {
     const command = buildJobCommand({ action: 'convert', demoId });
     const demo = (await this.store.read<DemoRow>(DSO.demo)).find((row) => row.id === demoId);
     if (!demo) throw new Error(`No demo ${demoId}`);
@@ -506,6 +583,7 @@ export class DemoFactoryStudio {
     const apiKey = await this.secrets.resolve('anthropic-api-key');
     if (!apiKey) throw new Error('No Anthropic API key — store the anthropic-api-key secret or set ANTHROPIC_API_KEY');
     await this.materializer.materializeIfPresent(demoId);
+    this.convertBaseline = await this.demoFingerprint(demoId);
     return this.launch('convert', demoId, command, uploadId, { ...signIn, ANTHROPIC_API_KEY: apiKey });
   }
 
@@ -576,7 +654,18 @@ export class DemoFactoryStudio {
       throw new Error(`Demo ${demoId} not found`);
     }
     if (this.inspecting) throw new Error('Another inspection is running — try again in a minute');
-    if (this.job.status === 'running') throw new Error('A pipeline job is running — inspect when it is done');
+    if (this.job.status === 'running' || this.starting)
+      throw new Error('A pipeline job is running — inspect when it is done');
+    // Claimed before the first await below, so a second call cannot slip in.
+    this.inspecting = true;
+    try {
+      return await this.runInspection(demoId, request);
+    } finally {
+      this.inspecting = false;
+    }
+  }
+
+  private async runInspection(demoId: string, request: InspectRequest) {
     const signIn = await this.demoUserEnv(demoId);
     const blocked = stageBlockedReason('convert', await this.host.capabilities(), {
       hasDemoUser: Boolean(signIn.DEMO_USER)
@@ -589,50 +678,45 @@ export class DemoFactoryStudio {
     await mkdir(outDir, { recursive: true });
     const requestFile = path.join(outDir, 'request.json');
     await writeFile(requestFile, JSON.stringify(request, null, 2));
-    this.inspecting = true;
     let output = '';
-    try {
-      const exitCode = await new Promise<number>((resolve) => {
-        const child = spawn(
-          process.execPath,
-          ['tools/run-demo.mjs', demoId, '--stages=inspect', `--request=${requestFile}`, `--out=${outDir}`],
-          {
-            cwd: this.host.projectRoot,
-            env: { ...process.env, ...this.host.definedEnv(), ...signIn },
-            shell: false,
-            stdio: ['ignore', 'pipe', 'pipe']
-          }
-        );
-        for (const stream of [child.stdout, child.stderr]) {
-          stream?.on('data', (data: Buffer) => {
-            output = (output + data.toString()).slice(-8000);
-          });
+    const exitCode = await new Promise<number>((resolve) => {
+      const child = spawn(
+        process.execPath,
+        ['tools/run-demo.mjs', demoId, '--stages=inspect', `--request=${requestFile}`, `--out=${outDir}`],
+        {
+          cwd: this.host.projectRoot,
+          env: { ...process.env, ...this.host.definedEnv(), ...signIn },
+          shell: false,
+          stdio: ['ignore', 'pipe', 'pipe']
         }
-        const timer = setTimeout(() => child.kill('SIGTERM'), INSPECT_TIMEOUT_MS);
-        child.once('exit', (code) => {
-          clearTimeout(timer);
-          resolve(code ?? -1);
+      );
+      for (const stream of [child.stdout, child.stderr]) {
+        stream?.on('data', (data: Buffer) => {
+          output = (output + data.toString()).slice(-8000);
         });
-      });
-      const result = await readFile(path.join(outDir, 'result.json'), 'utf8')
-        .then((text) => JSON.parse(text) as Record<string, unknown>)
-        .catch(() => null);
-      if (!result) {
-        const lines = output.trim().split('\n');
-        const reason =
-          lines.find((line) => /Error: Invalid inspect request/.test(line))?.replace(/^.*?Error: /, '') ??
-          lines.filter((line) => /error/i.test(line)).at(-1) ??
-          `exit ${exitCode}`;
-        throw new Error(`The inspection did not finish — ${reason.slice(0, 600)}`);
       }
-      return {
-        ...result,
-        signedInAs: signIn.DEMO_USER || null,
-        screenshotUrl: `/service/app/demo-factory/media/${demoId}/${runId}/page.jpg`
-      };
-    } finally {
-      this.inspecting = false;
+      const timer = setTimeout(() => child.kill('SIGTERM'), INSPECT_TIMEOUT_MS);
+      child.once('exit', (code) => {
+        clearTimeout(timer);
+        resolve(code ?? -1);
+      });
+    });
+    const result = await readFile(path.join(outDir, 'result.json'), 'utf8')
+      .then((text) => JSON.parse(text) as Record<string, unknown>)
+      .catch(() => null);
+    if (!result) {
+      const lines = output.trim().split('\n');
+      const reason =
+        lines.find((line) => /Error: Invalid inspect request/.test(line))?.replace(/^.*?Error: /, '') ??
+        lines.filter((line) => /error/i.test(line)).at(-1) ??
+        `exit ${exitCode}`;
+      throw new Error(`The inspection did not finish — ${reason.slice(0, 600)}`);
     }
+    return {
+      ...result,
+      signedInAs: signIn.DEMO_USER || null,
+      screenshotUrl: `/service/app/demo-factory/media/${demoId}/${runId}/page.jpg`
+    };
   }
 
   @B1Action({ description: 'Current pipeline job, including its log tail' })
@@ -676,12 +760,19 @@ export class DemoFactoryStudio {
   async deleteDemo({ body: { demoId = '' } = {} }: B1ActionPayload<{ demoId?: string }> = {}) {
     this.assertOperator();
     if (!demoId.trim()) throw new Error('Pass the demo id as `demoId`');
-    const demo = (await this.store.read<DemoRow>(DSO.demo)).find((row) => row.id === demoId.trim());
-    const result = await this.transfer.deleteDemo(demoId.trim());
-    // A video demo's upload is its footage, and nothing else refers to it —
-    // typically the largest thing the factory stores.
+    const demos = await this.store.read<DemoRow>(DSO.demo);
+    const demo = demos.find((row) => row.id === demoId.trim());
     const uploadId = demo?.source?.video?.split('/')[0];
-    if (uploadId && UPLOAD_ID_PATTERN.test(uploadId)) {
+    const uploadOf = (row: DemoRow) => row.source?.video?.split('/')[0];
+    if (uploadId && this.job.status === 'running' && this.job.uploadId === uploadId) {
+      throw new Error(`A ${this.job.action} job is working on this demo's recording — delete it when the job is done`);
+    }
+    const result = await this.transfer.deleteDemo(demoId.trim());
+    // A video demo's upload is its footage — typically the largest thing the
+    // factory stores. It goes with the last demo cut from it: a copy or an
+    // import of the demo under another id keeps using the same recording.
+    const stillUsed = demos.some((row) => row.id !== demo?.id && uploadOf(row) === uploadId);
+    if (uploadId && UPLOAD_ID_PATTERN.test(uploadId) && !stillUsed) {
       await rm(safeChildPath(this.uploadsRoot(), uploadId), { recursive: true, force: true });
     }
     return result;

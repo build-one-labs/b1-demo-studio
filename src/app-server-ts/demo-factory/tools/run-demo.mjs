@@ -9,7 +9,7 @@
  * the thing that rots between runs.
  */
 import {spawn} from 'node:child_process';
-import {existsSync, readFileSync} from 'node:fs';
+import {existsSync} from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {resolveApiKey} from '../src/lib/env.mjs';
@@ -57,12 +57,8 @@ const converting = stages.includes('convert') || stages.includes('inspect');
 const filmsInBrowser = converting || demo.scenes.some((scene) => !isClipScene(scene));
 // Every application a take opens — the demo's own and any a scene names (see
 // sceneBaseUrl): the sign-in below needs a session for each.
-// An inspection may open an application no scene names yet (its request's url or baseUrl).
-const requestFlag = process.argv.find((arg) => arg.startsWith('--request='));
-const inspected = stages.includes('inspect') && requestFlag
-  ? (({url, baseUrl: requested}) => [url, requested].filter(Boolean).map((href) => new URL(href).origin))(JSON.parse(readFileSync(requestFlag.slice('--request='.length), 'utf8')))
-  : [];
-const appUrls = [...new Set([...[{}, ...demo.scenes].map((scene) => new URL(sceneBaseUrl(demo, scene, {...process.env, B1_BASE_URL: baseUrl})).origin), ...inspected])];
+// An inspection opens only these too (inspect.mjs refuses any other origin).
+const appUrls = [...new Set([{}, ...demo.scenes].map((scene) => new URL(sceneBaseUrl(demo, scene, {...process.env, B1_BASE_URL: baseUrl})).origin))];
 
 // A minted storage state is the best take — a real session cookie, exactly
 // what a customer's browser carries. It is not always obtainable: the mint
