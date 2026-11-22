@@ -17,7 +17,7 @@
   <div :class="['flex flex-col', instance.attributes.htmlClass]">
     <div class="b1-field-label block">
       <label class="font-bold" :for="fieldId">
-        {{ instance.attributes.label }}
+        {{ label }}
         <span v-if="instance.attributes.required" class="text-red-500">*</span>
       </label>
     </div>
@@ -42,6 +42,7 @@
 </template>
 
 <script setup lang="ts">
+import { translate, useTranslation } from '@buildone/web-core';
 import { computed, ref, useTemplateRef, watch } from 'vue';
 
 import type { B1ComponentExposed, FormElement } from '@buildone/web-core';
@@ -53,7 +54,10 @@ defineEmits<{ (e: 'focus' | 'value-change'): void; (e: 'blur', event: Event): vo
 const model = defineModel<unknown>();
 const textareaRef = useTemplateRef<ComponentPublicInstance>('textareaRef');
 
+const { tranAttr } = useTranslation();
 const fieldId = computed(() => props.instance.blueprint.name);
+/** The field label, translated like the framework's own fields (`<Screen>.<InstanceName>._label`). */
+const label = computed(() => tranAttr(props.instance, '_label', String(props.instance.attributes.label ?? '')));
 const rows = computed(() => Number(props.instance.attributes.rows) || 12);
 const disabled = computed(() => props.instance.attributes.enabled === false);
 
@@ -91,7 +95,11 @@ function describe(parseError: Error, source: string): string {
   const before = source.slice(0, offset);
   const line = before.split('\n').length;
   const column = offset - before.lastIndexOf('\n');
-  return `${message} (line ${line}, column ${column})`;
+  return translate('b1App.B1JsonField.parsePosition', '{message} (line {line}, column {column})', {
+    message,
+    line,
+    column
+  });
 }
 
 const sameJson = (left: unknown, right: unknown) => JSON.stringify(left ?? null) === JSON.stringify(right ?? null);
@@ -118,9 +126,15 @@ function onInput(value: string | undefined) {
 
 const summary = computed(() => {
   const value = parse(text.value).value;
-  if (Array.isArray(value)) return `${value.length} ${value.length === 1 ? 'item' : 'items'}`;
-  if (value && typeof value === 'object') return `${Object.keys(value).length} keys`;
-  if (value == null) return 'Empty — saves as null';
+  if (Array.isArray(value)) {
+    return value.length === 1
+      ? translate('b1App.B1JsonField.itemCountOne', '1 item')
+      : translate('b1App.B1JsonField.itemCountMany', '{count} items', { count: value.length });
+  }
+  if (value && typeof value === 'object') {
+    return translate('b1App.B1JsonField.keyCount', '{count} keys', { count: Object.keys(value).length });
+  }
+  if (value == null) return translate('b1App.B1JsonField.empty', 'Empty — saves as null');
   return typeof value;
 });
 

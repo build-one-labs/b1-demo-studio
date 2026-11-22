@@ -1,9 +1,12 @@
 {
-  "productGuid": "df5d0f1a-7d37-44ea-8021-e868ac4a5aec",
+  "createdAt": "2026-11-22 10:02:39.35511",
+  "howToUse": "",
+  "label": "",
   "objectDescription": "This repository's refinements of b1-stack-standalone (converted from .build/deploy).",
   "objectMasterGuid": "e001c741-5c8c-45d3-9eb1-d1197af07354",
   "objectName": "app-stack-standalone",
   "objectTypeGuid": "8908f9a5-cfc0-4001-ac5b-7a14c0295221",
+  "productGuid": "df5d0f1a-7d37-44ea-8021-e868ac4a5aec",
   "status": "Active",
   "templateObject": false,
   "attributes": {
@@ -12,6 +15,7 @@
       "demo_factory_data": null
     }
   },
+  "createdBy": null,
   "instances": [
     {
       "instanceName": "app_server_ts",
@@ -20,24 +24,37 @@
       "objectSequence": 1,
       "attributes": {
         "env": {
-          "B1_DEFAULT_APP": "${B1_DEFAULT_APP:-b1-demo-factory}",
-          "REPOSITORY": "build-one-labs/b1-demo-studio",
           "B1_BASE_URL": "${B1_BASE_URL:-https://${STACK}.${DOMAIN}}",
+          "B1_DEFAULT_APP": "${B1_DEFAULT_APP:-b1-demo-factory}",
+          "B1_SUPPORTED_LOCALES": "${B1_SUPPORTED_LOCALES:-en,de}",
           "B1_USER_API_KEY": "${B1_USER_API_KEY:-}",
-          "DEMO_OUTPUT_DIR": "/data/demo-factory/output",
           "DEMO_CACHE_DIR": "/data/demo-factory/cache",
+          "DEMO_FACTORY_OPERATORS": "${DEMO_FACTORY_OPERATORS:-}",
+          "DEMO_OUTPUT_DIR": "/data/demo-factory/output",
           "ELEVENLABS_API_KEY": "${ELEVENLABS_API_KEY:-}",
           "ELEVENLABS_VOICE_ID": "${ELEVENLABS_VOICE_ID:-}",
-          "DEMO_FACTORY_OPERATORS": "${DEMO_FACTORY_OPERATORS:-}"
+          "REPOSITORY": "build-one-labs/b1-demo-studio"
         },
         "volumes": {
           "/data/demo-factory": "demo_factory_data"
         }
       },
       "instances": []
+    },
+    {
+      "instanceName": "web-app",
+      "objectInstanceGuid": "034eab2a-4571-45e5-b68f-01d7956ca59c",
+      "objectMasterGuid": "acb8a695-54d9-473e-aafb-611517cae654",
+      "attributes": {
+        "env": {
+          "B1_SUPPORTED_LOCALES": "${B1_SUPPORTED_LOCALES:-en,de}"
+        }
+      },
+      "instances": []
     }
   ],
   "links": [],
+  "owner": null,
   "tags": [],
   "tenantId": null,
   "validFrom": null,

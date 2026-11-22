@@ -1,1 +1,1194 @@
-{}
+{
+  "cardViewPanelMenu": {
+    "ManageFilters": {
+      "_label": "Filter verwalten"
+    },
+    "Refresh": {
+      "_label": "Aktualisieren"
+    },
+    "SaveAsFilter": {
+      "_label": "Als neuen Filter speichern"
+    },
+    "SaveCurrentFilter": {
+      "_label": "Aktuellen Filter speichern"
+    },
+    "Search": {
+      "_label": "Suchen"
+    }
+  },
+  "DemoFactoryAgentScreen": {
+    "_title": "Demo Creator fragen",
+    "agentFieldset": {
+      "_label": "Demo Creator"
+    },
+    "agentHelp": {
+      "_text": "Startet eine Unterhaltung mit dem Demo-Creator-Agenten in dieser Umgebung. Er liest und schreibt Demos über dieselben Datenquellen und Aktionen wie dieses Studio – beschreiben Sie das gewünschte Video oder die Änderung an einem vorhandenen."
+    },
+    "cancelButton": {
+      "_label": "Abbrechen"
+    },
+    "DemoFactoryAgentForm": {
+      "_title": "Demo Creator fragen"
+    },
+    "prompt": {
+      "_label": "Was soll er tun?"
+    },
+    "startButton": {
+      "_label": "Unterhaltung starten"
+    }
+  },
+  "DemoFactoryDemoActionsToolbar": {
+    "convertVideo": {
+      "_label": "In gefilmte Szenen umwandeln",
+      "_tooltip": "Video-Demos: Claude macht aus den aufgenommenen Clips Klicks und Eingaben, die Playwright in der laufenden Anwendung filmt"
+    },
+    "deleteAction": {
+      "_label": "Löschen",
+      "_tooltip": "Die Demo mit ihren Szenen und ihrem Verzeichnis löschen"
+    },
+    "DemoFactoryMoreActions": {
+      "_label": "Weitere Aktionen"
+    },
+    "exportAction": {
+      "_label": "Exportieren",
+      "_tooltip": "Die Demo als demo.yaml herunterladen"
+    },
+    "validate": {
+      "_label": "Prüfen",
+      "_tooltip": "Das Demo-Dokument gegen das Schema prüfen"
+    }
+  },
+  "DemoFactoryDemoCreate": {
+    "_title": "Neue Demo",
+    "cancelButton": {
+      "_label": "Abbrechen"
+    },
+    "createButton": {
+      "_label": "Demo anlegen"
+    },
+    "DemoFactoryDemoCreateForm": {
+      "_title": "Neue Demo"
+    },
+    "id": {
+      "_label": "Demo-ID – Kleinbuchstaben, Ziffern und Bindestriche"
+    },
+    "newDemoFieldset": {
+      "_label": "Neue Demo"
+    },
+    "startFrom": {
+      "_label": "Ausgangspunkt"
+    },
+    "startFromHelp": {
+      "_text": "Ist in der Liste eine Demo ausgewählt, werden ihre Einstellungen und Szenenstruktur kopiert – passen Sie Sprechertext, Routen und Aktionen vor der Aufnahme an. Ohne Auswahl liefert die leere Vorlage Standardeinstellungen und eine Eröffnungsszene."
+    },
+    "title": {
+      "_label": "Titel"
+    }
+  },
+  "DemoFactoryDemoMaintenance": {
+    "_title": "{'{{title}}'} – Demo",
+    "createdAt": {
+      "_label": "Erstellt"
+    },
+    "DemoFactoryDemoForm": {
+      "_title": "Demo"
+    },
+    "DemoFactoryJobLog": {
+      "_title": "Pipeline-Log"
+    },
+    "DemoFactoryJobStatus": {
+      "_title": "Pipeline-Log"
+    },
+    "DemoFactoryRunGrid": {
+      "_title": "Runs"
+    },
+    "DemoFactorySceneGrid": {
+      "_title": "Szenen"
+    },
+    "DemoFactoryVoiceoverForm": {
+      "_title": "Voiceover"
+    },
+    "demoId": {
+      "_label": "Demo"
+    },
+    "demoTab": {
+      "_label": "Demo"
+    },
+    "description": {
+      "_label": "Beschreibung"
+    },
+    "durationMs": {
+      "_label": "Dauer"
+    },
+    "hasVideo": {
+      "_label": "Video"
+    },
+    "id": {
+      "_label": "Demo-ID"
+    },
+    "identityFieldset": {
+      "_label": "Identität"
+    },
+    "logTab": {
+      "_label": "Log"
+    },
+    "narrationFieldset": {
+      "_label": "Sprechertext"
+    },
+    "panel_demo": {
+      "_title": "Demo"
+    },
+    "panel_log": {
+      "_title": "Pipeline-Log"
+    },
+    "panel_runs": {
+      "_title": "Runs dieser Demo"
+    },
+    "panel_scenes": {
+      "_title": "Szenen"
+    },
+    "panel_voiceover": {
+      "_title": "Voiceover"
+    },
+    "presentationFieldset": {
+      "_label": "Darstellung"
+    },
+    "provider": {
+      "_label": "Sprecher"
+    },
+    "recordedScenes": {
+      "_label": "Aufgenommen"
+    },
+    "recordingFieldset": {
+      "_label": "Aufnahme"
+    },
+    "route": {
+      "_label": "Route"
+    },
+    "runId": {
+      "_label": "Run"
+    },
+    "runsTab": {
+      "_label": "Runs"
+    },
+    "sceneCount": {
+      "_label": "Szenen"
+    },
+    "sceneId": {
+      "_label": "Szenen-ID"
+    },
+    "sceneKey": {
+      "_label": "Schlüssel"
+    },
+    "scenesTab": {
+      "_label": "Szenen"
+    },
+    "settings": {
+      "_label": "Einstellungen als JSON",
+      "baseUrl": {
+        "env": {
+          "_label": "Überschrieben durch Umgebungsvariable"
+        },
+        "fallback": {
+          "_label": "Basis-URL – die Anwendung, die die Demo aufnimmt"
+        }
+      },
+      "branding": {
+        "showCaptions": {
+          "_label": "Untertitel ins Video einbrennen"
+        }
+      },
+      "cursor": {
+        "enabled": {
+          "_label": "Mauszeiger einblenden"
+        }
+      },
+      "demoUser": {
+        "_label": "Anmelden als"
+      },
+      "fps": {
+        "_label": "Bilder pro Sekunde"
+      },
+      "holdAfterMs": {
+        "_label": "Pause nach einer Szene"
+      },
+      "holdBeforeMs": {
+        "_label": "Pause vor einer Szene"
+      },
+      "language": {
+        "_label": "Sprache"
+      },
+      "narration": {
+        "defaultLanguageCode": {
+          "_label": "Sprachcode"
+        },
+        "defaultModelId": {
+          "_label": "ElevenLabs-Modell"
+        },
+        "provider": {
+          "_label": "Anbieter"
+        }
+      },
+      "resetRepository": {
+        "_label": "Repository vor der Aufnahme zurücksetzen"
+      },
+      "viewport": {
+        "height": {
+          "_label": "Viewport-Höhe"
+        },
+        "width": {
+          "_label": "Viewport-Breite"
+        }
+      }
+    },
+    "settingsFieldset": {
+      "_label": "Erweitert – alle Einstellungen als JSON (Sprecher, Branding, Mauszeiger, …)"
+    },
+    "targetFieldset": {
+      "_label": "Zielanwendung"
+    },
+    "title": {
+      "_label": "Titel"
+    },
+    "voiceoverTab": {
+      "_label": "Voiceover"
+    }
+  },
+  "DemoFactoryDemoMaintenanceToolbar": {
+    "closeAction": {
+      "_label": "Schließen",
+      "_tooltip": "Ohne Speichern schließen"
+    },
+    "editWithAgent": {
+      "_label": "Mit Demo-Agent bearbeiten",
+      "_tooltip": "Demo-Einstellungen speichern und einen Chat mit dieser Demo und der ausgewählten Szene als Kontext öffnen"
+    },
+    "runAll": {
+      "_label": "Komplette Demo erzeugen",
+      "_tooltip": "Änderungen speichern, prüfen, anmelden, Voiceover erzeugen, alle Szenen aufnehmen und rendern"
+    },
+    "saveAction": {
+      "_label": "Speichern",
+      "_tooltip": "Die Demo speichern – der Server prüft das Dokument, bevor etwas übernommen wird"
+    }
+  },
+  "DemoFactoryDemoSearch": {
+    "_title": "Demos",
+    "DemoFactoryDemoGrid": {
+      "_title": "Demos"
+    },
+    "editedAt": {
+      "_label": "Bearbeitet"
+    },
+    "id": {
+      "_label": "ID"
+    },
+    "invalid": {
+      "_label": "Ungültig"
+    },
+    "owner": {
+      "_label": "Owner"
+    },
+    "panel_search": {
+      "_title": "Demos"
+    },
+    "sceneCount": {
+      "_label": "Szenen"
+    },
+    "title": {
+      "_label": "Titel"
+    }
+  },
+  "DemoFactoryDemoSearchToolbar": {
+    "askAgent": {
+      "_label": "Demo Creator fragen",
+      "_tooltip": "Eine Unterhaltung mit dem Demo-Creator-Agenten starten"
+    },
+    "importDemo": {
+      "_label": "Importieren",
+      "_tooltip": "Eine demo.yaml importieren"
+    },
+    "importVideo": {
+      "_label": "Video importieren",
+      "_tooltip": "Eine eigene Bildschirmaufnahme einer B1-App in eine Demo verwandeln – in Szenen geschnitten, Sprechertext aus Ihrer Stimme"
+    },
+    "newDemo": {
+      "_label": "Neue Demo",
+      "_tooltip": "Eine Demo anlegen – als Kopie der ausgewählten oder aus der leeren Vorlage"
+    }
+  },
+  "DemoFactoryHelpScreen": {
+    "_title": "Demo Factory – Hilfe"
+  },
+  "DemoFactoryHomeScreen": {
+    "_title": "Übersicht",
+    "reelCards": {
+      "_title": "Alle Demos"
+    },
+    "reelPanel": {
+      "_title": "Liste der Demos"
+    }
+  },
+  "DemoFactoryImportScreen": {
+    "_title": "Demo importieren",
+    "cancelButton": {
+      "_label": "Abbrechen"
+    },
+    "DemoFactoryImportForm": {
+      "_title": "Demo importieren"
+    },
+    "importButton": {
+      "_label": "Importieren"
+    },
+    "importFieldset": {
+      "_label": "demo.yaml"
+    },
+    "importHelp": {
+      "_text": "Der Import wird genauso geprüft wie eine Änderung im Studio; lehnt das Schema ihn ab, wird nichts übernommen."
+    },
+    "mode": {
+      "_label": "Wenn es eine Demo mit dieser ID schon gibt"
+    },
+    "newId": {
+      "_label": "Neue ID für die Kopie – Standard ist <id>-copy"
+    },
+    "yaml": {
+      "_label": "Den Text der demo.yaml einfügen – den Export dieser oder einer anderen Umgebung"
+    }
+  },
+  "DemoFactoryMenu": {
+    "_label": "Demo Factory",
+    "Demos": {
+      "_label": "Demos",
+      "_tooltip": "Demos und ihre Szenen"
+    },
+    "Overview": {
+      "_label": "Übersicht",
+      "_tooltip": "Alle Demos als Filmstreifen"
+    },
+    "Runs": {
+      "_label": "Runs",
+      "_tooltip": "Aufgenommene und gerenderte Runs"
+    },
+    "Settings": {
+      "_label": "Einstellungen",
+      "_tooltip": "Laufzeitkonfiguration, Anmeldung für Aufnahmen und was dieser Server ausführen kann"
+    }
+  },
+  "DemoFactoryNativeScreen": {
+    "_title": "Demo Factory",
+    "MainSidebar": {
+      "_description": "Demo Factory Studio"
+    }
+  },
+  "DemoFactoryPipelineToolbar": {
+    "cancel": {
+      "_label": "Job abbrechen",
+      "_tooltip": "Den laufenden Pipeline-Job stoppen"
+    },
+    "prepare": {
+      "_label": "Vorbereiten",
+      "_tooltip": "Sprechertext und Untertitel erzeugen"
+    },
+    "record": {
+      "_label": "Szene aufnehmen",
+      "_tooltip": "Die ausgewählte Szene im Browser aufnehmen (alle Szenen, wenn keine ausgewählt ist)"
+    },
+    "render": {
+      "_label": "Rendern",
+      "_tooltip": "Die aufgenommenen Clips zum Video schneiden"
+    },
+    "runAll": {
+      "_label": "Komplette Demo erzeugen",
+      "_tooltip": "Prüfen, anmelden, vorbereiten, aufnehmen und rendern"
+    },
+    "validate": {
+      "_label": "Prüfen",
+      "_tooltip": "Das Demo-Dokument gegen das Schema prüfen"
+    }
+  },
+  "DemoFactoryRunMaintenance": {
+    "_title": "{'{{runId}}'} – Run",
+    "artefactFieldset": {
+      "_label": "Ergebnisse"
+    },
+    "baseUrl": {
+      "_label": "Aufgenommen in"
+    },
+    "captionScene": {
+      "_label": "Szene"
+    },
+    "captionsTab": {
+      "_label": "Untertitel"
+    },
+    "createdAt": {
+      "_label": "Erstellt"
+    },
+    "DemoFactoryCaptionGrid": {
+      "_title": "Untertitel"
+    },
+    "DemoFactoryRunForm": {
+      "_title": "Run"
+    },
+    "DemoFactoryRunPlayer": {
+      "_title": "Vorschau"
+    },
+    "DemoFactoryRunSceneGrid": {
+      "_title": "Szenen dieses Runs"
+    },
+    "DemoFactoryRunTimeline": {
+      "_title": "Zeitleiste"
+    },
+    "demoHash": {
+      "_label": "Hash des Demo-Dokuments"
+    },
+    "demoId": {
+      "_label": "Demo"
+    },
+    "durationMs": {
+      "_label": "Dauer"
+    },
+    "endMs": {
+      "_label": "Ende"
+    },
+    "hasClip": {
+      "_label": "Clip"
+    },
+    "hasVideo": {
+      "_label": "Video gerendert"
+    },
+    "id": {
+      "_label": "Schlüssel"
+    },
+    "identityFieldset": {
+      "_label": "Run"
+    },
+    "narrationDurationMs": {
+      "_label": "Sprechertext"
+    },
+    "narrationOffsetMs": {
+      "_label": "Versatz"
+    },
+    "panel_captions": {
+      "_title": "Untertitel"
+    },
+    "panel_player": {
+      "_title": "Vorschau"
+    },
+    "panel_run_scenes": {
+      "_title": "Szenen dieses Runs"
+    },
+    "panel_run": {
+      "_title": "Run"
+    },
+    "panel_timeline": {
+      "_title": "Zeitleiste"
+    },
+    "previewTab": {
+      "_label": "Vorschau"
+    },
+    "productionFieldset": {
+      "_label": "Wie er entstand"
+    },
+    "provider": {
+      "_label": "Sprachanbieter"
+    },
+    "recordedAt": {
+      "_label": "Aufgenommen"
+    },
+    "recordedDurationMs": {
+      "_label": "Aufgenommen"
+    },
+    "recordedScenes": {
+      "_label": "Aufgenommene Szenen"
+    },
+    "runId": {
+      "_label": "Run-ID"
+    },
+    "runScenesTab": {
+      "_label": "Szenen"
+    },
+    "runTab": {
+      "_label": "Run"
+    },
+    "sceneId": {
+      "_label": "Szenen-ID"
+    },
+    "srtUrl": {
+      "_label": "Untertitel (SRT)"
+    },
+    "startMs": {
+      "_label": "Start"
+    },
+    "text": {
+      "_label": "Text"
+    },
+    "title": {
+      "_label": "Titel"
+    },
+    "videoUrl": {
+      "_label": "Video (MP4)"
+    }
+  },
+  "DemoFactoryRunSearch": {
+    "_title": "Runs",
+    "createdAt": {
+      "_label": "Erstellt"
+    },
+    "DemoFactoryRunGrid": {
+      "_title": "Runs"
+    },
+    "demoId": {
+      "_label": "Demo"
+    },
+    "durationMs": {
+      "_label": "Dauer"
+    },
+    "hasVideo": {
+      "_label": "Video"
+    },
+    "panel_runs": {
+      "_title": "Runs"
+    },
+    "provider": {
+      "_label": "Sprecher"
+    },
+    "recordedScenes": {
+      "_label": "Aufgenommen"
+    },
+    "runId": {
+      "_label": "Run"
+    },
+    "sceneCount": {
+      "_label": "Szenen"
+    }
+  },
+  "DemoFactoryRunsToolbar": {
+    "openCaptions": {
+      "_label": "Untertitel öffnen"
+    },
+    "openVideo": {
+      "_label": "Video öffnen"
+    },
+    "render": {
+      "_label": "Ausgewählten Run rendern",
+      "_tooltip": "Den ausgewählten aufgenommenen Run zur MP4 rendern"
+    }
+  },
+  "DemoFactoryRunToolbar": {
+    "closeAction": {
+      "_label": "Schließen"
+    },
+    "openCaptions": {
+      "_label": "Untertitel öffnen",
+      "_tooltip": "Die SRT-Untertitel in einem neuen Tab öffnen"
+    },
+    "openVideo": {
+      "_label": "Video öffnen",
+      "_tooltip": "Die gerenderte MP4 in einem neuen Tab öffnen"
+    }
+  },
+  "DemoFactorySceneMaintenance": {
+    "_title": "{'{{title}}'} – Szene",
+    "actions": {
+      "_label": "Browser-Aktionen (JSON-Liste)"
+    },
+    "actionsFieldset": {
+      "_label": "Aktionen"
+    },
+    "actionsTab": {
+      "_label": "Aktionen"
+    },
+    "assertions": {
+      "_label": "Prüfungen (JSON-Liste)"
+    },
+    "assertionsFieldset": {
+      "_label": "Prüfungen"
+    },
+    "baseUrl": {
+      "_label": "Anwendungs-URL – leer: die Basis-URL der Demo (z. B. https://platform.demo.build.one/)"
+    },
+    "clip": {
+      "_label": "Clip aus dem Quellvideo – nur Video-Demos (JSON: startMs, endMs, voiceAtMs in ms)"
+    },
+    "conversion": {
+      "message": {
+        "_label": "Was die Umwandlung zu dieser Szene sagt"
+      },
+      "status": {
+        "_label": "Letzte Umwandlung"
+      }
+    },
+    "DemoFactoryActionsForm": {
+      "_title": "Aktionen"
+    },
+    "DemoFactorySceneForm": {
+      "_title": "Szene"
+    },
+    "mode": {
+      "_label": "Bildquelle – clip: aus der Aufnahme geschnitten, film: Playwright führt die Aktionen aus, auto: clip, wenn es einen gibt"
+    },
+    "narration": {
+      "_label": "Sprechertext – Aktionen mit [cue:name] markieren"
+    },
+    "narrationFieldset": {
+      "_label": "Voiceover"
+    },
+    "panel_actions": {
+      "_title": "Aktionen"
+    },
+    "panel_scene": {
+      "_title": "Szene"
+    },
+    "route": {
+      "_label": "Route – wo die Szene in ihrer Anwendung startet (zum Filmen nötig; bei einem Clip: wo die Aufnahme spielt)"
+    },
+    "sceneFieldset": {
+      "_label": "Szene"
+    },
+    "sceneId": {
+      "_label": "Szenen-ID"
+    },
+    "sceneTab": {
+      "_label": "Szene"
+    },
+    "sequence": {
+      "_label": "Position"
+    },
+    "title": {
+      "_label": "Szenentitel"
+    }
+  },
+  "DemoFactoryScenesToolbar": {
+    "addScene": {
+      "_label": "Szene hinzufügen",
+      "_tooltip": "Eine Szene nach der letzten anhängen"
+    },
+    "deleteScene": {
+      "_label": "Szene löschen",
+      "_tooltip": "Die ausgewählte Szene löschen"
+    },
+    "duplicateScene": {
+      "_label": "Duplizieren",
+      "_tooltip": "Die ausgewählte Szene direkt dahinter kopieren"
+    },
+    "record": {
+      "_label": "Ausgewählte Szene aufnehmen",
+      "_tooltip": "Änderungen speichern und nur die ausgewählte Szene aufnehmen"
+    },
+    "recordAll": {
+      "_label": "Alle Szenen aufnehmen"
+    }
+  },
+  "DemoFactorySettingsScreen": {
+    "_title": "Einstellungen",
+    "apiKey": {
+      "_label": "API-Schlüssel – nur zum Hinzufügen oder Ersetzen"
+    },
+    "appUrl": {
+      "_label": "Gedacht für"
+    },
+    "canAuthenticate": {
+      "_label": "Anmelden (Auth state erzeugt)"
+    },
+    "canRecord": {
+      "_label": "Aufnehmen (Browser verfügbar)"
+    },
+    "canRender": {
+      "_label": "Rendern (ffmpeg verfügbar)"
+    },
+    "capabilityFieldset": {
+      "_label": "Kann ausführen"
+    },
+    "configured": {
+      "_label": "Konfiguriert"
+    },
+    "deleteDemoUserButton": {
+      "_label": "Löschen"
+    },
+    "DemoFactoryDemoUsersGrid": {
+      "_title": "Demo-User"
+    },
+    "DemoFactoryHostForm": {
+      "_title": "Dieser Server"
+    },
+    "DemoFactorySettingsGrid": {
+      "_title": "Laufzeitkonfiguration"
+    },
+    "demoUserFieldset": {
+      "_label": "Demo-User"
+    },
+    "demoUserHelp": {
+      "_text": "Fügen Sie einen API-Schlüssel des Demo-Users ein (Account → API keys, angemeldet als dieser User). Er wird im Secret Store der Organisation gespeichert und nie wieder angezeigt."
+    },
+    "demoUserKeyStored": {
+      "_label": "Schlüssel hinterlegt"
+    },
+    "demoUserLabel": {
+      "_label": "Demo-User"
+    },
+    "demoUserName": {
+      "_label": "Name"
+    },
+    "hasDependencies": {
+      "_label": "Abhängigkeiten installiert"
+    },
+    "hasFactory": {
+      "_label": "Pipeline gefunden"
+    },
+    "id": {
+      "_label": "ID"
+    },
+    "key": {
+      "_label": "Schlüssel"
+    },
+    "label": {
+      "_label": "Einstellung"
+    },
+    "newDemoUserButton": {
+      "_label": "Neu"
+    },
+    "panel_auth": {
+      "_title": "Demo-User hinzufügen oder ändern"
+    },
+    "panel_capabilities": {
+      "_title": "Dieser Server"
+    },
+    "panel_demo_users": {
+      "_title": "Demo-User – als wer sich Aufnahmen anmelden"
+    },
+    "panel_settings": {
+      "_title": "Laufzeitkonfiguration"
+    },
+    "pipelineFieldset": {
+      "_label": "Pipeline"
+    },
+    "pipelineRoot": {
+      "_label": "Pipeline-Verzeichnis"
+    },
+    "saveDemoUserButton": {
+      "_label": "Demo-User speichern"
+    },
+    "source": {
+      "_label": "Quelle"
+    },
+    "value": {
+      "_label": "Wert"
+    }
+  },
+  "DemoFactoryVideoImportScreen": {
+    "_title": "Bildschirmaufnahme importieren",
+    "analyzeButton": {
+      "_label": "Analysieren und Demo anlegen"
+    },
+    "cancelButton": {
+      "_label": "Abbrechen"
+    },
+    "DemoFactoryVideoImportForm": {
+      "_title": "Bildschirmaufnahme importieren"
+    },
+    "demoFieldset": {
+      "_label": "2 · Neue Demo"
+    },
+    "demoId": {
+      "_label": "Demo-ID – Kleinbuchstaben, Ziffern und Bindestriche"
+    },
+    "language": {
+      "_label": "Gesprochene Sprache – auto erkennt sie"
+    },
+    "title": {
+      "_label": "Titel"
+    },
+    "uploadId": {
+      "_label": "Hochgeladene Datei"
+    },
+    "uploadStatus": {
+      "_label": "Upload"
+    },
+    "videoFieldset": {
+      "_label": "1 · Bildschirmaufnahme"
+    },
+    "videoImportHelp": {
+      "_text": "Die Aufnahme wird dort in Szenen geschnitten, wo Sie eine Pause machen und sich das Bild ändert; was Sie gesagt haben, wird zum bearbeitbaren Sprechertext jeder Szene. Danach vertont „Komplette Demo erzeugen“ sie neu, schneidet die Clips und rendert das Video."
+    },
+    "videoUpload": {
+      "_label": "Ihre Aufnahme der App, mit Ihrer Stimme, die sie erklärt (MP4, MOV, WebM, MKV – bis 4 GB)",
+      "cancelLabel": "Abbrechen",
+      "chooseLabel": "Auswählen",
+      "emptyMessage": "Dateien zum Hochladen hierher ziehen.",
+      "uploadLabel": "Hochladen"
+    }
+  },
+  "DemoFactoryVoiceoverToolbar": {
+    "prepare": {
+      "_label": "Voiceover erzeugen",
+      "_tooltip": "Änderungen speichern und Sprechertext, Untertitel und Cue-Zeitpunkte erzeugen"
+    }
+  },
+  "MaintenanceSaveCloseToolbar": {
+    "closeAction": {
+      "_label": "Schließen"
+    },
+    "saveAndCloseAction": {
+      "_label": "Speichern und schließen"
+    }
+  },
+  "VanguardGridPanelMenu": {
+    "ColumnVisibility": {
+      "_label": "Spaltenreihenfolge und Sichtbarkeit"
+    },
+    "Customize": {
+      "_label": "Anpassen"
+    },
+    "Filters": {
+      "_label": "Filter"
+    },
+    "ManageFilters": {
+      "_label": "Filter verwalten"
+    },
+    "Refresh": {
+      "_label": "Aktualisieren"
+    },
+    "SaveAsFilter": {
+      "_label": "Als neuen Filter speichern"
+    },
+    "SaveCurrentFilter": {
+      "_label": "Aktuellen Filter speichern"
+    },
+    "ToggleColumnResize": {
+      "_label": "Spalten anpassen"
+    }
+  },
+  "b1App": {
+    "messages": {
+      "DemoFactorySettingsScreen": {
+        "invalidUserId": "Die ID eines Demo-Benutzers besteht aus Kleinbuchstaben, Ziffern und Bindestrichen, z. B. samples-demo.",
+        "userSaved": "Demo-Benutzer {id} gespeichert; sein Schlüssel liegt im Secret Store.",
+        "userSavedNoKey": "Demo-Benutzer {id} gespeichert, aber für ihn ist noch kein Schlüssel hinterlegt.",
+        "selectUserToDelete": "Den zu löschenden Demo-Benutzer auswählen.",
+        "deleteHeader": "Demo-Benutzer löschen",
+        "deleteMessage": "Demo-Benutzer „{id}“ und seinen API-Schlüssel im Secret Store löschen? Demos, die sich als dieser Benutzer anmelden, brechen bei der nächsten Aufnahme ab, bis sie einen anderen nennen.",
+        "deleteAccept": "Löschen",
+        "deleteReject": "Behalten",
+        "userDeletedStillNamed": "{id} gelöscht. Noch verwendet von: {demos} – dort einen anderen Demo-Benutzer wählen.",
+        "userDeleted": "{id} gelöscht."
+      },
+      "DemoFactoryImportScreen": {
+        "formNotFound": "Das Importformular wurde nicht gefunden.",
+        "yamlMissing": "Zuerst den Text der demo.yaml einfügen.",
+        "sceneCountOne": "1 Szene",
+        "sceneCountMany": "{count} Szenen",
+        "importedReplaced": "{demoId} importiert ({scenes}, ersetzt).",
+        "imported": "{demoId} importiert ({scenes})."
+      },
+      "DemoFactoryDemoCreate": {
+        "blankDemo": "Leere Demo",
+        "formNotFound": "Das Formular für die neue Demo wurde nicht gefunden.",
+        "invalidId": "Eine Demo-ID besteht aus Kleinbuchstaben, Ziffern und Bindestrichen.",
+        "demoExists": "Eine Demo mit dieser ID existiert bereits.",
+        "demoCreated": "Demo {demoId} angelegt.",
+        "demosReadFailed": "Die Demos konnten nicht gelesen werden ({status})",
+        "scenesReadFailed": "Die Szenen von {demoId} konnten nicht gelesen werden ({status})"
+      },
+      "DemoFactoryDemoMaintenance": {
+        "deleteHeader": "Demo löschen",
+        "deleteMessage": "„{title}“ mit allen Szenen löschen? Das kann nicht rückgängig gemacht werden.",
+        "deleteAccept": "Löschen",
+        "deleteReject": "Behalten",
+        "demoDeleted": "{demoId} gelöscht.",
+        "selectSceneToDuplicate": "Die zu duplizierende Szene auswählen.",
+        "correctSettings": "Bitte die Demo-Einstellungen korrigieren, bevor die Pipeline startet.",
+        "saveFailed": "Die Änderungen konnten nicht gespeichert werden. Die Pipeline wurde nicht gestartet.",
+        "stageUnavailable": "{stage} ist auf diesem Host nicht verfügbar.",
+        "selectSceneToRecord": "Eine Szene auswählen oder „Alle Szenen aufnehmen“ verwenden.",
+        "stageStarted": "{stage} für {demoId} gestartet.",
+        "convertNeedsVideo": "Nur eine aus einer Bildschirmaufnahme importierte Demo kann umgewandelt werden.",
+        "convertHeader": "In gefilmte Szenen umwandeln",
+        "convertMessage": "Claude liest jede Clip-Szene der Aufnahme und schreibt die Klicks und Eingaben, die sie in der laufenden Anwendung wiederholen; ein Probelauf prüft sie. Bestandene Szenen werden fortan gefilmt, die übrigen bleiben Clips der eigenen Aufnahme. Die Probeläufe handeln in der laufenden Anwendung als angemeldeter Demo-Benutzer – was eine Szene sendet oder speichert, wird wirklich gesendet, einmal pro Probelauf –, daher gegen eine Demo-Umgebung umwandeln, nicht gegen Produktivdaten. Jede Szene öffnet ihre Route (oder die Startseite) in ihrer Anwendung: Diese vorher festlegen, wenn es darauf ankommt. Das dauert einige Minuten und ruft die Anthropic API auf.",
+        "convertAccept": "Umwandeln",
+        "convertReject": "Nicht jetzt",
+        "converting": "{demoId} wird umgewandelt – Details im Pipeline-Log.",
+        "selectRunToRender": "Den zu rendernden Lauf auswählen.",
+        "recordBeforeRender": "Vor dem Rendern dieses Laufs die Szenen aufnehmen.",
+        "renderingRun": "Der ausgewählte Lauf wird gerendert.",
+        "selectRenderedRun": "Einen Lauf mit gerendertem Video auswählen.",
+        "cancellingJob": "Der Job wird abgebrochen…",
+        "jobComplete": "Job abgeschlossen.",
+        "jobFailedWithReason": "Job fehlgeschlagen – {reason}",
+        "jobFailed": "Job fehlgeschlagen – Details im Pipeline-Log.",
+        "jobEnded": "Job-Status: {status}."
+      },
+      "DemoFactoryAgentScreen": {
+        "conversationIdMissing": "Die Unterhaltung wurde angelegt, ihre ID aber nicht zurückgegeben",
+        "formNotFound": "Das Agent-Formular wurde nicht gefunden.",
+        "promptMissing": "Beschreiben, was der Demo Creator tun soll."
+      },
+      "DemoFactoryVideoImportScreen": {
+        "stillUploading": "Eine Aufnahme wird noch hochgeladen – bitte warten, bis sie fertig ist.",
+        "uploadProgress": "{fileName} wird hochgeladen … {percent} %",
+        "uploaded": "{fileName} – {size} MB hochgeladen",
+        "uploadDone": "{fileName} hochgeladen.",
+        "uploadFailed": "Upload fehlgeschlagen – {reason}",
+        "formNotFound": "Das Importformular wurde nicht gefunden.",
+        "waitForUpload": "Bitte warten, bis die Aufnahme hochgeladen ist.",
+        "uploadMissing": "Zuerst die Bildschirmaufnahme hochladen.",
+        "invalidId": "Eine Demo-ID besteht aus Kleinbuchstaben, Ziffern und Bindestrichen.",
+        "demoExists": "Eine Demo mit dieser ID existiert bereits.",
+        "analyzing": "Die Aufnahme wird analysiert – Szenen werden geschnitten und die Sprache transkribiert…",
+        "analysisDoneWithLog": "{created} Jetzt öffnen, um Szenen und Sprechertext zu prüfen.",
+        "analysisDone": "Demo {demoId} angelegt. Jetzt öffnen, um Szenen und Sprechertext zu prüfen.",
+        "analysisFailedWithReason": "Die Analyse ist fehlgeschlagen – {reason}",
+        "analysisFailed": "Die Analyse ist fehlgeschlagen – Details im Pipeline-Log."
+      },
+      "DemoFactoryRunMaintenance": {
+        "noVideo": "Dieser Lauf hat noch kein gerendertes Video.",
+        "noRun": "Kein Lauf geöffnet."
+      }
+    },
+    "DemoFactoryWelcome": {
+      "lead": "Hier entstehen Produktvideos aus einem Bauplan: Szenen beschreiben, die Factory nimmt sie in der echten App auf, spricht den Text ein und schneidet das Video. Unten erscheint jede Demo als Filmstreifen.",
+      "newDemoTooltip": "Demo anlegen – als Kopie der ausgewählten oder aus der leeren Vorlage",
+      "newDemo": "Neue Demo",
+      "importTooltip": "Eine demo.yaml importieren",
+      "import": "Importieren",
+      "importVideoTooltip": "Eigene Bildschirmaufnahme einer B1-App in eine Demo verwandeln – in Szenen geschnitten, Sprechertext aus der eigenen Stimme",
+      "importVideo": "Video importieren",
+      "ringTooltip": "{rendered} von {total} Demos gerendert",
+      "ringLabel": "gerendert",
+      "demos": "Demos",
+      "mine": "{count} eigene",
+      "rendered": "Gerendert",
+      "unfilmed": "{count} noch nicht gefilmt",
+      "scenes": "Szenen",
+      "scenesHint": "in allen Demos",
+      "runtime": "Laufzeit",
+      "runtimeHint": "fertiges Video",
+      "playTooltip": "{title} abspielen",
+      "latestRecording": "Zuletzt aufgenommen",
+      "greetingNight": "Gute Nacht",
+      "greetingMorning": "Guten Morgen",
+      "greetingDay": "Guten Tag",
+      "greetingEvening": "Guten Abend",
+      "loadFailed": "Die Kennzahlen konnten nicht geladen werden: {reason}"
+    },
+    "DemoFactoryReelCard": {
+      "invalid": "Ungültig",
+      "sceneCountOne": "1 Szene",
+      "sceneCountMany": "{count} Szenen",
+      "recordedAt": "aufgenommen {date}",
+      "play": "Abspielen",
+      "open": "Öffnen",
+      "stripLabel": "Szenen von {title}",
+      "frameUnfilmed": "noch nicht gefilmt",
+      "frameNoImage": "kein Bild",
+      "noScenes": "Keine Szenen",
+      "footageRun": "Gerendert",
+      "footageSource": "Quellvideo",
+      "footageNone": "Noch nicht gefilmt"
+    },
+    "B1LogView": {
+      "exitCode": "Exit-Code {code}",
+      "viewLog": "Log anzeigen",
+      "cancelJob": "Job abbrechen",
+      "follow": "Mitlaufen",
+      "refresh": "Aktualisieren",
+      "ready": "Bereit.",
+      "stageValidate": "Validierung",
+      "stagePrepare": "Sprechertext wird erzeugt",
+      "stageRecord": "Aufnahme",
+      "stageRender": "Rendern",
+      "stageAll": "Komplette Demo",
+      "statusConnecting": "Verbinden…",
+      "statusIdle": "Kein aktiver Job",
+      "statusRunning": "Läuft",
+      "statusComplete": "Abgeschlossen",
+      "statusFailed": "Fehlgeschlagen",
+      "statusCancelled": "abgebrochen",
+      "noLogSource": "Keine Log-Quelle konfiguriert (logSource = service/class/method)."
+    },
+    "B1MediaPlayer": {
+      "noVideo": "Dieser Lauf hat kein gerendertes Video.",
+      "noRun": "Kein Lauf ausgewählt.",
+      "downloadVideo": "Video herunterladen",
+      "downloadCaptions": "Untertitel herunterladen"
+    },
+    "B1DemoTimeline": {
+      "sceneCountOne": "1 Szene",
+      "sceneCountMany": "{count} Szenen",
+      "noScenes": "Keine Szenen.",
+      "sceneTooltip": "{title} – {duration}",
+      "sceneTooltipNotRecorded": "{title} – {duration} (nicht aufgenommen)",
+      "cueTooltip": "[cue:{name}] bei {time}"
+    },
+    "B1JsonField": {
+      "parsePosition": "{message} (Zeile {line}, Spalte {column})",
+      "itemCountOne": "1 Eintrag",
+      "itemCountMany": "{count} Einträge",
+      "keyCount": "{count} Schlüssel",
+      "empty": "Leer – wird als null gespeichert"
+    },
+    "DemoFactoryHelp": {
+      "title": "Vom ersten Entwurf zum fertigen Video",
+      "eyebrow": "Demo Factory · Anleitung",
+      "subtitle": "Sie beschreiben, was gezeigt und gesagt werden soll. Die Factory spricht den Text, bedient die App und schneidet daraus ein Video. Diese Anleitung führt durch die Schritte und erklärt die wichtigsten Buttons.",
+      "startHere": "Zur Übersicht",
+      "navHow": "So funktioniert es",
+      "navSetup": "Einmal vorbereiten",
+      "navFirst": "Mein erstes Video",
+      "navButtons": "Screens und Buttons",
+      "navScenes": "Szenen und Klicks",
+      "navAgent": "Mit dem Agent bearbeiten",
+      "navVoice": "Stimme, Untertitel und Timing",
+      "navResults": "Ergebnisse und Ablage",
+      "navFaq": "Wenn etwas nicht klappt",
+      "navOwn": "Aus eigener Bildschirmaufnahme",
+      "howLead": "Eine Demo ist der Bauplan Ihres Videos: Einstellungen und eine geordnete Liste von Szenen.",
+      "howScenes": "Jede Szene hat eine Startseite, einen gesprochenen Text und Aktionen wie Klicks oder Texteingaben. Vier Schritte machen aus dem Bauplan ein Video:",
+      "flowLabel": "Wie ein Video entsteht",
+      "flowValidate": "Prüfen",
+      "flowValidateNote": "Ist der Bauplan vollständig und gültig?",
+      "flowVoice": "Voiceover",
+      "flowVoiceNote": "Text sprechen und Wörter zeitlich bestimmen",
+      "flowRecord": "Aufnehmen",
+      "flowRecordNote": "App im Browser öffnen und Aktionen ausführen",
+      "flowRender": "Rendern",
+      "flowRenderNote": "Aufnahmen, Stimme und Untertitel werden zur MP4",
+      "howRunAll": "{runAll} führt diese Schritte in einem Durchgang aus, einschließlich der Vorbereitung der Anmeldung. Ein Run ist ein einzelner Durchlauf: Eine Demo kann viele Runs haben, etwa einen ersten Versuch und eine verbesserte Version.",
+      "howVideo": "Es gibt einen zweiten Weg: Sie nehmen die App selbst auf, sagen dabei, was Sie zeigen, und laden die Datei hoch. Die Factory macht daraus eine Demo mit Szenen – siehe „Aus eigener Bildschirmaufnahme“.",
+      "howNote": "Sie bearbeiten den Bauplan, die Factory schneidet daraus das Video. Änderungen an einer Demo ändern eine bereits gerenderte MP4 nicht.",
+      "screensTitle": "Die Screens des Studios",
+      "cardHome": "Jede Demo als Filmstreifen, die wichtigsten Kennzahlen und die Buttons für eine neue Demo.",
+      "cardDemos": "Die Liste der Demos: Öffnen Sie eine, um Szenen, Voiceover und Runs zu bearbeiten.",
+      "cardRuns": "Die Runs aller Demos mit ihren Videos und Untertiteln.",
+      "cardSettings": "Laufzeitkonfiguration, die Demo-User, als die sich Aufnahmen anmelden, und was dieser Server ausführen kann.",
+      "setupLead": "Öffnen Sie im Menü links {settings}. Dort stehen die Einstellungen der laufenden Factory und die Schritte, die dieser Server ausführen kann.",
+      "setupAppTitle": "Die richtige App erreichen",
+      "setupApp": "B1_BASE_URL ist die Adresse der App, die aufgenommen wird. Verwenden Sie die richtige Umgebung und bei Bedarf die App-Auswahl, zum Beispiel https://meine-umgebung.example/?app=b1-labs. Der Aufnahme-Browser muss diese Adresse erreichen können.",
+      "setupUserTitle": "Den Demo-User einrichten",
+      "setupUser": "Eine Aufnahme meldet sich in der Ziel-App nicht mit Ihrem Konto an, sondern als Demo-User – meist ein eigenes Konto mit Demodaten. Melden Sie sich einmal als dieser User in der Ziel-App an und erstellen Sie unter Account → API keys einen API-Schlüssel. Tragen Sie ihn in {settings} unter {demoUsers} ein: ID (z. B. samples-demo), Name, die App, für die er gedacht ist, und den Schlüssel. Klicken Sie dann auf {saveDemoUser}.",
+      "setupKey": "Der Schlüssel landet im Secret Store der Organisation und wird nie wieder angezeigt; {keyStored} zeigt, ob er hinterlegt ist. Zum Ersetzen tragen Sie einen neuen ein; bleibt das Feld leer, bleibt der gespeicherte Schlüssel erhalten. Speichern dürfen nur Owner und Admins der Organisation.",
+      "setupSignIn": "In der Demo wählen Sie den Demo-User unter {signInAs} aus. Bleibt das Feld leer, verwendet die Factory den API-Schlüssel dieses Servers.",
+      "setupVoiceTitle": "Die Stimme einrichten",
+      "setupVoice": "Gesprochene Videos brauchen auf dem Server einen ElevenLabs-API-Schlüssel und eine Voice-ID, normalerweise ELEVENLABS_API_KEY und ELEVENLABS_VOICE_ID. Fehlen sie, wenden Sie sich an die Person, die die Umgebung betreibt. Für einen ersten Test verwenden Sie den Provider silent: Das Video hat dann keine Stimme.",
+      "setupHost": "{settings} zeigt außerdem, welche Schritte dieser Server ausführen kann. Sind Aufnahme oder Rendern nicht verfügbar, muss die Umgebung dafür eingerichtet werden.",
+      "firstLead": "Beginnen Sie mit einem kurzen Video: eine App öffnen, eine Funktion zeigen, fertig. Eine oder zwei Szenen reichen für den ersten Versuch.",
+      "s1Title": "Eine Demo anlegen",
+      "s1": "Klicken Sie in der {overview} oder unter {demos} auf {newDemo}. Wählen Sie eine eindeutige ID wie mein-erstes-video und einen Titel. Die ID darf Kleinbuchstaben, Ziffern und Bindestriche enthalten. {startFrom} zeigt, ob die ausgewählte Demo kopiert oder die leere Vorlage verwendet wird – eine passende vorhandene Demo ist oft der schnellste Einstieg. Klicken Sie auf {createDemo}; die neue Demo öffnet sich.",
+      "s2Title": "Aufnahme-Einstellungen prüfen",
+      "s2": "Prüfen Sie im Tab {demoTab} die Zieladresse. Die Basis-URL wird verwendet, wenn die angegebene Umgebungsvariable keinen Wert hat; ist B1_BASE_URL gesetzt, hat dieser Wert Vorrang. 1920 × 1080 als Viewport und 30 Bilder pro Sekunde sind ein guter Start. Der Viewport ist die Größe des aufgenommenen Browserfensters. Klicken Sie auf {save}.",
+      "s3Title": "Die erste Szene beschreiben",
+      "s3": "Öffnen Sie {scenesTab}. Öffnen Sie eine Szene über ihren Titel oder legen Sie mit {addScene} eine an. Geben Sie ihr einen klaren Titel, eine Start-Route und einen kurzen Sprechertext, zum Beispiel: „Hier sehen wir unsere Kunden auf der Karte. Ein Klick auf die Gruppe zeigt die einzelnen Adressen.“ Eine Route wie /screens/MeineKarte?app=meine-app bezeichnet die Seite in der Ziel-App – verwenden Sie eine Seite, die es wirklich gibt. Speichern Sie die Szene in ihrem Fenster.",
+      "s4Title": "Die Aktionen ergänzen",
+      "s4": "Im Tab {actionsTab} des Szenenfensters stehen die Aktionen und Prüfungen als JSON. Wenn Sie sie nicht selbst schreiben möchten, speichern und schließen Sie die Szene, wählen ihre Zeile aus und klicken oben auf {editWithAgent} – etwa: „Zeige in dieser Szene die Kundenkarte. Klicke auf die Gruppe mit 12 Adressen, damit die Karte hineinzoomt. Stimme den Klick auf den Sprechertext ab.“ Prüfen Sie den Vorschlag des Agents vor der Aufnahme.",
+      "s5Title": "Die Stimme auswählen",
+      "s5": "Wählen Sie im Tab {voiceTab} elevenlabs für eine Stimme oder silent für einen stummen Test. Setzen Sie das Modell, zum Beispiel eleven_v4, wenn Ihr ElevenLabs-Zugang es unterstützt. Für deutsche Texte ist der Sprachcode de. Speichern Sie.",
+      "s6Title": "Den Bauplan prüfen",
+      "s6": "Klicken Sie im Tab {demoTab} auf {validate} und beheben Sie gemeldete Fehler, etwa eine fehlende Route oder einen falsch geschriebenen Cue. Geprüft wird der Bauplan; ob ein Button in der Ziel-App wirklich vorhanden ist, zeigt erst die Aufnahme.",
+      "s7Title": "Das komplette Video erzeugen",
+      "s7": "Klicken Sie oben auf {runAll}. Die Factory speichert offene Demo-Einstellungen und startet den Run. Die Statusleiste zeigt den Fortschritt, der Tab {logTab} die Details, und {cancelJob} bricht den Job ab. Aufnahme und besonders das Rendern dauern eine Weile. Die Factory führt die Aktionen wirklich in der Ziel-App aus – verwenden Sie passende Demodaten.",
+      "s8Title": "Das Ergebnis ansehen",
+      "s8": "Öffnen Sie den Tab {runsTab}, wählen Sie den fertigen Run und klicken Sie auf {openVideo}. Prüfen Sie Bild, Stimme, Klicks und Untertitel; {openCaptions} öffnet die separate Untertiteldatei. In der {overview} zeigt der Filmstreifen der Demo jetzt ein Bild pro Szene und spielt das Video ab. Um etwas zu ändern, passen Sie die Demo an und starten einen neuen kompletten Run.",
+      "overviewTitle": "Die Übersicht",
+      "overview1": "Das Studio startet mit der {overview}: einer Begrüßung mit den wichtigsten Kennzahlen und den Buttons {newDemo}, {import} und {importVideo}, darunter die {listOfDemos} – jede Demo als Filmstreifen mit einem Bild pro Szene.",
+      "overview2": "Die Bilder stammen aus dem neuesten gerenderten Run, bei einer Video-Demo ohne Run aus der hochgeladenen Aufnahme; eine Demo, die nie gefilmt wurde, zeigt leere Bilder. Abspielen zeigt das Video in einem Fenster, Öffnen oder ein Klick auf den Titel öffnet die Demo. Die Suche im Kopf der Liste findet Titel, IDs und Beschreibungen; der Filter Meine Demos zeigt nur die Demos, die Sie angelegt haben.",
+      "overview3": "Wer eine Demo anlegt, importiert oder aus einem Video erzeugt, wird ihr Owner; Demos aus den Dateien des Repositorys haben keinen.",
+      "buttonsTitle": "Die Buttons einer Demo",
+      "buttonsLead": "Die Buttons oben gelten für die ganze Demo, die in den Tabs gehören zum jeweiligen Arbeitsschritt.",
+      "bSave": "Änderungen an den Demo-Einstellungen speichern.",
+      "bRunAll": "Das komplette Video erzeugen: Voiceover, Aufnahme und Rendern.",
+      "bAgent": "Einen Chat zu dieser Demo und der ausgewählten Szene öffnen.",
+      "bClose": "Das Demo-Fenster schließen.",
+      "bValidate": "Den Bauplan auf gültige Angaben prüfen (Tab Demo).",
+      "bMore": "Den Bauplan exportieren oder die Demo löschen; Löschen fragt vorher nach.",
+      "bVoice": "Stimme und Zeitpunkte vorbereiten (Tab Voiceover); erzeugt noch kein fertiges Video.",
+      "bScenes": "Eine Szene ergänzen, die ausgewählte kopieren oder löschen (Tab Szenen).",
+      "bRecordOne": "Nur die ausgewählte Szene erneut aufnehmen – für gezielte Korrekturen nach einer erfolgreichen Gesamtaufnahme.",
+      "bRecordAll": "Alle Szenen aufnehmen; das Voiceover muss vorher vorbereitet sein.",
+      "bRender": "Den ausgewählten aufgenommenen Run zur MP4 rendern, mit den in diesem Run gespeicherten Einstellungen (Tab Runs).",
+      "bOpen": "Die fertige MP4 oder die SRT-Untertitel öffnen.",
+      "bCancel": "Den laufenden Pipeline-Job abbrechen.",
+      "menuTitle": "Das Benutzermenü",
+      "menuLead": "Der Avatar oben rechts öffnet das Benutzermenü. Diese Anleitung ist sein Eintrag {help}.",
+      "scenesLead": "Jede Szene startet mit einem frischen Browser. Sie öffnet ihre Seite selbst und bereitet alles vor, was sie braucht; sie darf sich nicht darauf verlassen, dass eine vorige Szene schon einen Tab geöffnet hat.",
+      "cueTitle": "Sprechertext und Cues",
+      "cue": "Ein Cue ist eine Marke im Sprechertext, zum Beispiel [cue:karte]. Sie wird nicht mitgesprochen. Eine Aktion mit atCue: \"karte\" wird an dieser Stelle ausgeführt: „Hier sehen wir die Kundenkarte. [cue:karte] Jetzt öffnen wir die Kartenansicht.“",
+      "jsonTitle": "Eine Aktion als JSON",
+      "json": "Aktionen sind eine Liste in eckigen Klammern. Dieses Beispiel klickt zum Cue auf einen Button mit dem sichtbaren Namen „Map“; Name und Rolle müssen zur echten App passen.",
+      "target": "target beschreibt das Element: role und name einen Button und seine Beschriftung, text sichtbaren Text, css einen technischen Selektor. Kartenmarker brauchen oft einen Selektor – „12“ allein kann mehrere Elemente treffen. Lassen Sie den Agent die echte Seite prüfen.",
+      "verbs": "click klickt, fill setzt einen Feldwert, type tippt ihn, press drückt eine Taste, highlight hebt ein Element hervor, waitFor wartet, bis ein Element sichtbar ist. timelapse verkürzt lange Wartezeiten im fertigen Video.",
+      "calloutTitle": "Textbanner im Bild",
+      "callout": "Eine callout-Aktion blendet unten im Bild einen Text ein; value enthält den Text, wie im Beispiel unten. Das Banner bleibt bis zum nächsten Banner oder zum Szenenende; durationMs begrenzt es, ein leerer value entfernt es. Nach einer Textänderung die Szene neu aufnehmen und rendern.",
+      "assertTitle": "Prüfungen: Was muss zu sehen sein?",
+      "assert": "Prüfungen (Assertions) laufen nach den Aktionen. Diese verlangt, dass der Text „Customer map“ sichtbar ist. Ohne Aktionen oder Prüfungen steht im Feld []. Ungültiges JSON wird als Fehler markiert und ersetzt die gespeicherten Daten nicht – korrigieren Sie es vor dem Speichern.",
+      "agentLead": "Der Demo-Agent bearbeitet eine Demo im Chat – Szenen, Sprechertexte, Aktionen.",
+      "a1": "Öffnen Sie die Demo.",
+      "a2": "Wählen Sie unter {scenesTab} die Szene aus, um die es geht. Speichern und schließen Sie ein Szenenfenster vor dem Chat.",
+      "a3": "Klicken Sie in der oberen Toolbar auf {editWithAgent}.",
+      "a4": "Schreiben Sie im Chat, was sich ändern soll.",
+      "agentContext": "Der Chat erhält ID und Titel der Demo und – falls ausgewählt – ID, Titel und Position der Szene. Der Kontext wird beim Öffnen festgelegt: Wählen Sie später eine andere Szene aus, ändert das einen offenen Chat nicht – nennen Sie die neue Szenen-ID oder öffnen Sie einen neuen Chat. Ohne ausgewählte Szene fragt der Agent nach, was „hier“ bedeutet.",
+      "agentEx1": "„Füge nach dieser Szene eine weitere ein, die zeigt, wie ich einen neuen Kunden anlege. Verwende einen kurzen Sprechertext.“",
+      "agentEx2": "„Kürze den Sprechertext dieser Szene auf etwa 20 Sekunden, aber behalte die Cue-Marken für die Klicks bei.“",
+      "agentCheck": "Prüfen Sie die Änderungen des Agents anschließend im Studio und nehmen Sie danach neu auf – anfangs am besten mit {runAll}.",
+      "featureTitle": "Ein Video zu einer neuen Funktion",
+      "feature": "Der Demo Creator kann ein Video zu einer neu entwickelten Funktion selbst entwerfen. Klicken Sie unter {demos} auf {askAgent} und nennen Sie das Linear-Ticket, die Ziel-App und den Demo-User: „Erstelle ein Produktvideo zur neuen Funktion aus B1-1658. Aufnahme in https://samples.demo.build.one/ mit dem Demo-User samples-demo, englische Stimme.“",
+      "f1": "Er liest das Ticket – Problem, Akzeptanzkriterien, verknüpfte Pull Requests – sowie Beschreibung und geänderte Dateien des Pull Requests.",
+      "f2": "Er prüft, ob die Funktion in der Ziel-App schon ausgeliefert ist, und skizziert die geplanten Szenen.",
+      "f3": "Er öffnet jede Startseite live als Demo-User, liest die echten Beschriftungen und probiert jede Szene aus, bevor er sie speichert.",
+      "f4": "Danach prüft, vertont, nimmt er auf und rendert das Video.",
+      "featureNote": "Für das Ticket braucht Ihr Konto einen Linear-Schlüssel (Secrets → Linear API Key); ohne ihn fragt der Agent nach dem Tickettext. Die Probeläufe handeln in der Ziel-App als Demo-User: Was eine Szene speichert oder abschickt, passiert dort wirklich.",
+      "voiceProvider": "Der Provider bestimmt, ob gesprochen wird: elevenlabs erzeugt Sprache, silent bleibt stumm, auto verwendet ElevenLabs, wenn Schlüssel und Stimme vorhanden sind.",
+      "voiceModel": "Das v4-Modell heißt eleven_v4 (eleven_multilingual_v4 gibt es nicht); eleven_multilingual_v2 funktioniert weiterhin. Eine Server-Variable ELEVENLABS_MODEL_ID überschreibt das Modellfeld. Stimme und Modell müssen in Ihrem ElevenLabs-Zugang verfügbar sein.",
+      "voiceCache": "Lange Texte werden in Stücken gesprochen und zusammengefügt. Unveränderte Texte und Stimmeinstellungen kommen aus dem Cache, das spart eine erneute Erzeugung.",
+      "voiceTiming": "Ändern sich Sprechertext oder Stimme, können sich die Zeitpunkte der Aktionen ändern. Erzeugen Sie das Voiceover neu, nehmen Sie dann auf und rendern Sie – oder starten Sie den kompletten Run.",
+      "voiceLook": "{cursor} blendet den Demo-Mauszeiger ein; {burnCaptions} macht die Untertitel zum Teil des Bildes – eine separate SRT-Datei entsteht in jedem Fall. 30 fps sind ein guter Standard für App-Demos; 60 fps erzeugen mehr Bilder und dauern länger.",
+      "res1": "Sichern Sie den Bauplan über {moreActions} → {export} als demo.yaml und importieren Sie ihn später mit {import}. Die Datei beschreibt das Video; sie ist selbst kein Video.",
+      "res2": "Jeder Run hat einen eigenen Ordner mit seiner Run-ID, darin nach dem Rendern die MP4, die SRT-Untertitel und die Angaben zum Run. Am einfachsten öffnen Sie das Ergebnis über den Run in der App.",
+      "res3": "DEMO_OUTPUT_DIR bestimmt den Ausgabeordner, DEMO_CACHE_DIR den Sprach-Cache. Ohne Konfiguration landet die Ausgabe im output-Ordner der Factory – im Workspace unter /workspace/src/app-server-ts/demo-factory/output. Das Standalone-Deployment verwendet /data/demo-factory/output und /data/demo-factory/cache auf einem dauerhaften Volume. Eine andere Ablage verschiebt vorhandene Ergebnisse nicht.",
+      "q1": "Der Agent-Chat meldet „404 page not found“",
+      "a1q": "Die Adresse des Agent-Servers, die Server-Variable B1_AGENT_SERVER_URL, ist möglicherweise falsch. Der aktuelle Standard ist https://adorable.test.build.one; die alte Adresse https://try-adorable.test.build.one gibt es nicht mehr. Lassen Sie die Laufzeitkonfiguration korrigieren und den App-Server neu starten. Die Adresse, die Ihr Video aufnimmt, ist davon nicht betroffen.",
+      "q2": "Das Log zeigt die Anmeldeseite",
+      "a2q": "Prüfen Sie die Zieladresse und den Demo-User. Eine Sitzung für eine andere Domain hilft nicht. Ein falscher API-Schlüssel kann dazu führen, dass die Factory einen alten gespeicherten Zustand verwendet.",
+      "q3": "„Model not found“ bei ElevenLabs",
+      "a3q": "Prüfen Sie den Modellnamen – für v4 eleven_v4 –, ob eine Server-Variable das Feld überschreibt und ob Ihr Zugang das Modell enthält.",
+      "q4": "Ein Klick läuft in einen Timeout",
+      "a4q": "Die Factory findet das Element nicht rechtzeitig. Öffnen Sie die Seite selbst: Ist die richtige App geladen, sind Sie angemeldet, stimmt der Text des Buttons, muss vorher ein anderer Tab geöffnet oder auf Daten gewartet werden? Das Log nennt das gesuchte Element und bei einer fehlgeschlagenen Aufnahme den Pfad eines Screenshots.",
+      "q5": "Das JSON ist nicht formatiert oder Speichern klappt nicht",
+      "a5q": "Aktionen und Prüfungen müssen Listen sein, etwa [] oder die Beispiele oben. Prüfen Sie Anführungszeichen, Kommas und Klammern. Auch ein fehlender Titel, eine ungültige Route oder ein unbekannter Cue können das Speichern verhindern.",
+      "q6": "Kein fertiges Video trotz Voiceover",
+      "a6q": "Das Voiceover ist nur der erste Schritt; Aufnahme und Rendern folgen. Rendern Sie einen erfolgreich aufgenommenen Run oder starten Sie {runAll}.",
+      "q7": "Die Analyse des hochgeladenen Videos schlägt fehl",
+      "a7q": "„No ffmpeg“ bedeutet, dass ffmpeg auf dem Server fehlt; in einem Codespace stellt yarn demo:provision es nach einem Neustart wieder her. Meldet ElevenLabs Speech-to-Text einen Fehler, prüfen Sie Schlüssel und Kontingent. Ohne Schlüssel wird das Video trotzdem in Szenen geschnitten, nur die Sprechertexte bleiben leer.",
+      "q8": "„The source video … is not on this host“",
+      "a8q": "Die Szenen einer Video-Demo sind Ausschnitte der hochgeladenen Datei. Wurde die Demo als demo.yaml in eine andere Umgebung übertragen, fehlt dort die Datei; laden Sie die Aufnahme dort mit {importVideo} erneut hoch.",
+      "q9": "Das Rendern dauert lange oder bricht ab",
+      "a9q": "Rendern ist der aufwendigste Schritt. Der Tab {logTab} zeigt Fortschritt und Fehler. Bei einem Speicher- oder Browserfehler muss die Server-Konfiguration geprüft werden. Für eine Meldung notieren Sie Demo-ID, Run-ID und die letzte Fehlermeldung.",
+      "ownLead": "Statt Klicks als Aktionen zu beschreiben, bedienen Sie die App selbst und nehmen dabei auf – mit OBS, QuickTime, Loom oder der Aufnahmefunktion Ihres Betriebssystems – und sagen laut, was Sie zeigen. Die Factory schneidet die Aufnahme in Szenen und macht Ihre Worte zum Sprechertext.",
+      "o1Title": "Aufnehmen",
+      "o1": "Nehmen Sie nur das Browserfenster auf, am besten in 1920 × 1080. Sprechen Sie in ganzen Sätzen und machen Sie eine kurze Pause, bevor Sie zur nächsten Seite oder zum nächsten Schritt wechseln – genau dort entstehen die Szenengrenzen. Versprecher und „ähm“ sind kein Problem: Füllwörter werden entfernt, und den Text können Sie danach korrigieren.",
+      "o2Title": "Hochladen",
+      "o2": "Klicken Sie in der {overview} oder unter {demos} auf {importVideo} und wählen Sie die Datei (MP4, MOV, WebM oder MKV, bis 4 GB); der Upload startet sofort. ID und Titel sind aus dem Dateinamen vorbelegt – passen Sie sie an. Bei der gesprochenen Sprache erkennt auto die Sprache selbst.",
+      "o3Title": "Analysieren lassen",
+      "o3": "Klicken Sie auf {analyze}. Die Factory sucht die Stellen, an denen sich das Bild deutlich ändert (eine neue Seite, ein Dialog), lässt Ihre Sprache mit Zeitstempeln transkribieren und schneidet dort, wo Sie eine Pause machen und sich das Bild ändert – Szenen von etwa 15 bis 45 Sekunden, nie mitten in einem Wort. Kurz danach erscheint die neue Demo in der Liste.",
+      "o4Title": "Die Szenen prüfen",
+      "o4": "Öffnen Sie die Demo. Statt einer Route hat jede Szene einen Clip – den Ausschnitt Ihrer Aufnahme in Millisekunden (startMs, endMs) und voiceAtMs, die Stelle, an der Sie zu sprechen beginnen. Der Sprechertext ist das, was Sie gesagt haben: Korrigieren, kürzen oder ersetzen Sie ihn und geben Sie den Szenen bessere Titel. Szenen lassen sich wie gewohnt löschen, duplizieren und umsortieren, oder im Chat mit dem Agent.",
+      "o5Title": "Das Video erzeugen",
+      "o5": "Klicken Sie auf {runAll}. Der Sprechertext wird mit der eingestellten Stimme neu vertont, jeder Clip aus Ihrer Aufnahme geschnitten und an die neue Stimme angepasst, und alles wird zum fertigen Video mit Titeln und Untertiteln gerendert. Anmeldung oder Aufnahme-Browser sind dafür nicht nötig.",
+      "fitTitle": "Wie Bild und neue Stimme zusammenpassen",
+      "fit": "Spricht die neue Stimme schneller oder langsamer als Sie, läuft der Clip schneller (höchstens 2,5-fach) oder langsamer (mindestens 0,8-fach); reicht das nicht, bleibt am Ende das letzte Bild stehen. Lange stille Stellen am Szenenanfang – etwa eine ladende Seite – laufen im Zeitraffer mit ▶▶-Hinweis, und die Stimme setzt genau dort ein, wo Sie zu sprechen begonnen haben.",
+      "convertTitle": "In gefilmte Szenen umwandeln",
+      "convert1": "{convert} (oben in der Pipeline-Leiste) macht aus den Ausschnitten Ihrer Aufnahme eine Demo, die die App selbst bedient – wie eine von Hand oder vom Agent angelegte. Claude sieht sich pro Szene Standbilder Ihrer Aufnahme, Ihren Text und die laufende App an und schreibt die Klicks und Eingaben samt Cues. Ein Probelauf mit Playwright prüft sie; scheitert er, korrigiert Claude den Vorschlag bis zu zweimal.",
+      "convert2": "Szenen, deren Probelauf klappt, stehen danach auf Bildquelle film und werden beim nächsten {runAll} neu gefilmt – scharf, mit animiertem Mauszeiger und wiederholbar. Ihr Ausschnitt bleibt erhalten: Bildquelle clip holt ihn zurück. Szenen, die nicht klappen, bleiben Ausschnitte; {conversionSays} sagt warum, und die vorgeschlagenen Aktionen liegen als Entwurf in der Szene.",
+      "convertWarn": "Probeläufe handeln wirklich in der App, als angemeldeter Demo-User: Was eine Szene abschickt oder speichert, wird bei jedem Probelauf und jeder Aufnahme abgeschickt. Wandeln Sie nur gegen eine Demo-Umgebung um, nie gegen Produktivdaten.",
+      "warnTitle": "Vorsicht",
+      "resetTitle": "Vor der Aufnahme zurücksetzen",
+      "reset": "Mit {resetRepository} im Tab {demoTab} setzt die Factory vor jeder Aufnahme und Umwandlung die Blueprints der Ziel-App zurück, wie der Button Reset repository im Changes-Bildschirm. Alle Blueprint-Änderungen dieser Umgebung gehen verloren und die Aufnahme beginnt im Auslieferungszustand – für alle, die die Umgebung nutzen, und nur für die App der Basis-URL. Schlägt das Zurücksetzen fehl, wird nicht aufgenommen.",
+      "appsTitle": "Szenen in verschiedenen Apps",
+      "apps": "Jede Szene kann unter {appUrl} eine eigene App haben, zum Beispiel erst https://samples.demo.build.one/ zum Anlegen eines Change Requests und dann https://platform.demo.build.one/, um ihn dort zu zeigen. Die Route der Szene gilt dann in dieser App; leer bedeutet die Basis-URL der Demo. Vor der Aufnahme meldet sich die Factory bei jeder dieser Apps an. Neue Demos zeigen auf https://samples.demo.build.one/.",
+      "ownStorage": "Die hochgeladene Datei liegt auf dem Server neben den Runs. Wird die Demo gelöscht, wird auch die Aufnahme gelöscht. Eine exportierte demo.yaml enthält sie nicht.",
+      "uiLog": "Log",
+      "uiAddDupDelete": "Szene hinzufügen / duplizieren / löschen",
+      "uiOpenVideoCaptions": "Video öffnen / Untertitel öffnen",
+      "uiAppUrl": "Anwendungs-URL"
+    }
+  }
+}

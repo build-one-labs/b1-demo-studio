@@ -14,7 +14,7 @@
   "attributes": {
     "eventNamespace": "#",
     "icon": "i-lucide-clapperboard",
-    "title": "Übersicht"
+    "title": "Overview"
   },
   "instances": [
     {
@@ -44,7 +44,7 @@
       "objectMasterGuid": "31572117-2fe3-4262-ba03-20a74c6b59ca",
       "objectSequence": 2,
       "attributes": {
-        "headerLabel": "Liste der Demos",
+        "headerLabel": "List of demos",
         "htmlClass": "flex-1 min-h-0",
         "panelType": "visual"
       },

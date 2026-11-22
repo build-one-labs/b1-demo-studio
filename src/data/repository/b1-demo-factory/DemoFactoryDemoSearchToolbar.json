@@ -71,20 +71,6 @@
         "tooltip": "Start a conversation with the Demo Creator agent"
       },
       "instances": []
-    },
-    {
-      "instanceName": "helpAction",
-      "objectInstanceGuid": "0d42f4e1-e4f7-4e5a-a690-951df8b60242",
-      "objectMasterGuid": "2a34c785-bbd7-439f-aacd-c5e24927f26c",
-      "objectSequence": 5,
-      "attributes": {
-        "actionParameter": "DemoFactoryHelpScreen",
-        "actionType": "Launch",
-        "label": "Hilfe",
-        "smallImage": "i-lucide-circle-help",
-        "tooltip": "Anleitung und Mein erstes Video öffnen"
-      },
-      "instances": []
     }
   ],
   "links": [],

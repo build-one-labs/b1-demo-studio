@@ -59,20 +59,6 @@
       "instances": []
     },
     {
-      "instanceName": "helpAction",
-      "objectInstanceGuid": "c0fd6608-14ee-464b-9e1c-eff8f84459d5",
-      "objectMasterGuid": "2a34c785-bbd7-439f-aacd-c5e24927f26c",
-      "objectSequence": 4,
-      "attributes": {
-        "actionType": "Launch",
-        "actionParameter": "DemoFactoryHelpScreen",
-        "label": "Hilfe",
-        "smallImage": "i-lucide-circle-help",
-        "tooltip": "Anleitung und Mein erstes Video öffnen"
-      },
-      "instances": []
-    },
-    {
       "instanceName": "closeAction",
       "objectInstanceGuid": "ce091963-4523-4b98-8d39-b909498a2125",
       "objectMasterGuid": "2a34c785-bbd7-439f-aacd-c5e24927f26c",

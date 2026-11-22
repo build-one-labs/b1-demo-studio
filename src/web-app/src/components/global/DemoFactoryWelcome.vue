@@ -26,70 +26,105 @@
         {{ greeting }}<template v-if="firstName">, {{ firstName }}</template>
       </h1>
       <p class="welcome-lead">
-        Hier entstehen Produktvideos aus einem Bauplan: Szenen beschreiben, die Factory nimmt sie in der echten App auf,
-        spricht den Text ein und schneidet das Video. Unten siehst du jede Demo als Filmstreifen.
+        {{
+          translate(
+            'b1App.DemoFactoryWelcome.lead',
+            'This is where product videos are made from a blueprint: describe the scenes, and the Factory records them in the real app, voices the narration and cuts the video. Below, every demo appears as a film strip.'
+          )
+        }}
       </p>
       <!-- Same labels, tooltips and order as the toolbar of the Demos screen (DemoFactoryDemoSearchToolbar). -->
       <div class="welcome-actions">
         <button
           type="button"
           class="welcome-button welcome-button--primary"
-          title="Create a demo — as a copy of the selected one, or from the blank starter"
+          :title="
+            translate(
+              'b1App.DemoFactoryWelcome.newDemoTooltip',
+              'Create a demo — as a copy of the selected one, or from the blank starter'
+            )
+          "
           @click="open('DemoFactoryDemoCreate')"
         >
-          <Icon name="lucide-plus" aria-hidden="true" /> New demo
+          <Icon name="lucide-plus" aria-hidden="true" /> {{ translate('b1App.DemoFactoryWelcome.newDemo', 'New demo') }}
         </button>
         <button
           type="button"
           class="welcome-button"
-          title="Import a demo.yaml"
+          :title="translate('b1App.DemoFactoryWelcome.importTooltip', 'Import a demo.yaml')"
           @click="open('DemoFactoryImportScreen')"
         >
-          <Icon name="lucide-upload" aria-hidden="true" /> Import
+          <Icon name="lucide-upload" aria-hidden="true" /> {{ translate('b1App.DemoFactoryWelcome.import', 'Import') }}
         </button>
         <button
           type="button"
           class="welcome-button"
-          title="Turn your own screen recording of a B1 app into a demo — cut into scenes, narration from your voice"
+          :title="
+            translate(
+              'b1App.DemoFactoryWelcome.importVideoTooltip',
+              'Turn your own screen recording of a B1 app into a demo — cut into scenes, narration from your voice'
+            )
+          "
           @click="open('DemoFactoryVideoImportScreen')"
         >
-          <Icon name="lucide-file-video" aria-hidden="true" /> Import video
+          <Icon name="lucide-file-video" aria-hidden="true" />
+          {{ translate('b1App.DemoFactoryWelcome.importVideo', 'Import video') }}
         </button>
       </div>
     </div>
 
     <div class="welcome-figures">
-      <div class="welcome-ring" :title="`${rendered} von ${total} Demos gerendert`">
+      <div
+        class="welcome-ring"
+        :title="
+          translate('b1App.DemoFactoryWelcome.ringTooltip', '{rendered} of {total} demos rendered', { rendered, total })
+        "
+      >
         <svg viewBox="0 0 120 120" aria-hidden="true">
           <circle class="ring-track" cx="60" cy="60" r="50" />
           <circle class="ring-value" cx="60" cy="60" r="50" :stroke-dasharray="RING" :stroke-dashoffset="ringOffset" />
         </svg>
         <div class="ring-label">
           <strong>{{ Math.round(animated.share) }}%</strong>
-          <span>gerendert</span>
+          <span>{{ translate('b1App.DemoFactoryWelcome.ringLabel', 'rendered') }}</span>
         </div>
       </div>
 
       <dl class="welcome-kpis">
         <div class="kpi">
-          <dt><Icon name="lucide-film" aria-hidden="true" /> Demos</dt>
+          <dt>
+            <Icon name="lucide-film" aria-hidden="true" /> {{ translate('b1App.DemoFactoryWelcome.demos', 'Demos') }}
+          </dt>
           <dd>{{ Math.round(animated.total) }}</dd>
-          <small>{{ Math.round(animated.mine) }} von dir</small>
+          <small>{{
+            translate('b1App.DemoFactoryWelcome.mine', '{count} by you', { count: Math.round(animated.mine) })
+          }}</small>
         </div>
         <div class="kpi">
-          <dt><Icon name="lucide-circle-play" aria-hidden="true" /> Gerendert</dt>
+          <dt>
+            <Icon name="lucide-circle-play" aria-hidden="true" />
+            {{ translate('b1App.DemoFactoryWelcome.rendered', 'Rendered') }}
+          </dt>
           <dd>{{ Math.round(animated.rendered) }}</dd>
-          <small>{{ unfilmed }} noch nicht gefilmt</small>
+          <small>{{
+            translate('b1App.DemoFactoryWelcome.unfilmed', '{count} not filmed yet', { count: unfilmed })
+          }}</small>
         </div>
         <div class="kpi">
-          <dt><Icon name="lucide-list-video" aria-hidden="true" /> Szenen</dt>
+          <dt>
+            <Icon name="lucide-list-video" aria-hidden="true" />
+            {{ translate('b1App.DemoFactoryWelcome.scenes', 'Scenes') }}
+          </dt>
           <dd>{{ Math.round(animated.scenes) }}</dd>
-          <small>in allen Demos</small>
+          <small>{{ translate('b1App.DemoFactoryWelcome.scenesHint', 'across all demos') }}</small>
         </div>
         <div class="kpi">
-          <dt><Icon name="lucide-timer" aria-hidden="true" /> Laufzeit</dt>
+          <dt>
+            <Icon name="lucide-timer" aria-hidden="true" />
+            {{ translate('b1App.DemoFactoryWelcome.runtime', 'Runtime') }}
+          </dt>
           <dd>{{ formatDuration(animated.runtimeMs) }}</dd>
-          <small>fertiges Video</small>
+          <small>{{ translate('b1App.DemoFactoryWelcome.runtimeHint', 'finished video') }}</small>
         </div>
       </dl>
 
@@ -97,7 +132,7 @@
         v-if="latest"
         type="button"
         class="welcome-spotlight"
-        :title="`${latest.title} abspielen`"
+        :title="translate('b1App.DemoFactoryWelcome.playTooltip', 'Play {title}', { title: latest.title })"
         @click="play(latest)"
       >
         <span class="spotlight-frame">
@@ -105,7 +140,10 @@
           <span class="spotlight-play"><Icon name="lucide-play" aria-hidden="true" /></span>
         </span>
         <span class="spotlight-text">
-          <small>Zuletzt aufgenommen{{ latest.recordedAt ? ` · ${formatDate(latest.recordedAt)}` : '' }}</small>
+          <small
+            >{{ translate('b1App.DemoFactoryWelcome.latestRecording', 'Latest recording')
+            }}{{ latest.recordedAt ? ` · ${formatDate(latest.recordedAt)}` : '' }}</small
+          >
           <strong>{{ latest.title }}</strong>
         </span>
       </button>
@@ -116,7 +154,7 @@
 </template>
 
 <script setup lang="ts">
-import { displayError, launchScreen, useUserStore } from '@buildone/web-core';
+import { displayError, launchScreen, translate, useUserStore } from '@buildone/web-core';
 import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue';
 
 interface ReelDemo {
@@ -140,15 +178,16 @@ const demos = ref<ReelDemo[]>([]);
 const ready = ref(false);
 const error = ref('');
 const now = ref(new Date());
+const { locale } = useI18n();
 
 const user = computed(() => useUserStore().user);
 const firstName = computed(() => (user.value?.userName ?? '').trim().split(/\s+/)[0] ?? '');
 const greeting = computed(() => {
   const hour = now.value.getHours();
-  if (hour < 5) return 'Gute Nacht';
-  if (hour < 11) return 'Guten Morgen';
-  if (hour < 18) return 'Guten Tag';
-  return 'Guten Abend';
+  if (hour < 5) return translate('b1App.DemoFactoryWelcome.greetingNight', 'Good night');
+  if (hour < 11) return translate('b1App.DemoFactoryWelcome.greetingMorning', 'Good morning');
+  if (hour < 18) return translate('b1App.DemoFactoryWelcome.greetingDay', 'Good afternoon');
+  return translate('b1App.DemoFactoryWelcome.greetingEvening', 'Good evening');
 });
 
 const total = computed(() => demos.value.length);
@@ -202,7 +241,9 @@ async function load(): Promise<void> {
     demos.value = (await response.json()) as ReelDemo[];
     error.value = '';
   } catch (cause) {
-    error.value = `Die Kennzahlen konnten nicht geladen werden: ${cause instanceof Error ? cause.message : String(cause)}`;
+    error.value = translate('b1App.DemoFactoryWelcome.loadFailed', 'The figures could not be loaded: {reason}', {
+      reason: cause instanceof Error ? cause.message : String(cause)
+    });
   } finally {
     ready.value = true;
   }
@@ -231,7 +272,9 @@ function formatDuration(ms: number): string {
 
 function formatDate(value: string): string {
   const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? value : date.toLocaleDateString(undefined, { day: '2-digit', month: 'short' });
+  return Number.isNaN(date.getTime())
+    ? value
+    : date.toLocaleDateString(locale.value, { day: '2-digit', month: 'short' });
 }
 
 const onChanged = () => void load();

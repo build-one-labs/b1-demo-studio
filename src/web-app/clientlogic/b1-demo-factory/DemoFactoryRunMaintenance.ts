@@ -3,7 +3,7 @@
  * produced, so there is nothing to edit — only its artefacts to open. The URLs
  * on the run row point at the demo factory's media routes.
  */
-import { displayWarning, type ObjectInstance } from '@buildone/web-core';
+import { displayWarning, translate, type ObjectInstance } from '@buildone/web-core';
 
 import { DSO, dsoOf, screenOf } from '../shared/demoFactoryStudio';
 
@@ -19,7 +19,11 @@ export function openArtefact(eventSource: ObjectInstance, field: 'videoUrl' | 's
   const run = dsoOf<RunRow>(screenOf(eventSource), DSO.run)?.selectedRecord.value;
   const url = run?.[field];
   if (!url) {
-    displayWarning(run ? 'This run has no rendered video yet.' : 'No run is open.');
+    displayWarning(
+      run
+        ? translate('b1App.messages.DemoFactoryRunMaintenance.noVideo', 'This run has no rendered video yet.')
+        : translate('b1App.messages.DemoFactoryRunMaintenance.noRun', 'No run is open.')
+    );
     return;
   }
   window.open(url, '_blank', 'noopener');

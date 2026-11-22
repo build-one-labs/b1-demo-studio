@@ -72,11 +72,19 @@ it waits for the user's instructions before changing the definition. Pending
 demo/voice-over edits are saved first. A new scene selection does not change an
 already-open conversation's context.
 
-**Hilfe** is also available in the app menu and demo search toolbar. It opens
-`DemoFactoryHelpScreen`, a B1 window using `b1_native_component` with the global
-`DemoFactoryHelp.vue` component. The self-contained German HTML guide lives at
-`src/web-app/public/help/demo-factory.html`; its nine chapters include the
-eight-step **Mein erstes Video** walkthrough.
+**Help** is the user menu's entry (avatar, top right): the app names
+`DemoFactoryHelpScreen` as its b1_app `helpScreen`, a floating window beside the
+screen it describes. It renders `src/web-app/src/components/global/DemoFactoryHelp.vue`,
+built from the framework's Help kit; its ten sections include the eight-step
+**My first video** walkthrough. `b1 check-help` (CI: `help-pages.yml`) fails when
+a screen of the app's navigation is not mentioned in it.
+
+The Studio speaks English and German (`B1_SUPPORTED_LOCALES=en,de`, set by the
+`app-stack-workspace` and `app-stack-standalone` overlays). Blueprint labels are
+English in the blueprint and German in `src/web-app/public/i18n/de.json`; code
+strings use `translate()` under `b1App.<Component>` and `b1App.messages.<Screen>`.
+`b1 translations check` (scope in `translations.config.json`) fails when a label
+has no translation in both files.
 
 The Codespace pins `B1_AGENT_SERVER_URL` to the framework's current endpoint,
 `https://adorable.test.build.one`, in `.devcontainer/devcontainer.json`.

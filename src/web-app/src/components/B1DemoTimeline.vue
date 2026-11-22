@@ -12,14 +12,18 @@
 <template>
   <div :class="['b1-demo-timeline flex flex-col gap-2', instance.attributes.htmlClass]">
     <div class="flex items-center justify-between text-sm text-muted-color">
-      <span>{{ scenes.length }} {{ scenes.length === 1 ? 'scene' : 'scenes' }}</span>
+      <span>{{
+        scenes.length === 1
+          ? translate('b1App.B1DemoTimeline.sceneCountOne', '1 scene')
+          : translate('b1App.B1DemoTimeline.sceneCountMany', '{count} scenes', { count: scenes.length })
+      }}</span>
       <span>{{ format(totalMs) }}</span>
     </div>
     <div
       v-if="scenes.length === 0"
       class="rounded border border-dashed border-surface-300 p-6 text-center text-sm text-muted-color"
     >
-      No scenes.
+      {{ translate('b1App.B1DemoTimeline.noScenes', 'No scenes.') }}
     </div>
     <div
       v-else
@@ -36,7 +40,17 @@
             : 'bg-surface-200 dark:bg-surface-700'
         "
         :style="{ flexGrow: scene.durationMs, flexBasis: 0 }"
-        :title="`${scene.title} — ${format(scene.durationMs)}${scene.recorded ? '' : ' (not recorded)'}`"
+        :title="
+          scene.recorded
+            ? translate('b1App.B1DemoTimeline.sceneTooltip', '{title} — {duration}', {
+                title: scene.title,
+                duration: format(scene.durationMs)
+              })
+            : translate('b1App.B1DemoTimeline.sceneTooltipNotRecorded', '{title} — {duration} (not recorded)', {
+                title: scene.title,
+                duration: format(scene.durationMs)
+              })
+        "
         @click="seek(scene.startMs)"
       >
         <span class="absolute inset-x-1 top-1 truncate text-xs font-medium text-surface-900 dark:text-surface-0">
@@ -50,7 +64,12 @@
           :key="cue.name"
           class="absolute bottom-0 top-0 w-px bg-orange-500"
           :style="{ left: `${cue.percent}%` }"
-          :title="`[cue:${cue.name}] at ${format(cue.offsetMs)}`"
+          :title="
+            translate('b1App.B1DemoTimeline.cueTooltip', '[cue:{name}] at {time}', {
+              name: cue.name,
+              time: format(cue.offsetMs)
+            })
+          "
         />
       </button>
       <span
@@ -72,6 +91,7 @@
 </template>
 
 <script setup lang="ts">
+import { translate } from '@buildone/web-core';
 import { computed } from 'vue';
 
 import type { DemoTimeline } from '~/types/object/demoTimeline.types';

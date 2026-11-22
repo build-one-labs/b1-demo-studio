@@ -23,7 +23,8 @@
       "objectMasterGuid": "11ba27c0-a259-4df5-8752-2a7fd4f08242",
       "attributes": {
         "enabled": false,
-        "label": "Demo user"
+        "label": "Demo user",
+        "translationName": "demoUserLabel"
       },
       "instances": []
     },
@@ -53,7 +54,8 @@
       "objectMasterGuid": "3d463fd8-49d9-4094-8f0a-9ad8d28f653f",
       "attributes": {
         "enabled": false,
-        "label": "Key stored"
+        "label": "Key stored",
+        "translationName": "demoUserKeyStored"
       },
       "instances": []
     }

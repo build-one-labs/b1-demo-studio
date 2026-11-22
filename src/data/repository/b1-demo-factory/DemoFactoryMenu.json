@@ -24,9 +24,9 @@
       "attributes": {
         "actionParameter": "DemoFactoryHomeScreen",
         "actionType": "Launch",
-        "label": "Übersicht",
+        "label": "Overview",
         "smallImage": "i-lucide-clapperboard",
-        "tooltip": "Alle Demos als Filmstreifen"
+        "tooltip": "All demos as film strips"
       },
       "instances": []
     },

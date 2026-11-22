@@ -16,6 +16,7 @@ import {
   displayWarning,
   invokeServerTask,
   launchScreen,
+  translate,
   type ObjectInstance
 } from '@buildone/web-core';
 
@@ -55,7 +56,13 @@ export async function createDemoConversation(prompt: string, payload: AgentPaylo
   // The proxy mints the id and returns it as `request.conversation_id` (the
   // conversation itself comes up in the background; the chat waits for it).
   const conversationId = String(result?.request?.conversation_id ?? result?.conversation_id ?? result?.id ?? '');
-  if (!conversationId) throw new Error('The conversation was created but its id was not returned');
+  if (!conversationId)
+    throw new Error(
+      translate(
+        'b1App.messages.DemoFactoryAgentScreen.conversationIdMissing',
+        'The conversation was created but its id was not returned'
+      )
+    );
   return { conversationId, chatScreen: result?.chatScreen };
 }
 
@@ -78,12 +85,14 @@ export async function startConversation(eventSource: ObjectInstance): Promise<vo
   const form = formOf(eventSource, 'DemoFactoryAgentForm');
   const screen = screenOfObject(form);
   if (!screen || !form) {
-    displayError('The agent form was not found.');
+    displayError(translate('b1App.messages.DemoFactoryAgentScreen.formNotFound', 'The agent form was not found.'));
     return;
   }
   const prompt = String(form.getValue('prompt') ?? '').trim();
   if (!prompt) {
-    displayWarning('Say what the Demo Creator should do.');
+    displayWarning(
+      translate('b1App.messages.DemoFactoryAgentScreen.promptMissing', 'Say what the Demo Creator should do.')
+    );
     return;
   }
   const payload = (screen.payload?.data ?? eventSource.screen?.payload?.data ?? {}) as AgentPayload;

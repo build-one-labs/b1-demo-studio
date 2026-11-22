@@ -3,7 +3,7 @@
   "createdBy": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
   "howToUse": "",
   "label": "",
-  "objectDescription": "Native component displaying the German HTML guide including Mein erstes Video.",
+  "objectDescription": "The Demo Factory Studio's user guide, built from the framework's Help kit (HelpLayout, steps, cards that open the Studio's screens, FAQ). Every string goes through translate() under b1App.DemoFactoryHelp, English with a German translation.",
   "objectMasterGuid": "b549daec-1b9a-466e-b907-ff5a7b9f904e",
   "objectName": "DemoFactoryHelpComponent",
   "objectTypeGuid": "217eaba6-7c1d-49f3-a755-e135d89c93ac",

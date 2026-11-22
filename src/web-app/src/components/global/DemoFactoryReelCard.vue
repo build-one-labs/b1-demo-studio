@@ -9,25 +9,41 @@
   <article class="reel" :class="{ 'reel--selected': props.selected }" @click="emit('click', props.item)">
     <div class="reel-meta">
       <button class="reel-name" type="button" @click.stop="openDemo">{{ demo.title }}</button>
-      <span class="reel-badge" :class="`reel-badge--${demo.footage}`">{{ FOOTAGE_LABEL[demo.footage] }}</span>
-      <span v-if="demo.invalid" class="reel-badge reel-badge--invalid">Ungültig</span>
+      <span class="reel-badge" :class="`reel-badge--${demo.footage}`">{{ footageLabel(demo.footage) }}</span>
+      <span v-if="demo.invalid" class="reel-badge reel-badge--invalid">{{
+        translate('b1App.DemoFactoryReelCard.invalid', 'Invalid')
+      }}</span>
       <span class="reel-facts">
-        {{ demo.sceneCount }} {{ demo.sceneCount === 1 ? 'Szene' : 'Szenen' }}
+        {{
+          demo.sceneCount === 1
+            ? translate('b1App.DemoFactoryReelCard.sceneCountOne', '1 scene')
+            : translate('b1App.DemoFactoryReelCard.sceneCountMany', '{count} scenes', { count: demo.sceneCount })
+        }}
         <template v-if="demo.durationMs"> · {{ formatDuration(demo.durationMs) }}</template>
-        <template v-if="demo.recordedAt"> · aufgenommen {{ formatDate(demo.recordedAt) }}</template>
+        <template v-if="demo.recordedAt">
+          ·
+          {{
+            translate('b1App.DemoFactoryReelCard.recordedAt', 'recorded {date}', { date: formatDate(demo.recordedAt) })
+          }}</template
+        >
         <template v-if="demo.owner"> · {{ demo.owner }}</template>
       </span>
       <span class="reel-actions">
         <button v-if="demo.videoUrl" class="reel-play" type="button" @click.stop="play">
-          <Icon name="lucide-play" aria-hidden="true" /> Abspielen
+          <Icon name="lucide-play" aria-hidden="true" /> {{ translate('b1App.DemoFactoryReelCard.play', 'Play') }}
         </button>
         <button class="reel-open" type="button" @click.stop="openDemo">
-          Öffnen <Icon name="lucide-arrow-right" aria-hidden="true" />
+          {{ translate('b1App.DemoFactoryReelCard.open', 'Open') }}
+          <Icon name="lucide-arrow-right" aria-hidden="true" />
         </button>
       </span>
     </div>
 
-    <div class="strip" role="list" :aria-label="`Szenen von ${demo.title}`">
+    <div
+      class="strip"
+      role="list"
+      :aria-label="translate('b1App.DemoFactoryReelCard.stripLabel', 'Scenes of {title}', { title: demo.title })"
+    >
       <figure
         v-for="(frame, index) in frames"
         :key="frame.sceneId"
@@ -46,7 +62,11 @@
           />
           <div v-else class="frame-blank">
             <Icon name="lucide-clapperboard" class="frame-blank-icon" aria-hidden="true" />
-            <span>{{ demo.footage === 'none' ? 'noch nicht gefilmt' : 'kein Bild' }}</span>
+            <span>{{
+              demo.footage === 'none'
+                ? translate('b1App.DemoFactoryReelCard.frameUnfilmed', 'not filmed yet')
+                : translate('b1App.DemoFactoryReelCard.frameNoImage', 'no image')
+            }}</span>
           </div>
         </div>
         <figcaption>
@@ -55,14 +75,16 @@
         </figcaption>
       </figure>
       <div v-if="frames.length === 0" class="frame frame--empty">
-        <div class="frame-window"><div class="frame-blank">Keine Szenen</div></div>
+        <div class="frame-window">
+          <div class="frame-blank">{{ translate('b1App.DemoFactoryReelCard.noScenes', 'No scenes') }}</div>
+        </div>
       </div>
     </div>
   </article>
 </template>
 
 <script setup lang="ts">
-import { displayError, launchScreen } from '@buildone/web-core';
+import { displayError, launchScreen, translate } from '@buildone/web-core';
 import { computed, ref } from 'vue';
 
 interface ReelFrame {
@@ -94,11 +116,19 @@ const emit = defineEmits<{
   click: [item: Record<string, unknown>];
 }>();
 
-const FOOTAGE_LABEL: Record<ReelDemo['footage'], string> = {
-  run: 'Gerendert',
-  source: 'Quellvideo',
-  none: 'Noch nicht gefilmt'
-};
+const { locale } = useI18n();
+
+/** The footage badge — read in the template, so it follows a language switch. */
+function footageLabel(footage: ReelDemo['footage']): string {
+  switch (footage) {
+    case 'run':
+      return translate('b1App.DemoFactoryReelCard.footageRun', 'Rendered');
+    case 'source':
+      return translate('b1App.DemoFactoryReelCard.footageSource', 'Source video');
+    default:
+      return translate('b1App.DemoFactoryReelCard.footageNone', 'Not filmed yet');
+  }
+}
 
 const demo = computed(() => props.item as unknown as ReelDemo);
 /** The frames arrive as an array; a JSON string is tolerated in case a data layer flattens them. */
@@ -147,7 +177,9 @@ function formatDuration(ms: number): string {
 
 function formatDate(value: string): string {
   const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? value : date.toLocaleDateString(undefined, { day: '2-digit', month: 'short' });
+  return Number.isNaN(date.getTime())
+    ? value
+    : date.toLocaleDateString(locale.value, { day: '2-digit', month: 'short' });
 }
 </script>
 

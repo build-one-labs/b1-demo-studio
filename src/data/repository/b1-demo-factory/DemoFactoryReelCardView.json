@@ -13,7 +13,7 @@
   "templateObject": false,
   "attributes": {
     "fileName": "src/web-app/src/components/global/DemoFactoryReelCard.vue",
-    "headerLabel": "Alle Demos",
+    "headerLabel": "All demos",
     "layoutType": "list",
     "template": "DemoFactoryReelCard",
     "templateOptions": "|id|title"
