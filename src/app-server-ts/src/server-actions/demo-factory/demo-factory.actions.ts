@@ -28,8 +28,7 @@ import {
 } from './demo-factory.lib';
 import { DemoFactoryMaterializer } from './demo-factory.materializer';
 import { DemoFactoryNarrationCache } from './demo-factory.narration-cache';
-import { buildReel, ReelDemo } from './demo-factory.reel';
-import { DemoDocument, DemoRow, DSO, JobRow, RunRow, RunSceneRow, SceneRow } from './demo-factory.rows';
+import { DemoDocument, DemoRow, DSO, JobRow, SceneRow } from './demo-factory.rows';
 import { DemoFactoryRunIngest } from './demo-factory.run-ingest';
 import { DemoFactorySeedService } from './demo-factory.seed';
 import { DemoFactoryStore } from './demo-factory.store';
@@ -250,19 +249,6 @@ export class DemoFactoryStudio {
       // History is a nicety; the job itself must not depend on it.
       this.logger.warn(`Could not record the job: ${(error as Error).message}`);
     }
-  }
-
-  /** Every demo as a strip of film for the Studio home screen — see demo-factory.reel.ts. */
-  @B1Action({ description: 'Every demo with a frame per scene, for the Studio home screen' })
-  async reel(): Promise<{ demos: ReelDemo[] }> {
-    await this.seed.ensureReconciled();
-    const [demos, scenes, runs, runScenes] = await Promise.all([
-      this.store.read<DemoRow>(DSO.demo),
-      this.store.read<SceneRow>(DSO.scene),
-      this.store.read<RunRow>(DSO.run),
-      this.store.read<RunSceneRow>(DSO.runScene)
-    ]);
-    return { demos: buildReel(demos, scenes, runs, runScenes) };
   }
 
   @B1Action({ description: 'The current job, after making sure the data sources match this host' })

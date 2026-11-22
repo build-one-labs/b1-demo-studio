@@ -1,0 +1,27 @@
+{
+  "createdAt": "2026-11-22 12:10:34.201291",
+  "createdBy": "mp1kR5wQmWEa3mwRuVe86SkKtgdp8A4C",
+  "howToUse": "",
+  "label": "",
+  "objectDescription": "The Studio overview: one card per demo, a strip of film with a frame per scene, play and open. Card template DemoFactoryReelCard.vue; bind DemoFactoryReelDSO via the Data link.",
+  "objectMasterGuid": "8f031168-3460-4e34-9dcc-af2c0bbd9d7e",
+  "objectName": "DemoFactoryReelCardView",
+  "objectTypeGuid": "702c021a-1d4a-4dab-a7b4-8e2b89fb2575",
+  "owner": "mp1kR5wQmWEa3mwRuVe86SkKtgdp8A4C",
+  "productGuid": "94328e98-6f1d-4d15-b86d-f62fff77d705",
+  "status": "Active",
+  "templateObject": false,
+  "attributes": {
+    "fileName": "src/web-app/src/components/global/DemoFactoryReelCard.vue",
+    "headerLabel": "Alle Demos",
+    "layoutType": "list",
+    "template": "DemoFactoryReelCard",
+    "templateOptions": "|id|title"
+  },
+  "instances": [],
+  "links": [],
+  "tags": [],
+  "tenantId": null,
+  "validFrom": null,
+  "validUntil": null
+}

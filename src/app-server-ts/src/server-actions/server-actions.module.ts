@@ -15,6 +15,7 @@ import { DemoFactoryHost } from './demo-factory/demo-factory.host';
 import { DemoFactoryMaterializer } from './demo-factory/demo-factory.materializer';
 import { DemoFactoryMedia } from './demo-factory/demo-factory.media.controller';
 import { DemoFactoryNarrationCache } from './demo-factory/demo-factory.narration-cache';
+import { DemoFactoryReel } from './demo-factory/demo-factory.reel.controller';
 import { DemoFactoryRunIngest } from './demo-factory/demo-factory.run-ingest';
 import { DemoFactorySeedService } from './demo-factory/demo-factory.seed';
 import { DemoFactoryStore } from './demo-factory/demo-factory.store';
@@ -45,7 +46,7 @@ const HANDLERS = [
 
 @Module({
   imports: [HttpModule, ApiModule],
-  controllers: [Weather, PriceCalculation, DemoFactoryStudio, DemoFactoryMedia, DemoFactoryUpload],
+  controllers: [Weather, PriceCalculation, DemoFactoryStudio, DemoFactoryMedia, DemoFactoryReel, DemoFactoryUpload],
   providers: [
     DemoFactoryHost,
     DemoFactoryFrames,
