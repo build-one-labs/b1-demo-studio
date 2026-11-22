@@ -2,6 +2,8 @@
   Welcome panel of the Demo Factory overview (DemoFactoryHomeScreen), above the
   card view of all demos: a greeting, what the Studio is for, the key figures,
   the newest recording as a spotlight, and the buttons that start a demo.
+  Layout: text and spotlight | the buttons, stacked | ring and KPIs — one row, so
+  the card view below keeps the height.
 
   A b1_native_component on purpose (CLAUDE.md, reason 1: no b1 object type fits):
   it is a dashboard header — KPI tiles that count up, a ring chart of rendered
@@ -33,44 +35,64 @@
           )
         }}
       </p>
-      <!-- Same labels, tooltips and order as the toolbar of the Demos screen (DemoFactoryDemoSearchToolbar). -->
-      <div class="welcome-actions">
-        <button
-          type="button"
-          class="welcome-button welcome-button--primary"
-          :title="
-            translate(
-              'b1App.DemoFactoryWelcome.newDemoTooltip',
-              'Create a demo — as a copy of the selected one, or from the blank starter'
-            )
-          "
-          @click="open('DemoFactoryDemoCreate')"
-        >
-          <Icon name="lucide-plus" aria-hidden="true" /> {{ translate('b1App.DemoFactoryWelcome.newDemo', 'New demo') }}
-        </button>
-        <button
-          type="button"
-          class="welcome-button"
-          :title="translate('b1App.DemoFactoryWelcome.importTooltip', 'Import a demo.yaml')"
-          @click="open('DemoFactoryImportScreen')"
-        >
-          <Icon name="lucide-upload" aria-hidden="true" /> {{ translate('b1App.DemoFactoryWelcome.import', 'Import') }}
-        </button>
-        <button
-          type="button"
-          class="welcome-button"
-          :title="
-            translate(
-              'b1App.DemoFactoryWelcome.importVideoTooltip',
-              'Turn your own screen recording of a B1 app into a demo — cut into scenes, narration from your voice'
-            )
-          "
-          @click="open('DemoFactoryVideoImportScreen')"
-        >
-          <Icon name="lucide-file-video" aria-hidden="true" />
-          {{ translate('b1App.DemoFactoryWelcome.importVideo', 'Import video') }}
-        </button>
-      </div>
+      <button
+        v-if="latest"
+        type="button"
+        class="welcome-spotlight"
+        :title="translate('b1App.DemoFactoryWelcome.playTooltip', 'Play {title}', { title: latest.title })"
+        @click="play(latest)"
+      >
+        <span class="spotlight-frame">
+          <img v-if="latest.frames[0]?.imageUrl" :src="latest.frames[0].imageUrl" alt="" loading="lazy" />
+          <span class="spotlight-play"><Icon name="lucide-play" aria-hidden="true" /></span>
+        </span>
+        <span class="spotlight-text">
+          <small
+            >{{ translate('b1App.DemoFactoryWelcome.latestRecording', 'Latest recording')
+            }}{{ latest.recordedAt ? ` · ${formatDate(latest.recordedAt)}` : '' }}</small
+          >
+          <strong>{{ latest.title }}</strong>
+        </span>
+      </button>
+    </div>
+
+    <!-- Same labels, tooltips and order as the toolbar of the Demos screen (DemoFactoryDemoSearchToolbar). -->
+    <div class="welcome-actions">
+      <button
+        type="button"
+        class="welcome-button welcome-button--primary"
+        :title="
+          translate(
+            'b1App.DemoFactoryWelcome.newDemoTooltip',
+            'Create a demo — as a copy of the selected one, or from the blank starter'
+          )
+        "
+        @click="open('DemoFactoryDemoCreate')"
+      >
+        <Icon name="lucide-plus" aria-hidden="true" /> {{ translate('b1App.DemoFactoryWelcome.newDemo', 'New demo') }}
+      </button>
+      <button
+        type="button"
+        class="welcome-button"
+        :title="translate('b1App.DemoFactoryWelcome.importTooltip', 'Import a demo.yaml')"
+        @click="open('DemoFactoryImportScreen')"
+      >
+        <Icon name="lucide-upload" aria-hidden="true" /> {{ translate('b1App.DemoFactoryWelcome.import', 'Import') }}
+      </button>
+      <button
+        type="button"
+        class="welcome-button"
+        :title="
+          translate(
+            'b1App.DemoFactoryWelcome.importVideoTooltip',
+            'Turn your own screen recording of a B1 app into a demo — cut into scenes, narration from your voice'
+          )
+        "
+        @click="open('DemoFactoryVideoImportScreen')"
+      >
+        <Icon name="lucide-file-video" aria-hidden="true" />
+        {{ translate('b1App.DemoFactoryWelcome.importVideo', 'Import video') }}
+      </button>
     </div>
 
     <div class="welcome-figures">
@@ -127,26 +149,6 @@
           <small>{{ translate('b1App.DemoFactoryWelcome.runtimeHint', 'finished video') }}</small>
         </div>
       </dl>
-
-      <button
-        v-if="latest"
-        type="button"
-        class="welcome-spotlight"
-        :title="translate('b1App.DemoFactoryWelcome.playTooltip', 'Play {title}', { title: latest.title })"
-        @click="play(latest)"
-      >
-        <span class="spotlight-frame">
-          <img v-if="latest.frames[0]?.imageUrl" :src="latest.frames[0].imageUrl" alt="" loading="lazy" />
-          <span class="spotlight-play"><Icon name="lucide-play" aria-hidden="true" /></span>
-        </span>
-        <span class="spotlight-text">
-          <small
-            >{{ translate('b1App.DemoFactoryWelcome.latestRecording', 'Latest recording')
-            }}{{ latest.recordedAt ? ` · ${formatDate(latest.recordedAt)}` : '' }}</small
-          >
-          <strong>{{ latest.title }}</strong>
-        </span>
-      </button>
     </div>
 
     <p v-if="error" class="welcome-error">{{ error }}</p>
@@ -311,8 +313,9 @@ onBeforeUnmount(() => {
 
   position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1.2fr) auto minmax(0, 1fr);
   gap: 28px;
+  align-items: center;
   padding: 28px 32px;
   overflow: hidden;
   color: var(--ink);
@@ -351,6 +354,7 @@ onBeforeUnmount(() => {
 }
 
 .welcome-intro,
+.welcome-actions,
 .welcome-figures {
   opacity: 0;
   transform: translateY(10px);
@@ -359,11 +363,16 @@ onBeforeUnmount(() => {
     transform 500ms ease;
 }
 
+.welcome-actions {
+  transition-delay: 60ms;
+}
+
 .welcome-figures {
   transition-delay: 120ms;
 }
 
 .welcome--ready .welcome-intro,
+.welcome--ready .welcome-actions,
 .welcome--ready .welcome-figures {
   opacity: 1;
   transform: none;
@@ -397,7 +406,7 @@ onBeforeUnmount(() => {
 
 .welcome-lead {
   max-width: 56ch;
-  margin: 12px 0 22px;
+  margin: 12px 0 16px;
   font-size: 14px;
   line-height: 1.6;
   color: var(--muted);
@@ -405,7 +414,7 @@ onBeforeUnmount(() => {
 
 .welcome-actions {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   gap: 10px;
 }
 
@@ -545,7 +554,7 @@ onBeforeUnmount(() => {
 
 .welcome-spotlight {
   display: flex;
-  grid-column: 1 / -1;
+  max-width: 420px;
   gap: 14px;
   align-items: center;
   padding: 8px;
@@ -626,9 +635,24 @@ onBeforeUnmount(() => {
   color: #b91c1c;
 }
 
+/* Narrower: the buttons stay beside the text, the figures move below both. */
 @media (max-width: 1100px) {
   .welcome {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .welcome-figures {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 760px) {
+  .welcome {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .welcome-actions {
+    flex-flow: row wrap;
   }
 }
 
@@ -652,6 +676,7 @@ onBeforeUnmount(() => {
   }
 
   .welcome-intro,
+  .welcome-actions,
   .welcome-figures {
     transition: none;
   }
