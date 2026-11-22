@@ -10,6 +10,7 @@ import path from 'node:path';
 
 import { Controller, Get, Headers, NotFoundException, Param, Res } from '@nestjs/common';
 
+import { DemoFactoryFrames } from './demo-factory.frames';
 import { DemoFactoryHost } from './demo-factory.host';
 import { assertSafeId, safeChildPath } from './demo-factory.lib';
 
@@ -40,7 +41,10 @@ const RUN_SUBDIRS = new Set(['narration', 'captions', 'clips', 'normalized']);
 
 @Controller('demo-factory/media')
 export class DemoFactoryMedia {
-  constructor(private readonly host: DemoFactoryHost) {}
+  constructor(
+    private readonly host: DemoFactoryHost,
+    private readonly frames: DemoFactoryFrames
+  ) {}
 
   /**
    * The same file as the streaming route, as a download.
@@ -69,6 +73,35 @@ export class DemoFactoryMedia {
     createReadStream(resolved).pipe(response);
   }
 
+  /**
+   * A still frame of an uploaded recording, `ms` into it — the reel of the
+   * Studio home screen for a video demo that has not been rendered yet.
+   *
+   * Declared before the run routes: `uploads` is a reserved output directory,
+   * never a demo id, so it cannot shadow one.
+   */
+  @Get('uploads/:uploadId/frame/:ms')
+  async uploadFrame(
+    @Param('uploadId') uploadId: string,
+    @Param('ms') ms: string,
+    @Res() response: Response
+  ): Promise<void> {
+    if (!/^[\w-]+$/.test(uploadId) || !/^\d{1,9}$/.test(ms)) throw new NotFoundException();
+    await this.sendFrame(await this.frames.uploadFrame(uploadId, Number(ms)), response);
+  }
+
+  /** A still frame from the middle of a run scene's clip — the reel of the Studio home screen. */
+  @Get(':demoId/:runId/frame/:sceneId')
+  async runSceneFrame(
+    @Param('demoId') demoId: string,
+    @Param('runId') runId: string,
+    @Param('sceneId') sceneId: string,
+    @Res() response: Response
+  ): Promise<void> {
+    this.resolve(demoId, runId, sceneId);
+    await this.sendFrame(await this.frames.runSceneFrame(demoId, runId, sceneId), response);
+  }
+
   /** A file inside a run subdirectory — narration audio, captions, raw clips. */
   @Get(':demoId/:runId/:sub/:file')
   async mediaInSubdir(
@@ -92,6 +125,17 @@ export class DemoFactoryMedia {
     @Res() response: Response
   ): Promise<void> {
     await this.stream(this.resolve(demoId, runId, file), range, response);
+  }
+
+  /** Frames never change once cut: the browser may keep them for a day. */
+  private async sendFrame(file: string, response: Response): Promise<void> {
+    const info = await stat(file);
+    response.writeHead(200, {
+      'content-type': 'image/jpeg',
+      'content-length': info.size,
+      'cache-control': 'private, max-age=86400'
+    });
+    createReadStream(file).pipe(response);
   }
 
   private resolve(demoId: string, runId: string, ...segments: string[]): string {

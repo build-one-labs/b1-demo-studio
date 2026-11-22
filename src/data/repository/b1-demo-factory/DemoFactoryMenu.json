@@ -17,10 +17,24 @@
   },
   "instances": [
     {
+      "instanceName": "Overview",
+      "objectInstanceGuid": "1e1fd2f9-b0db-4d46-aa54-b6fd9b52d9b2",
+      "objectMasterGuid": "2a34c785-bbd7-439f-aacd-c5e24927f26c",
+      "objectSequence": 1,
+      "attributes": {
+        "actionParameter": "DemoFactoryHomeScreen",
+        "actionType": "Launch",
+        "label": "Übersicht",
+        "smallImage": "i-lucide-clapperboard",
+        "tooltip": "Alle Demos als Filmstreifen"
+      },
+      "instances": []
+    },
+    {
       "instanceName": "Demos",
       "objectInstanceGuid": "6f857845-46f5-4176-b111-560f82cd2031",
       "objectMasterGuid": "2a34c785-bbd7-439f-aacd-c5e24927f26c",
-      "objectSequence": 1,
+      "objectSequence": 2,
       "attributes": {
         "actionParameter": "DemoFactoryDemoSearch",
         "actionType": "Launch",
@@ -34,7 +48,7 @@
       "instanceName": "Runs",
       "objectInstanceGuid": "a28b5386-9513-4d69-bcd7-6522d71d87e9",
       "objectMasterGuid": "2a34c785-bbd7-439f-aacd-c5e24927f26c",
-      "objectSequence": 2,
+      "objectSequence": 3,
       "attributes": {
         "actionParameter": "DemoFactoryRunSearch",
         "actionType": "Launch",
@@ -48,7 +62,7 @@
       "instanceName": "Settings",
       "objectInstanceGuid": "22ed64eb-66f7-4544-9d0d-73101f2d31a5",
       "objectMasterGuid": "2a34c785-bbd7-439f-aacd-c5e24927f26c",
-      "objectSequence": 3,
+      "objectSequence": 4,
       "attributes": {
         "actionParameter": "DemoFactorySettingsScreen",
         "actionType": "Launch",
@@ -62,10 +76,10 @@
       "instanceName": "helpAction",
       "objectInstanceGuid": "909ba3f9-6462-4d6d-b69d-459750b9ca62",
       "objectMasterGuid": "2a34c785-bbd7-439f-aacd-c5e24927f26c",
-      "objectSequence": 4,
+      "objectSequence": 5,
       "attributes": {
-        "actionType": "Launch",
         "actionParameter": "DemoFactoryHelpScreen",
+        "actionType": "Launch",
         "label": "Hilfe",
         "smallImage": "i-lucide-circle-help",
         "tooltip": "Anleitung und Mein erstes Video öffnen"

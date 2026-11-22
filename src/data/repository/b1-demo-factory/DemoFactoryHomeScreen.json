@@ -1,0 +1,45 @@
+{
+  "createdAt": "2026-11-22 11:20:26.309236",
+  "createdBy": "mp1kR5wQmWEa3mwRuVe86SkKtgdp8A4C",
+  "howToUse": "",
+  "label": "",
+  "objectDescription": "Home screen of the Demo Factory Studio: an overview of every demo as a film strip with a frame per scene (DemoFactoryReelComponent). Opens first when the app starts; clicking a demo opens DemoFactoryDemoMaintenance, a rendered demo plays in place.",
+  "objectMasterGuid": "898fd80b-abee-460f-a3be-73f6aed8a558",
+  "objectName": "DemoFactoryHomeScreen",
+  "objectTypeGuid": "d188099d-8548-49f0-86e4-c4b28dda9ecc",
+  "owner": "mp1kR5wQmWEa3mwRuVe86SkKtgdp8A4C",
+  "productGuid": "94328e98-6f1d-4d15-b86d-f62fff77d705",
+  "status": "Active",
+  "templateObject": false,
+  "attributes": {
+    "icon": "i-lucide-clapperboard",
+    "title": "Übersicht"
+  },
+  "instances": [
+    {
+      "instanceName": "reelPanel",
+      "objectInstanceGuid": "e43eb175-2c2e-4edd-8763-445a1621e70c",
+      "objectMasterGuid": "31572117-2fe3-4262-ba03-20a74c6b59ca",
+      "attributes": {
+        "panelType": "structural"
+      },
+      "instances": [
+        {
+          "instanceName": "reel",
+          "objectInstanceGuid": "b61f89c3-e3f4-476f-9f85-e5b11ca97763",
+          "objectMasterGuid": "056a9481-f2ba-4582-83bd-85e3b11fd9d5",
+          "objectSequence": 1,
+          "attributes": {},
+          "instances": []
+        }
+      ]
+    }
+  ],
+  "links": [],
+  "tags": [
+    "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4"
+  ],
+  "tenantId": null,
+  "validFrom": null,
+  "validUntil": null
+}

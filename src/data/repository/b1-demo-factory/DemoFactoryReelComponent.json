@@ -1,0 +1,27 @@
+{
+  "createdAt": "2026-11-22 11:20:19.228507",
+  "createdBy": "mp1kR5wQmWEa3mwRuVe86SkKtgdp8A4C",
+  "howToUse": "",
+  "label": "",
+  "objectDescription": "The Demo Factory home screen's reel: every demo as a strip of film with one frame per scene, cut from the newest rendered run (else the uploaded recording) by the media controller. Data from the demo-factory-studio/reel action. A native component because a film strip of frames per record is a dashboard visual no b1 object type composes.",
+  "objectMasterGuid": "056a9481-f2ba-4582-83bd-85e3b11fd9d5",
+  "objectName": "DemoFactoryReelComponent",
+  "objectTypeGuid": "217eaba6-7c1d-49f3-a755-e135d89c93ac",
+  "owner": "mp1kR5wQmWEa3mwRuVe86SkKtgdp8A4C",
+  "productGuid": "94328e98-6f1d-4d15-b86d-f62fff77d705",
+  "status": "Active",
+  "templateObject": false,
+  "attributes": {
+    "componentName": "DemoFactoryReel",
+    "fileName": "src/web-app/src/components/global/DemoFactoryReel.vue",
+    "panelType": "structural"
+  },
+  "instances": [],
+  "links": [],
+  "tags": [
+    "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4"
+  ],
+  "tenantId": null,
+  "validFrom": null,
+  "validUntil": null
+}

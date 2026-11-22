@@ -10,6 +10,7 @@ import {
   DemoFactorySettingEvents,
   DemoFactoryStageEvents
 } from './demo-factory/demo-factory.events';
+import { DemoFactoryFrames } from './demo-factory/demo-factory.frames';
 import { DemoFactoryHost } from './demo-factory/demo-factory.host';
 import { DemoFactoryMaterializer } from './demo-factory/demo-factory.materializer';
 import { DemoFactoryMedia } from './demo-factory/demo-factory.media.controller';
@@ -47,6 +48,7 @@ const HANDLERS = [
   controllers: [Weather, PriceCalculation, DemoFactoryStudio, DemoFactoryMedia, DemoFactoryUpload],
   providers: [
     DemoFactoryHost,
+    DemoFactoryFrames,
     DemoFactoryStore,
     DemoFactoryMaterializer,
     DemoFactoryRunIngest,
