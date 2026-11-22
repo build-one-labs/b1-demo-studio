@@ -56,11 +56,29 @@
       </button>
     </div>
 
-    <!-- Same labels, tooltips and order as the toolbar of the Demos screen (DemoFactoryDemoSearchToolbar). -->
+    <!--
+      Creating a demo with the Demo Creator agent is the default, so it comes first and
+      is the primary button. The others match the toolbar of the Demos screen
+      (DemoFactoryDemoSearchToolbar) in label, tooltip and order.
+    -->
     <div class="welcome-actions">
       <button
         type="button"
         class="welcome-button welcome-button--primary"
+        :title="
+          translate(
+            'b1App.DemoFactoryWelcome.agentTooltip',
+            'Tell the Demo Creator agent what the video should show — it drafts the demo for you'
+          )
+        "
+        @click="openAgent"
+      >
+        <Icon name="lucide-sparkles" aria-hidden="true" />
+        {{ translate('b1App.DemoFactoryWelcome.agent', 'Create with agent') }}
+      </button>
+      <button
+        type="button"
+        class="welcome-button"
         :title="
           translate(
             'b1App.DemoFactoryWelcome.newDemoTooltip',
@@ -251,6 +269,15 @@ async function load(): Promise<void> {
   }
 }
 
+/** The Demo Creator without a demo: it drafts a new one (the toolbar passes the selected demo instead). */
+async function openAgent(): Promise<void> {
+  try {
+    await launchScreen('DemoFactoryAgentScreen', { data: {} });
+  } catch (cause) {
+    displayError(cause instanceof Error ? cause.message : String(cause));
+  }
+}
+
 async function open(screen: string): Promise<void> {
   try {
     await launchScreen(screen);
@@ -313,7 +340,7 @@ onBeforeUnmount(() => {
 
   position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 1.2fr) auto minmax(0, 1fr);
+  grid-template-columns: minmax(0, 560px) minmax(170px, 1fr) minmax(0, 560px);
   gap: 28px;
   align-items: center;
   padding: 28px 32px;
@@ -412,16 +439,19 @@ onBeforeUnmount(() => {
   color: var(--muted);
 }
 
+/* Centred in its column, so it sits midway between the text and the figures. */
 .welcome-actions {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  justify-self: center;
 }
 
 .welcome-button {
   display: inline-flex;
   gap: 8px;
   align-items: center;
+  white-space: nowrap;
   padding: 9px 16px;
   font-size: 13px;
   font-weight: 600;
@@ -638,7 +668,7 @@ onBeforeUnmount(() => {
 /* Narrower: the buttons stay beside the text, the figures move below both. */
 @media (max-width: 1100px) {
   .welcome {
-    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 560px) minmax(170px, 1fr);
   }
 
   .welcome-figures {

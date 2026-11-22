@@ -969,7 +969,9 @@
       "greetingMorning": "Guten Morgen",
       "greetingDay": "Guten Tag",
       "greetingEvening": "Guten Abend",
-      "loadFailed": "Die Kennzahlen konnten nicht geladen werden: {reason}"
+      "loadFailed": "Die Kennzahlen konnten nicht geladen werden: {reason}",
+      "agent": "Mit Agent erstellen",
+      "agentTooltip": "Dem Demo-Creator-Agenten beschreiben, was das Video zeigen soll – er entwirft die Demo für Sie"
     },
     "DemoFactoryReelCard": {
       "invalid": "Ungültig",

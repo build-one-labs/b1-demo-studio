@@ -969,7 +969,9 @@
       "greetingMorning": "Good morning",
       "greetingDay": "Good afternoon",
       "greetingEvening": "Good evening",
-      "loadFailed": "The figures could not be loaded: {reason}"
+      "loadFailed": "The figures could not be loaded: {reason}",
+      "agent": "Create with agent",
+      "agentTooltip": "Tell the Demo Creator agent what the video should show — it drafts the demo for you"
     },
     "DemoFactoryReelCard": {
       "invalid": "Invalid",
