@@ -285,7 +285,7 @@ onBeforeUnmount(() => {
   --accent: #f5b33c;
   --glass: rgb(255 255 255 / 5%);
   --glass-border: rgb(255 255 255 / 10%);
-  --surface: #0d0f15;
+  --surface: #14110d;
   --track: rgb(255 255 255 / 10%);
 }
 
@@ -295,8 +295,8 @@ onBeforeUnmount(() => {
   inset: -40%;
   z-index: -1;
   background: radial-gradient(30% 35% at 20% 30%, rgb(245 179 60 / 22%), transparent 70%),
-    radial-gradient(28% 32% at 75% 25%, rgb(0 87 255 / 16%), transparent 70%),
-    radial-gradient(30% 30% at 60% 85%, rgb(236 72 153 / 10%), transparent 70%);
+    radial-gradient(28% 32% at 75% 25%, rgb(232 150 26 / 14%), transparent 70%),
+    radial-gradient(30% 30% at 60% 85%, rgb(225 29 72 / 8%), transparent 70%);
   filter: blur(10px);
   animation: aurora 22s ease-in-out infinite alternate;
 }
