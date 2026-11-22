@@ -29,6 +29,25 @@
       </HelpCards>
     </HelpSection>
 
+    <HelpSection id="ways" :title="t('navWays')" icon="lucide-git-fork" :lead="t('waysLead')">
+      <HelpCards>
+        <HelpCard :title="L.agent" icon="lucide-sparkles" screen="DemoFactoryAgentScreen">{{
+          t('waysAgent')
+        }}</HelpCard>
+        <HelpCard :title="L.newDemo" icon="lucide-plus" screen="DemoFactoryDemoCreate">{{ t('waysNew') }}</HelpCard>
+        <HelpCard :title="L.importVideo" icon="lucide-file-video" screen="DemoFactoryVideoImportScreen">{{
+          t('waysVideo')
+        }}</HelpCard>
+        <HelpCard :title="L.import" icon="lucide-upload" screen="DemoFactoryImportScreen">{{
+          t('waysImport')
+        }}</HelpCard>
+      </HelpCards>
+      <h3>{{ t('waysWhichTitle') }}</h3>
+      <HelpTerms :items="ways" />
+      <p><Say k="waysWhere" :ui="L" /></p>
+      <HelpCallout type="tip"><Say k="waysAfter" :ui="L" /></HelpCallout>
+    </HelpSection>
+
     <HelpSection id="setup" :title="t('navSetup')" icon="lucide-wrench">
       <p><Say k="setupLead" :ui="L" /></p>
       <h3>{{ t('setupAppTitle') }}</h3>
@@ -42,7 +61,8 @@
       <p><Say k="setupHost" :ui="L" /></p>
     </HelpSection>
 
-    <HelpSection id="first" :title="t('navFirst')" icon="lucide-rocket" :lead="t('firstLead')">
+    <HelpSection id="first" :title="t('navFirst')" icon="lucide-rocket">
+      <p><Say k="firstLead" :ui="L" /></p>
       <HelpSteps>
         <HelpStep v-for="step in firstSteps" :key="step" :title="t(`${step}Title`)"><Say :k="step" :ui="L" /></HelpStep>
       </HelpSteps>
@@ -187,7 +207,7 @@ const EN = {
   howRunAll:
     '{runAll} performs these steps in one go, including preparing the sign-in. A run is one pass: a demo can have many runs, such as a first attempt and an improved version.',
   howVideo:
-    'There is a second way: record the app yourself, say what you show, and upload the file. The Factory turns it into a demo with scenes — see “From your own screen recording”.',
+    'You do not have to describe every scene yourself: the Demo Creator agent can write them for you, or you record the app yourself and upload the recording — see “Ways to create a demo”.',
   howNote:
     'You edit the blueprint; the Factory cuts the video from it. Changing a demo does not change an MP4 that was already rendered.',
   screensTitle: 'The Studio’s screens',
@@ -195,6 +215,26 @@ const EN = {
   cardDemos: 'The list of demos: open one to edit its scenes, voice-over and runs.',
   cardRuns: 'The runs of all demos, with their videos and captions.',
   cardSettings: 'Runtime configuration, the demo users recordings sign in as, and what this host can run.',
+  navWays: 'Ways to create a demo',
+  waysLead:
+    'There are four ways to a new demo. Each ends in an ordinary demo: scenes you can refine, voice and record again.',
+  waysAgent:
+    'The default. Say in a sentence what the video should show, or name a Linear ticket. The Demo Creator writes the scenes, tries each one live in the target app as the demo user, and then records and renders the video.',
+  waysNew:
+    'By hand, from the blank starter or as a copy of the selected demo. You write the scenes, narration and actions yourself — see “My first video”.',
+  waysVideo:
+    'From your own screen recording: operate the app, speak, upload. The Factory cuts it into scenes and voices your words anew — see “From your own screen recording”.',
+  waysImport: 'From a demo.yaml, for example one exported from another environment.',
+  waysWhichTitle: 'Which way when?',
+  waysWhichAgent: 'You know what the video should show, but not every click — or there is a ticket for the feature.',
+  waysWhichNew: 'You want full control over every action, or you want to vary an existing demo.',
+  waysWhichVideo:
+    'Showing it is quicker than describing it. Later, {convert} turns the clips into scenes the Factory films itself.',
+  waysWhichImport: 'The demo already exists elsewhere, or you restore a backup.',
+  waysWhere:
+    'All four buttons are in the welcome panel of the {overview}; the toolbar in {demos} has them too, where the agent button is called {askAgent}.',
+  waysAfter:
+    'Whichever way you start: afterwards you can refine the demo with the agent ({editWithAgent}), edit it by hand and record it again.',
   setupLead:
     'Open {settings} in the menu on the left. It shows the running Factory’s configuration and the steps this host can perform.',
   setupAppTitle: 'Reach the right app',
@@ -212,7 +252,7 @@ const EN = {
   setupHost:
     '{settings} also shows which steps this host can run. If recording or rendering is not available, the environment has to be set up for it.',
   firstLead:
-    'Start with a short video: open an app, show one feature, done. One or two scenes are enough for a first attempt.',
+    'This chapter walks through the manual way, to show what a demo consists of. With {agent}, the agent does most of these steps for you. Start with a short video: open an app, show one feature, done. One or two scenes are enough for a first attempt.',
   s1Title: 'Create a demo',
   s1: 'On the {overview} or in {demos}, click {newDemo}. Choose a unique id such as my-first-video and a title. The id may contain lowercase letters, digits and hyphens. {startFrom} tells whether the selected demo is copied or the blank starter is used — a fitting existing demo is often the fastest start. Click {createDemo}; the new demo opens.',
   s2Title: 'Check the recording settings',
@@ -231,7 +271,7 @@ const EN = {
   s8: 'Open the {runsTab} tab, select the finished run and click {openVideo}. Check picture, voice, clicks and captions; {openCaptions} opens the separate caption file. On the {overview}, the demo’s film strip now shows a frame per scene and plays the video. To change something, adapt the demo and start a new full run.',
   overviewTitle: 'The overview',
   overview1:
-    'The Studio opens on the {overview}: a greeting with the key figures and the buttons {newDemo}, {import} and {importVideo}, and below it the {listOfDemos} — every demo as a film strip with one frame per scene.',
+    'The Studio opens on the {overview}: a greeting with the key figures and the buttons {agent}, {newDemo}, {import} and {importVideo}, and below it the {listOfDemos} — every demo as a film strip with one frame per scene.',
   overview2:
     'The frames come from the newest rendered run, for a video demo without one from the uploaded recording; a demo that was never filmed shows blank frames. Play shows the video in a window, Open or a click on the title opens the demo. The search in the list’s header finds titles, ids and descriptions; the filter My demos shows only the demos you created.',
   overview3:
@@ -281,7 +321,7 @@ const EN = {
   agentCheck: 'Check the agent’s changes in the Studio afterwards, then record again — at first best with {runAll}.',
   featureTitle: 'A video of a new feature',
   feature:
-    'The Demo Creator can design a video of a newly built feature on its own. In {demos}, click {askAgent} and name the Linear ticket, the target app and the demo user: “Make a product video of the new feature from B1-1658. Record in https://samples.demo.build.one/ as the demo user samples-demo, English voice.”',
+    'The Demo Creator can design a video of a newly built feature on its own. On the {overview}, click {agent} (in {demos}: {askAgent}) and name the Linear ticket, the target app and the demo user: “Make a product video of the new feature from B1-1658. Record in https://samples.demo.build.one/ as the demo user samples-demo, English voice.”',
   f1: 'It reads the ticket — problem, acceptance criteria, linked pull requests — and the pull request’s description and changed files.',
   f2: 'It checks whether the feature has shipped in the target app and outlines the planned scenes.',
   f3: 'It opens every start page live as the demo user, reads the real labels and tries each scene before saving it.',
@@ -368,6 +408,7 @@ const L = computed(() => ({
   runs: ui('DemoFactoryMenu.Runs._label', 'Runs'),
   settings: ui('DemoFactoryMenu.Settings._label', 'Settings'),
   listOfDemos: ui('DemoFactoryHomeScreen.reelPanel._title', 'List of demos'),
+  agent: ui('b1App.DemoFactoryWelcome.agent', 'Create with agent'),
   newDemo: ui('DemoFactoryDemoSearchToolbar.newDemo._label', 'New demo'),
   import: ui('DemoFactoryDemoSearchToolbar.importDemo._label', 'Import'),
   importVideo: ui('DemoFactoryDemoSearchToolbar.importVideo._label', 'Import video'),
@@ -429,6 +470,7 @@ Say.props = ['k', 'ui'];
 
 const sections = computed<HelpNavSection[]>(() => [
   { id: 'how', label: t('navHow'), icon: 'lucide-workflow' },
+  { id: 'ways', label: t('navWays'), icon: 'lucide-git-fork' },
   { id: 'setup', label: t('navSetup'), icon: 'lucide-wrench' },
   { id: 'first', label: t('navFirst'), icon: 'lucide-rocket' },
   { id: 'buttons', label: t('navButtons'), icon: 'lucide-mouse-pointer-click' },
@@ -450,6 +492,14 @@ const flow = computed<HelpFlowNode[]>(() => [
 const firstSteps = ['s1', 's2', 's3', 's4', 's5', 's6', 's7', 's8'] as const;
 const agentSteps = ['a1', 'a2', 'a3', 'a4'] as const;
 const ownSteps = ['o1', 'o2', 'o3', 'o4', 'o5'] as const;
+
+/** Which way to a demo fits when — label and icon as on the overview's buttons. */
+const ways = computed<HelpTerm[]>(() => [
+  { label: L.value.agent, icon: 'lucide-sparkles', text: t('waysWhichAgent') },
+  { label: L.value.newDemo, icon: 'lucide-plus', text: t('waysWhichNew') },
+  { label: L.value.importVideo, icon: 'lucide-file-video', text: t('waysWhichVideo', { convert: L.value.convert }) },
+  { label: L.value.import, icon: 'lucide-upload', text: t('waysWhichImport') }
+]);
 
 const buttons = computed<HelpTerm[]>(() => [
   { label: L.value.save, icon: 'lucide-save', text: t('bSave') },
