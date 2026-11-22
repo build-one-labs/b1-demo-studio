@@ -3,7 +3,7 @@
   "createdBy": "mp1kR5wQmWEa3mwRuVe86SkKtgdp8A4C",
   "howToUse": "",
   "label": "",
-  "objectDescription": "Home screen of the Demo Factory Studio, the first entry of DemoFactoryMenu: every demo as a film strip with a frame per scene — the b1_card_view DemoFactoryReelCardView over DemoFactoryReelDSO. A click on a demo opens DemoFactoryDemoMaintenance, a rendered demo plays in place.",
+  "objectDescription": "Home screen of the Demo Factory Studio, the first entry of DemoFactoryMenu: the welcome panel DemoFactoryWelcomeComponent (greeting, KPIs, New demo / import buttons) above \"Liste der Demos\", the b1_card_view DemoFactoryReelCardView over DemoFactoryReelDSO. Client logic re-exports the handlers of the dialogs the welcome panel opens; Abspielen opens DemoFactoryReelPlayer.",
   "objectMasterGuid": "898fd80b-abee-460f-a3be-73f6aed8a558",
   "objectName": "DemoFactoryHomeScreen",
   "objectTypeGuid": "d188099d-8548-49f0-86e4-c4b28dda9ecc",
@@ -12,17 +12,40 @@
   "status": "Active",
   "templateObject": false,
   "attributes": {
+    "eventNamespace": "#",
     "icon": "i-lucide-clapperboard",
     "title": "Übersicht"
   },
   "instances": [
     {
+      "instanceName": "welcomePanel",
+      "objectInstanceGuid": "b3eaaf51-6a39-4b83-b6b9-ba3e58e5af66",
+      "objectMasterGuid": "31572117-2fe3-4262-ba03-20a74c6b59ca",
+      "objectSequence": 1,
+      "attributes": {
+        "htmlClass": "flex-none",
+        "panelMenu": "",
+        "panelType": "structural"
+      },
+      "instances": [
+        {
+          "instanceName": "welcome",
+          "objectInstanceGuid": "95b4ace6-2d74-4e3f-ac2b-254a22c45203",
+          "objectMasterGuid": "925c1472-4217-4446-baec-8a6def9a0f37",
+          "objectSequence": 1,
+          "attributes": {},
+          "instances": []
+        }
+      ]
+    },
+    {
       "instanceName": "reelPanel",
       "objectInstanceGuid": "e43eb175-2c2e-4edd-8763-445a1621e70c",
       "objectMasterGuid": "31572117-2fe3-4262-ba03-20a74c6b59ca",
+      "objectSequence": 2,
       "attributes": {
-        "headerLabel": "Alle Demos",
-        "htmlClass": "h-full min-h-0",
+        "headerLabel": "Liste der Demos",
+        "htmlClass": "flex-1 min-h-0",
         "panelType": "visual"
       },
       "instances": [
@@ -40,6 +63,7 @@
       "instanceName": "reelDSO",
       "objectInstanceGuid": "31f7438e-1a71-4f9f-b0af-cbcf7fb101d2",
       "objectMasterGuid": "16879257-4968-4db6-9b19-5356504b8c8b",
+      "objectSequence": 3,
       "attributes": {},
       "instances": []
     }

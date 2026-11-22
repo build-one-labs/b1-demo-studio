@@ -18,7 +18,7 @@
         <template v-if="demo.owner"> · {{ demo.owner }}</template>
       </span>
       <span class="reel-actions">
-        <button v-if="demo.videoUrl" class="reel-play" type="button" @click.stop="projecting = true">
+        <button v-if="demo.videoUrl" class="reel-play" type="button" @click.stop="play">
           <Icon name="lucide-play" aria-hidden="true" /> Abspielen
         </button>
         <button class="reel-open" type="button" @click.stop="openDemo">
@@ -34,7 +34,7 @@
         class="frame"
         role="listitem"
         :title="frame.title"
-        @click.stop="demo.videoUrl ? (projecting = true) : openDemo()"
+        @click.stop="demo.videoUrl ? play() : openDemo()"
       >
         <div class="frame-window">
           <img
@@ -58,26 +58,12 @@
         <div class="frame-window"><div class="frame-blank">Keine Szenen</div></div>
       </div>
     </div>
-
-    <Teleport to="body">
-      <div v-if="projecting" class="reel-projector" role="dialog" aria-modal="true" @click.self="projecting = false">
-        <div class="projector-screen">
-          <header>
-            <span>{{ demo.title }}</span>
-            <button type="button" title="Schließen" @click="projecting = false">
-              <Icon name="lucide-x" aria-hidden="true" />
-            </button>
-          </header>
-          <video :src="demo.videoUrl" controls autoplay playsinline />
-        </div>
-      </div>
-    </Teleport>
   </article>
 </template>
 
 <script setup lang="ts">
 import { displayError, launchScreen } from '@buildone/web-core';
-import { computed, onBeforeUnmount, ref, watch } from 'vue';
+import { computed, ref } from 'vue';
 
 interface ReelFrame {
   sceneId: string;
@@ -93,6 +79,7 @@ interface ReelDemo {
   footage: 'run' | 'source' | 'none';
   frames: ReelFrame[] | string;
   videoUrl: string;
+  runId: string;
   durationMs: number | null;
   recordedAt: string | null;
   invalid: boolean;
@@ -125,8 +112,16 @@ const frames = computed<ReelFrame[]>(() => {
   }
 });
 
-const projecting = ref(false);
 const broken = ref(new Set<string>());
+
+/** The rendered video, in the modal player screen positioned on its run. */
+async function play(): Promise<void> {
+  try {
+    await launchScreen('DemoFactoryReelPlayer', { repositionTo: demo.value.runId });
+  } catch (cause) {
+    displayError(cause instanceof Error ? cause.message : String(cause));
+  }
+}
 
 async function openDemo(): Promise<void> {
   try {
@@ -154,23 +149,13 @@ function formatDate(value: string): string {
   const date = new Date(value);
   return Number.isNaN(date.getTime()) ? value : date.toLocaleDateString(undefined, { day: '2-digit', month: 'short' });
 }
-
-function onKey(event: KeyboardEvent): void {
-  if (event.key === 'Escape') projecting.value = false;
-}
-
-watch(projecting, (open) => {
-  if (open) window.addEventListener('keydown', onKey);
-  else window.removeEventListener('keydown', onKey);
-});
-onBeforeUnmount(() => window.removeEventListener('keydown', onKey));
 </script>
 
 <style scoped>
 /*
  * Colours follow the app theme (PrimeVue's dark-mode selector is `.app-dark` on <html>):
  * the card and its text use PrimeVue's tokens. The film strip itself
- * stays dark in both themes, as film does, so it and the projector keep fixed
+ * stays dark in both themes, as film does, so it keeps fixed
  * colours (--film*, --edge, --on-film).
  */
 
@@ -431,50 +416,6 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey));
   color: var(--on-film);
   white-space: nowrap;
   text-overflow: ellipsis;
-}
-
-:global(.reel-projector) {
-  position: fixed;
-  inset: 0;
-  z-index: 1000;
-  display: grid;
-  place-items: center;
-  padding: 24px;
-  background: rgb(4 4 6 / 88%);
-  backdrop-filter: blur(4px);
-}
-
-:global(.reel-projector) .projector-screen {
-  width: min(1200px, 100%);
-  overflow: hidden;
-  background: #000;
-  border-radius: 10px;
-  box-shadow: 0 0 120px rgb(245 179 60 / 18%);
-}
-
-:global(.reel-projector) .projector-screen header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 14px;
-  font-weight: 600;
-  color: #f3f1ec;
-  background: #101014;
-}
-
-:global(.reel-projector) .projector-screen header button {
-  font-size: 18px;
-  color: #f3f1ec;
-  background: none;
-  border: 0;
-  cursor: pointer;
-}
-
-:global(.reel-projector) .projector-screen video {
-  display: block;
-  width: 100%;
-  max-height: 78vh;
-  background: #000;
 }
 
 @media (max-width: 720px) {

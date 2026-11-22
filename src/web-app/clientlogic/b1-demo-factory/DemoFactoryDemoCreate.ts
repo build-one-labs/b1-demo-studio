@@ -6,11 +6,19 @@
  * path that runs the schema validation — either as a copy of the demo selected
  * in the search grid or from the blank starter document.
  */
-import { closeScreen, displayError, displaySuccess, displayWarning, type ObjectInstance } from '@buildone/web-core';
+import {
+  closeScreen,
+  displayError,
+  displaySuccess,
+  displayWarning,
+  launchScreen,
+  type ObjectInstance
+} from '@buildone/web-core';
 
 import {
   DEMO_ID_PATTERN,
   DSO,
+  MAINTENANCE_SCREEN,
   assembleDocument,
   blankDocument,
   SEARCH_SCREEN,
@@ -49,9 +57,13 @@ export async function createDemo(eventSource: ObjectInstance): Promise<void> {
     return;
   }
 
+  // Opened from the overview, the search list may not be open: then the ids
+  // come from the data source, since save-demo would replace a demo of this id.
   const search = openScreen(SEARCH_SCREEN);
-  const demoRows = dsoOf<DemoRow>(search, DSO.demo)?.records.value ?? [];
-  if (demoRows.some((row) => row.id === id)) {
+  const demoIds = search
+    ? (dsoOf<DemoRow>(search, DSO.demo)?.records.value ?? []).map((row) => row.id)
+    : await demoIdsInStore();
+  if (demoIds.includes(id)) {
     displayWarning('A demo with this id already exists.');
     return;
   }
@@ -73,9 +85,20 @@ export async function createDemo(eventSource: ObjectInstance): Promise<void> {
     closeScreen(screen);
     await refreshDemos(search, id);
     displaySuccess(`Demo ${id} created.`);
+    if (!search) await launchScreen(MAINTENANCE_SCREEN, { repositionTo: id });
   } catch (error) {
     displayError(errorMessage(error));
   }
+}
+
+/** Every demo id, straight from the demo data source. */
+async function demoIdsInStore(): Promise<string[]> {
+  const query = encodeURIComponent(JSON.stringify({ fieldlist: 'id', filters: { logic: 'and', filters: [] } }));
+  const filter = encodeURIComponent(JSON.stringify({ top: -1 }));
+  const response = await fetch(`/service/app/data/${DSO.demo}?queryInformation=${query}&filter=${filter}`);
+  if (!response.ok) throw new Error(`Could not read the demos (${response.status})`);
+  const body = (await response.json()) as { records?: DemoRow[] } | DemoRow[];
+  return (Array.isArray(body) ? body : (body.records ?? [])).map((row) => row.id);
 }
 
 /**

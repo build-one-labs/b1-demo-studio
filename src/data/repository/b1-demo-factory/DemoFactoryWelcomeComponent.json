@@ -1,0 +1,25 @@
+{
+  "createdAt": "2026-11-22 12:43:18.351476",
+  "createdBy": "mp1kR5wQmWEa3mwRuVe86SkKtgdp8A4C",
+  "howToUse": "",
+  "label": "",
+  "objectDescription": "Welcome panel of the Studio overview: greeting, what the Studio does, KPI tiles (demos, mine, rendered, scenes, runtime) with a ring chart, the newest recording as a spotlight, and buttons for New demo / video import / YAML import. A dashboard header (native by CLAUDE.md reason 1); reads demo-factory/reel.",
+  "objectMasterGuid": "925c1472-4217-4446-baec-8a6def9a0f37",
+  "objectName": "DemoFactoryWelcomeComponent",
+  "objectTypeGuid": "217eaba6-7c1d-49f3-a755-e135d89c93ac",
+  "owner": "mp1kR5wQmWEa3mwRuVe86SkKtgdp8A4C",
+  "productGuid": "94328e98-6f1d-4d15-b86d-f62fff77d705",
+  "status": "Active",
+  "templateObject": false,
+  "attributes": {
+    "componentName": "DemoFactoryWelcome",
+    "fileName": "src/web-app/src/components/global/DemoFactoryWelcome.vue",
+    "panelType": "structural"
+  },
+  "instances": [],
+  "links": [],
+  "tags": [],
+  "tenantId": null,
+  "validFrom": null,
+  "validUntil": null
+}
