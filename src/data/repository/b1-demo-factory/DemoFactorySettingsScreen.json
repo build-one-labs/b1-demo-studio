@@ -97,7 +97,10 @@
                   "objectInstanceGuid": "ae652d38-b5d3-43ad-8607-b23b8ec7f2ed",
                   "objectMasterGuid": "42d23280-0576-4959-b408-9360cf65764f",
                   "objectSequence": 2,
-                  "attributes": {},
+                  "attributes": {
+                    "minSize": "15",
+                    "size": "42"
+                  },
                   "instances": [
                     {
                       "instanceName": "panel_auth",
@@ -126,7 +129,10 @@
                   "objectInstanceGuid": "a9457554-7e0c-4b05-a6d8-69e0a22ce12b",
                   "objectMasterGuid": "42d23280-0576-4959-b408-9360cf65764f",
                   "objectSequence": 3,
-                  "attributes": {},
+                  "attributes": {
+                    "minSize": "15",
+                    "size": "33"
+                  },
                   "instances": [
                     {
                       "instanceName": "panel_capabilities",
@@ -155,7 +161,10 @@
                   "objectInstanceGuid": "23a97c1c-69fb-4b75-81a1-a5efa8f25553",
                   "objectMasterGuid": "42d23280-0576-4959-b408-9360cf65764f",
                   "objectSequence": 1,
-                  "attributes": {},
+                  "attributes": {
+                    "minSize": "15",
+                    "size": "25"
+                  },
                   "instances": [
                     {
                       "instanceName": "panel_demo_users",
