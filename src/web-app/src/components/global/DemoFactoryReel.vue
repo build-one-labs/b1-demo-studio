@@ -297,10 +297,23 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey));
   color: var(--muted);
 }
 
+/* Each demo is a framed card, so one strip never runs into the next. */
 .reel {
-  margin-bottom: 30px;
+  margin-bottom: 22px;
+  padding: 16px 16px 18px;
+  background: linear-gradient(180deg, rgb(255 255 255 / 5%), rgb(255 255 255 / 2%));
+  border: 1px solid rgb(255 255 255 / 14%);
+  border-radius: 12px;
+  box-shadow:
+    0 0 0 1px rgb(0 0 0 / 60%),
+    0 14px 30px -18px rgb(0 0 0 / 90%);
+  transition: border-color 200ms ease;
   animation: reel-in 500ms ease-out both;
   animation-delay: var(--delay);
+}
+
+.reel:hover {
+  border-color: rgb(245 179 60 / 45%);
 }
 
 @keyframes reel-in {
@@ -315,7 +328,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey));
   flex-wrap: wrap;
   align-items: baseline;
   gap: 10px 14px;
-  margin: 0 4px 10px;
+  margin: 0 2px 12px;
 }
 
 .reel-name {

@@ -3,7 +3,7 @@
   "createdBy": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
   "howToUse": "",
   "label": "Demo Factory Studio",
-  "objectDescription": "Main screen of the native Demo Factory Studio: a sidebar rendering DemoFactoryMenu (Übersicht, Demos, Runs, Settings, Hilfe) beside the screen container the chosen screen opens in. On mount it launches the overview, DemoFactoryHomeScreen. The app's Start screen.",
+  "objectDescription": "Main screen of the native Demo Factory Studio: a sidebar rendering DemoFactoryMenu (Übersicht, Demos, Runs, Settings, Hilfe) beside the screen container the chosen screen opens in; the first menu entry, the overview, shows on start. The app's Start screen.",
   "objectMasterGuid": "a315e3c4-c7e0-41f0-8675-edfa2c3efc70",
   "objectName": "DemoFactoryNativeScreen",
   "objectTypeGuid": "d188099d-8548-49f0-86e4-c4b28dda9ecc",
@@ -12,8 +12,6 @@
   "status": "Active",
   "templateObject": false,
   "attributes": {
-    "eventNamespace": "#",
-    "EventVueMounted": "#.onMounted(eventSource)",
     "htmlClass": "flex flex-row gap-2",
     "icon": "i-lucide-clapperboard",
     "title": "Demo Factory"
