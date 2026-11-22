@@ -20,7 +20,7 @@
     {
       "instanceName": "DemoFactoryRunDSO",
       "objectInstanceGuid": "e2d52133-7b38-4675-a3fa-6134f3b036c6",
-      "objectMasterGuid": "49b67af7-2346-40c3-8ba3-ff546ed534cd",
+      "objectMasterGuid": "a70b95cb-7376-42ad-8a08-985731bd96fd",
       "attributes": {
         "foreignFields": "",
         "initialFetch": ""
@@ -30,7 +30,7 @@
     {
       "instanceName": "DemoFactoryRunSceneDSO",
       "objectInstanceGuid": "26677a3c-8ce7-486f-938e-5a2cbb332f01",
-      "objectMasterGuid": "2189c867-4a1d-428e-8a0d-980a35c0fe32",
+      "objectMasterGuid": "30c59db0-fd80-4cac-b0f2-60017b702280",
       "attributes": {
         "initialFetch": ""
       },
@@ -39,7 +39,7 @@
     {
       "instanceName": "DemoFactoryCaptionDSO",
       "objectInstanceGuid": "8d588866-bc43-4919-8a1d-43f0ba63e082",
-      "objectMasterGuid": "9e5a1d69-57d5-4182-b47e-685a96d3137d",
+      "objectMasterGuid": "67ea6704-0f88-4cc3-bb80-37183217f7f3",
       "attributes": {
         "initialFetch": ""
       },

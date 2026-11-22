@@ -8,7 +8,7 @@ import type { DemoFactoryStore } from './demo-factory.store';
 import type { ClsService } from 'nestjs-cls';
 
 /**
- * An in-memory stand-in for the clob store: read and commit with the same
+ * An in-memory stand-in for the store: read and commit with the same
  * key-diff semantics, no materializer hooks. The transfer service's job under
  * test is the ordering and diffing of commits — the validation those commits
  * trigger in production belongs to the materializer and the CLI schema, which
@@ -143,14 +143,14 @@ describe('DemoFactoryTransfer', () => {
     const { store, transfer } = makeTransfer();
     await transfer.saveDocument(document('demo', ['one']));
     const stored = (await store.read<DemoRow>('DemoFactoryDemoDSO'))[0];
-    stored.updatedAt = '2026-01-01T00:00:00.000Z';
+    stored.editedAt = '2026-01-01T00:00:00.000Z';
     stored.sourceHash = 'sha256:something';
 
     await transfer.saveDocument({ ...document('demo', ['one']), title: 'New title' });
 
     const after = (await store.read<DemoRow>('DemoFactoryDemoDSO'))[0];
     expect(after.title).toBe('New title');
-    expect(after.updatedAt).toBe('2026-01-01T00:00:00.000Z');
+    expect(after.editedAt).toBe('2026-01-01T00:00:00.000Z');
     expect(after.sourceHash).toBe('sha256:something');
   });
 
@@ -162,7 +162,7 @@ describe('DemoFactoryTransfer', () => {
   /**
    * The demo row is committed before the scenes, so a scene commit that throws
    * used to leave a demo with none. That row cannot validate or run, and
-   * `reconcileDemos` reads its `updatedAt` as a Studio edit — so it would go on
+   * `reconcileDemos` reads its `editedAt` as a Studio edit — so it would go on
    * hiding the demo.yaml it shares an id with. Observed on a deployment: an
    * import failed inside the materializer and left exactly that behind.
    */

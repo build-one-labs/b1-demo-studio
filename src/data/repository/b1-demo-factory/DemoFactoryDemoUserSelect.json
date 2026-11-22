@@ -22,7 +22,7 @@
     {
       "instanceName": "DemoFactoryDemoUserDSO",
       "objectInstanceGuid": "508fc6d9-6e26-487f-ab7e-4a1e85f787c6",
-      "objectMasterGuid": "ea51aceb-6460-480a-86a6-ee6c14e3461b",
+      "objectMasterGuid": "f9d5ae52-95e2-495d-b362-7ac60e2a043b",
       "attributes": {
         "initialFetch": "#none",
         "keyFields": "id"

@@ -11,10 +11,10 @@ import { createHash } from 'node:crypto';
  * this file only takes it apart and puts it back together, which is why
  * `rowsToDemo` is deliberately dumb: it reassembles, it never repairs.
  *
- * A clob payload is arbitrary JSON per row, so a column holding a nested object
- * (`settings`, `actions`, `assertions`, `cues`) stores the object itself. The
- * `dataType: "string"` those fields carry in the blueprint is field metadata for
- * grids and forms, which none of these data sources render.
+ * A column holding a nested object (`settings`, `actions`, `assertions`,
+ * `cues`) is jsonb in the app table (`drizzle/schema/demoFactory.table.ts`) and
+ * stores the object itself. The table's property names are these field names:
+ * the embedded data sources map columns to fields by them.
  */
 
 /** The data source names, so a typo is a compile error rather than a 404. */
@@ -50,7 +50,7 @@ export interface DemoRow {
   /** The file on disk has moved on, but this row was edited in the Studio. */
   driftedFromFile: boolean;
   /** Null until the Studio writes the row; that is what makes a reseed safe. */
-  updatedAt: string | null;
+  editedAt: string | null;
 }
 
 export interface SceneRow {
@@ -227,7 +227,7 @@ export interface DemoDocument {
  * Compound keys are built here and nowhere else.
  *
  * A scene id is only unique within its demo and a run scene only within its
- * run, so both need a prefix to be a clob key. `:` is safe as the separator
+ * run, so both need a prefix to be a primary key. `:` is safe as the separator
  * because `assertSafeId` already refuses it in a demo or scene id.
  */
 export const sceneKey = (demoId: string, sceneId: string): string => `${demoId}:${sceneId}`;
@@ -251,7 +251,7 @@ export const demoToRows = (demo: DemoDocument, sourceHash = ''): { demo: DemoRow
     invalidReason: '',
     sourceHash,
     driftedFromFile: false,
-    updatedAt: null
+    editedAt: null
   },
   scenes: (demo.scenes ?? []).map((scene, index) => ({
     id: sceneKey(demo.id, scene.id),

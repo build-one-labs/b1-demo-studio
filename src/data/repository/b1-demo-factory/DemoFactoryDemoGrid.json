@@ -62,13 +62,13 @@
       "instances": []
     },
     {
-      "instanceName": "updatedAt",
+      "instanceName": "editedAt",
       "objectInstanceGuid": "19a28286-7cb3-4bbd-95df-d54a97ac42e9",
       "objectMasterGuid": "6ce7a38a-5e9e-456f-a816-34cfcbf84de9",
       "objectSequence": 5,
       "attributes": {
         "dataType": "datetime",
-        "label": "Updated"
+        "label": "Edited"
       },
       "instances": []
     }
