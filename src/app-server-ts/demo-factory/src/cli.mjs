@@ -5,6 +5,10 @@ import {createRun, loadDemo, rehomeManifest, loadLatestRun, loadSelectedRun, rea
 import {prepareNarration} from './lib/narration.mjs';
 import {recordScenes} from './lib/record.mjs';
 import {renderDemo} from './lib/render.mjs';
+import {analyzeUpload} from './lib/source-video.mjs';
+import {convertDemo} from './lib/convert.mjs';
+import {inspectPage} from './lib/inspect.mjs';
+import {readFile} from 'node:fs/promises';
 
 await loadDotEnv();
 
@@ -13,11 +17,48 @@ const voiceFlag = flags.find((flag) => flag.startsWith('--voice='));
 const providerOverride = voiceFlag?.split('=')[1];
 const runId = flags.find((flag) => flag.startsWith('--run='))?.slice('--run='.length);
 const scenesFlag = flags.find((flag) => flag.startsWith('--scenes='));
+const flagValue = (name) => flags.find((flag) => flag.startsWith(`--${name}=`))?.slice(name.length + 3);
 const sceneFilter = scenesFlag ? new Set(scenesFlag.split('=')[1].split(',').map((value) => value.trim()).filter(Boolean)) : null;
 
 const validate = async () => {
   const {demo, file} = await loadDemo(demoId);
   console.log(`OK: ${demo.id} with ${demo.scenes.length} scenes (${file})`);
+};
+
+/**
+ * Turn an uploaded screen recording into a demo document (`<upload>/demo.json`).
+ * The document is not saved here: the app server saves it through its one
+ * validated write path, so a demo never lands half-made.
+ */
+const analyze = async () => {
+  const uploadId = flagValue('upload');
+  if (!uploadId) throw new Error('analyze needs --upload=<upload-id>');
+  const document = await analyzeUpload({uploadId, demoId, title: flagValue('title'), language: flagValue('language')});
+  console.log(`Analyzed upload ${uploadId}: ${document.scenes.length} scenes for demo ${demoId}`);
+};
+
+/**
+ * Turn the clip scenes of a video demo into filmed scenes (see convert.mjs).
+ * Like analyze, the result (`<upload>/converted.json`) is saved by the app
+ * server, not here.
+ */
+const convert = async () => {
+  const {demo} = await loadDemo(demoId);
+  const {file, filmed, total} = await convertDemo({demo, sceneFilter});
+  console.log(`Conversion of ${demoId}: ${filmed} of ${total} scene(s) filmed — ${file}`);
+};
+
+/**
+ * The live look (see inspect.mjs): `--request=<file>` holds what to open and
+ * play, `--out=<dir>` receives result.json and page.jpg. Exits 0 whether the
+ * draft passed or not — the result says which; only a broken request fails.
+ */
+const inspect = async () => {
+  const requestFile = flagValue('request');
+  const outDir = flagValue('out');
+  if (!requestFile || !outDir) throw new Error('inspect needs --request=<file> and --out=<dir>');
+  const {demo} = await loadDemo(demoId);
+  await inspectPage({demo, request: JSON.parse(await readFile(requestFile, 'utf8')), outDir});
 };
 
 const prepare = async () => {
@@ -67,10 +108,13 @@ const render = async () => {
 
 switch (command) {
   case 'validate': await validate(); break;
+  case 'analyze': await analyze(); break;
+  case 'convert': await convert(); break;
+  case 'inspect': await inspect(); break;
   case 'prepare': await prepare(); break;
   case 'record': await record(); break;
   case 'render': await render(); break;
   default:
-    console.log('Usage: node src/cli.mjs <validate|prepare|record|render> <demo-id> [--voice=elevenlabs|silent] [--scenes=id-1,id-2] [--run=run-id (render)]');
+    console.log('Usage: node src/cli.mjs <validate|analyze|convert|inspect|prepare|record|render> <demo-id> [--voice=elevenlabs|silent] [--scenes=id-1,id-2 (record, convert)] [--run=run-id (render)] [--request=file --out=dir (inspect)] [--upload=upload-id --title=… --language=de (analyze)]');
     process.exitCode = command === 'help' ? 0 : 1;
 }

@@ -1,0 +1,48 @@
+{
+  "createdAt": "2026-11-21 14:45:35.211852",
+  "createdBy": "mp1kR5wQmWEa3mwRuVe86SkKtgdp8A4C",
+  "howToUse": "",
+  "label": "",
+  "objectDescription": "Import video dialog of the native Studio, opened from the demo search toolbar: the author's own screen recording is uploaded and analyzed into a new video demo (scenes cut at speech pauses and screen changes, narration transcribed from the author's voice). The dialog closes when the analyze job has started; the search screen's job watcher repositions the list to the new demo when it lands.",
+  "objectMasterGuid": "9457e260-d83b-4221-9b15-e02462586f04",
+  "objectName": "DemoFactoryVideoImportScreen",
+  "objectTypeGuid": "d188099d-8548-49f0-86e4-c4b28dda9ecc",
+  "owner": "mp1kR5wQmWEa3mwRuVe86SkKtgdp8A4C",
+  "productGuid": "94328e98-6f1d-4d15-b86d-f62fff77d705",
+  "status": "Active",
+  "templateObject": false,
+  "attributes": {
+    "eventNamespace": "#",
+    "icon": "i-lucide-file-video",
+    "screenMode": "modal",
+    "title": "Import screen recording"
+  },
+  "instances": [
+    {
+      "instanceName": "a",
+      "objectInstanceGuid": "83a211a5-136e-4e42-9dff-7a78d896e8e1",
+      "objectMasterGuid": "31572117-2fe3-4262-ba03-20a74c6b59ca",
+      "attributes": {
+        "panelMenu": "",
+        "panelType": "visual"
+      },
+      "instances": [
+        {
+          "instanceName": "DemoFactoryVideoImportForm",
+          "objectInstanceGuid": "822bf8e5-035f-4439-ab5b-322f4d9b0af4",
+          "objectMasterGuid": "02c3e2fe-57d8-4e28-8357-628de12b55a9",
+          "objectSequence": 1,
+          "attributes": {},
+          "instances": []
+        }
+      ]
+    }
+  ],
+  "links": [],
+  "tags": [
+    "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4"
+  ],
+  "tenantId": null,
+  "validFrom": null,
+  "validUntil": null
+}

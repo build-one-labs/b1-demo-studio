@@ -35,7 +35,10 @@ function studio({valid = true, saves = true, scene = {sceneId: 'scene', demoId: 
     errorMessage: (error) => error.message,
   };
   const notifications = {launchScreen: async (name, payload) => calls.push({name, payload}), displayWarning: () => {}, displayInfo: () => {}, displaySuccess: () => {}, displayError: (error) => {throw new Error(error);}};
-  const agent = {createDemoConversation: async (prompt, context) => {calls.push({prompt, context}); return 'chat123';}};
+  const agent = {
+    createDemoConversation: async (prompt, context) => {calls.push({prompt, context}); return {conversationId: 'chat123', chatScreen: 'DemoChat'};},
+    openDemoConversation: async (created, prompt) => calls.push({name: 'open', created, prompt}),
+  };
   const exports = {};
   vm.runInNewContext(code, {exports, require: (name) => name === '@buildone/web-core' ? notifications : name === './DemoFactoryAgentScreen' ? agent : api, setTimeout: (callback) => callback()});
   return {exports, calls, run};
@@ -80,8 +83,9 @@ test('editing chat saves first and carries the current demo and selected scene',
   assert.deepEqual(JSON.parse(JSON.stringify(calls[1].context)), {
     demoId: 'demo', demoTitle: 'Demo', sceneId: 'scene', sceneTitle: 'Scene', sceneSequence: 2
   });
-  assert.equal(calls[2].name, 'agentChatScreen');
-  assert.equal(calls[2].payload.repositionTo, 'chat123');
+  assert.equal(calls[2].name, 'open');
+  assert.deepEqual(calls[2].created, {conversationId: 'chat123', chatScreen: 'DemoChat'});
+  assert.equal(calls[2].prompt, calls[1].prompt);
 });
 
 test('editing chat omits missing or foreign scenes and blocks unsuccessful saves', async () => {
@@ -106,11 +110,12 @@ test('conversation API receives environment, agent and explicit scene context', 
     exports,
     window: {location: {origin: 'https://studio.example'}},
     require: name => name === '@buildone/web-core'
-      ? {invokeServerTask: async value => {request = value; return {conversationId: 'ab-cd'};}}
+      // The proxy's answer: the minted id under request.conversation_id (B1 24.3).
+      ? {invokeServerTask: async value => {request = value; return {status: 'WORKING', request: {conversation_id: 'ab-cd'}, chatScreen: 'DemoChat'};}}
       : {DEMO_CREATOR_AGENT_GUID: 'demo-agent'},
   });
-  const id = await exports.createDemoConversation('Edit this scene', {demoId: 'demo', sceneId: 'scene', sceneSequence: 2});
-  assert.equal(id, 'abcd');
+  const created = await exports.createDemoConversation('Edit this scene', {demoId: 'demo', sceneId: 'scene', sceneSequence: 2});
+  assert.deepEqual(JSON.parse(JSON.stringify(created)), {conversationId: 'ab-cd', chatScreen: 'DemoChat'});
   assert.equal(request.paramObj.environmentUrl, 'https://studio.example');
   assert.equal(request.paramObj.agentObjectMasterGuid, 'demo-agent');
   assert.equal(request.paramObj.prompt, 'Edit this scene');

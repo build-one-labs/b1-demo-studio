@@ -158,6 +158,14 @@ const buildNarration = async ({demo, scene, provider, cacheDirectory}) => {
   const modelId = process.env[narration.modelIdEnv] || narration.defaultModelId;
   const languageCode = process.env[narration.languageCodeEnv] || narration.defaultLanguageCode;
   const voiceId = process.env[narration.voiceIdEnv] || 'silent-preview';
+  if (!text) {
+    // A clip scene the author did not speak over: no voice-over at all, and
+    // nothing to send to ElevenLabs. The footage plays at its own length.
+    const audioFile = path.join(cacheDirectory, 'empty-narration.wav');
+    await writeSilentWav(audioFile, 100);
+    step(`Narration for ${scene.id}: none — the scene plays without voice-over`);
+    return {provider: 'none', cacheKey: '', text: '', audioFile, alignment: {characters: [], character_start_times_seconds: [], character_end_times_seconds: []}, durationMs: 0, cues: {}, captions: []};
+  }
   // voiceSettings are part of the key: changing stability or style changes the
   // audio, and a cache that ignored that would keep serving the old take.
   const cacheKey = sha256(JSON.stringify({provider, text, modelId, languageCode, voiceId, wordsPerMinute: narration.wordsPerMinute, voiceSettings: narration.voiceSettings, chunkChars: narration.chunkChars}));
@@ -243,6 +251,7 @@ export const prepareNarration = async ({demo, runDir, providerOverride}) => {
       id: scene.id,
       title: scene.title,
       route: scene.route,
+      ...(scene.clip ? {clip: scene.clip} : {}),
       actions: scene.actions,
       assertions: scene.assertions,
       narration: metadata.text,

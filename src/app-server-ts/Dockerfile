@@ -96,7 +96,13 @@ COPY --chown=node:node ./src/app-server-ts/demo-factory ./demo-factory
 COPY --chown=node:node ./node_modules/@buildone/swat-data /data/b1
 COPY --chown=node:node ./src/data /data/app
 
-RUN mkdir -p /app-data/uploads && chown -R node:node /app-data
+# The Demo Factory's persistent volume (DEMO_OUTPUT_DIR, DEMO_CACHE_DIR in the
+# stack overlay app-stack-standalone) is mounted at /data/demo-factory. Docker
+# gives an empty named volume the owner and contents of the image's directory
+# at that path — without one here its root is root's, and the node user cannot
+# write a single run, upload or inspection (EACCES on mkdir).
+RUN mkdir -p /app-data/uploads /data/demo-factory/output /data/demo-factory/cache \
+  && chown -R node:node /app-data /data/demo-factory
 
 USER node
 CMD ["./start.sh"]

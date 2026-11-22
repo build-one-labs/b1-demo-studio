@@ -16,7 +16,6 @@ import {
   displayInfo,
   displaySuccess,
   displayWarning,
-  launchScreen,
   type Form,
   type ObjectInstance
 } from '@buildone/web-core';
@@ -37,7 +36,7 @@ import {
   type StageRow
 } from '../shared/demoFactoryStudio';
 
-import { createDemoConversation } from './DemoFactoryAgentScreen';
+import { createDemoConversation, openDemoConversation } from './DemoFactoryAgentScreen';
 
 /** How often the job is asked how it is doing while a stage runs. */
 const JOB_POLL_MS = 1500;
@@ -52,21 +51,20 @@ export async function editWithAgent(eventSource: ObjectInstance): Promise<void> 
   const scene = selectedScene(screen);
   try {
     if (!(await savePendingChanges(eventSource))) return;
-    const conversationId = await createDemoConversation(
-      'I want to edit the video currently open in Demo Factory Studio. Use the supplied demo and scene context, and ask what I would like to change. Wait for my instructions before modifying the definition.',
-      {
-        demoId: demo.id,
-        demoTitle: demo.title,
-        ...(scene && scene.demoId === demo.id
-          ? {
-              sceneId: scene.sceneId,
-              sceneTitle: scene.title,
-              sceneSequence: scene.sequence
-            }
-          : {})
-      }
-    );
-    await launchScreen('agentChatScreen', { repositionTo: conversationId, data: { conversationId } });
+    const prompt =
+      'I want to edit the video currently open in Demo Factory Studio. Use the supplied demo and scene context, and ask what I would like to change. Wait for my instructions before modifying the definition.';
+    const created = await createDemoConversation(prompt, {
+      demoId: demo.id,
+      demoTitle: demo.title,
+      ...(scene && scene.demoId === demo.id
+        ? {
+            sceneId: scene.sceneId,
+            sceneTitle: scene.title,
+            sceneSequence: scene.sequence
+          }
+        : {})
+    });
+    await openDemoConversation(created, prompt);
   } catch (error) {
     displayError(errorMessage(error));
   }
@@ -126,14 +124,18 @@ export async function addScene(eventSource: ObjectInstance): Promise<void> {
   if (!demo || !scenes) return;
   const rows = scenes.records.value;
   const sceneId = freshSceneId(rows, 'scene');
+  // A video demo's scenes are ranges of its recording, not browser sessions:
+  // the new one starts as the first ten seconds, for the author to move.
+  const durationMs = Number(demo.source?.durationMs) || 10_000;
   await commitScene(scenes, {
     id: `${demo.id}:${sceneId}`,
     demoId: demo.id,
     sceneId,
     sequence: rows.length + 1,
     title: 'New scene',
-    route: '/',
+    route: demo.source ? '' : '/',
     narration: 'Describe what this scene shows.',
+    clip: demo.source ? { startMs: 0, endMs: Math.min(10_000, durationMs) } : null,
     actions: [],
     assertions: []
   });
@@ -243,6 +245,41 @@ export async function runStage(eventSource: ObjectInstance, stage: string, allSc
   } catch (error) {
     displayError(errorMessage(error));
   }
+}
+
+/**
+ * Turn the clip scenes of a video demo into filmed scenes: Claude reads the
+ * recording's keyframes and the narration and writes Playwright actions, which
+ * a trial run in the live application must pass. Scenes that fail stay clips,
+ * with the reason on the scene.
+ */
+export function convertVideoDemo(eventSource: ObjectInstance): void {
+  const screen = screenOf(eventSource);
+  const demo = selectedDemo(screen);
+  if (!screen || !demo) return;
+  if (!demo.source) {
+    displayWarning('Only a demo imported from a screen recording can be converted.');
+    return;
+  }
+  displayConfirmationModal({
+    header: 'Convert to filmed scenes',
+    message:
+      'Claude reads each clip scene of the recording and writes the clicks and inputs that repeat it in the live application; a trial run checks them. Scenes that pass are filmed from then on, the others stay clips of your recording. The trial runs act in the live application as the signed-in demo user — what a scene sends or saves is really sent, once per trial — so convert against a demo environment, not production data. Each scene opens its route (or the start page) in its application: set those first if they matter. This takes a few minutes and calls the Anthropic API.',
+    icon: 'pi pi-sparkles',
+    acceptProps: { label: 'Convert' },
+    rejectProps: { label: 'Not now', outlined: true },
+    accept: async () => {
+      try {
+        if (!(await savePendingChanges(eventSource))) return;
+        await callStudio('convert-video', { demoId: demo.id });
+        displayInfo(`Converting ${demo.id} — see the pipeline log.`, { life: 4000 });
+        await watchJob(eventSource);
+        await dsoOf(screen, DSO.scene)?.fetchRecords();
+      } catch (error) {
+        displayError(errorMessage(error));
+      }
+    }
+  });
 }
 
 interface SelectedRun {

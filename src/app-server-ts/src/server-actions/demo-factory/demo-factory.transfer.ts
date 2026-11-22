@@ -142,6 +142,7 @@ export class DemoFactoryTransfer {
           schemaVersion: rows.demo.schemaVersion,
           settings: rows.demo.settings,
           setup: rows.demo.setup,
+          source: rows.demo.source,
           sceneCount: rows.demo.sceneCount
         }
       : rows.demo;

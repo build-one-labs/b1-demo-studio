@@ -55,6 +55,16 @@ data sources, plus three small project-owned object types (`b1_log_view`,
 whose Vue components live in `src/web-app/src/components/`. The former
 `DemoFactoryStudio` Vue component is gone (issue #17).
 
+**Import video** on the demo search screen is the third way to start a demo,
+beside writing it and asking the Demo Creator: the author records the app
+themselves, talking while they click, and uploads the file
+(`DemoFactoryVideoImportScreen` → `POST demo-factory/upload` →
+`import-video`). The `analyze` job cuts it into scenes at speech pauses and
+screen changes and transcribes the narration (ElevenLabs Speech-to-Text); the
+result is a demo whose scenes carry a `clip` of the recording instead of a
+route and actions, and which records and renders without a browser or a
+sign-in. See *Video demos* in `AUTHORING.md`.
+
 The demo screen's main toolbar contains **Save**, **Run full demo**,
 **Edit with Demo Agent**, **Hilfe**, and **Close**. The editing chat carries the
 current demo ID/title and selected scene ID/title/sequence as explicit context;
@@ -449,5 +459,8 @@ Two recording constraints worth knowing before editing `demo.yaml`:
 
 Upstream extras not vendored (fetch from the source repo if needed): the local
 B1 fixture, the `payment-infrastructure` and `vibecode-sales-tour` reference
-demos, the source-video import tools, and the standalone Studio UI that edits
+demos with the `source-edit.yaml` and Python prompt-replacement script their
+source-video tools (`tools/import-source-video.mjs`,
+`tools/render-source-video.mjs`) expect — superseded by video demos, see
+`AUTHORING.md` — and the standalone Studio UI that edits
 demo YAMLs in a browser (superseded here by the `b1-demo-factory` app).

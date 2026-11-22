@@ -30,10 +30,24 @@
       "instances": []
     },
     {
+      "instanceName": "convertVideo",
+      "objectInstanceGuid": "91b503cd-78e5-4922-987b-ff551332b35a",
+      "objectMasterGuid": "2a34c785-bbd7-439f-aacd-c5e24927f26c",
+      "objectSequence": 2,
+      "attributes": {
+        "actionParameter": "#.convertVideoDemo(eventSource)",
+        "actionType": "Run",
+        "label": "Convert to filmed scenes",
+        "smallImage": "i-lucide-wand-sparkles",
+        "tooltip": "Video demos: Claude turns the recorded clips into clicks and inputs that Playwright films in the live application"
+      },
+      "instances": []
+    },
+    {
       "instanceName": "DemoFactoryMoreActions",
       "objectInstanceGuid": "2092fad8-3501-4a14-bf90-3f48485d2b90",
       "objectMasterGuid": "abf1cf15-ebbf-49f5-a5ac-a6ab64cb1fba",
-      "objectSequence": 2,
+      "objectSequence": 3,
       "attributes": {},
       "instances": []
     }

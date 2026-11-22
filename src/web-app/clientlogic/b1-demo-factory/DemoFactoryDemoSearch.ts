@@ -19,9 +19,15 @@ import { screenOf, selectedDemo } from '../shared/demoFactoryStudio';
 export { startConversation } from './DemoFactoryAgentScreen';
 export { createDemo, onInitialize } from './DemoFactoryDemoCreate';
 export { importDemo } from './DemoFactoryImportScreen';
+export { importVideo, onVideoSelected } from './DemoFactoryVideoImportScreen';
 
 export async function openImport(): Promise<void> {
   await launchScreen('DemoFactoryImportScreen');
+}
+
+/** The author's own screen recording → a video demo, cut into scenes. */
+export async function openVideoImport(): Promise<void> {
+  await launchScreen('DemoFactoryVideoImportScreen');
 }
 
 export async function openAgent(eventSource: ObjectInstance): Promise<void> {

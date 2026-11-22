@@ -1,0 +1,66 @@
+{
+  "createdAt": "2026-11-21 18:25:52.4793",
+  "createdBy": "mp1kR5wQmWEa3mwRuVe86SkKtgdp8A4C",
+  "howToUse": "",
+  "label": "",
+  "objectDescription": "Demo users of the Settings screen (DemoFactoryDemoUserDSO): the accounts Playwright signs in as. Read-only; selecting a row loads it into DemoFactoryDemoUserForm for editing. \"Key stored\" is the secret store's answer, looked up on every read.",
+  "objectMasterGuid": "7e375164-6c42-4cc7-b8d2-da753cc45adc",
+  "objectName": "DemoFactoryDemoUsersGrid",
+  "objectTypeGuid": "63d81ac2-8555-44e1-9032-7064448799c4",
+  "owner": "mp1kR5wQmWEa3mwRuVe86SkKtgdp8A4C",
+  "productGuid": "94328e98-6f1d-4d15-b86d-f62fff77d705",
+  "status": "Active",
+  "templateObject": false,
+  "attributes": {
+    "enabled": true,
+    "eventRowSelected": "#.onDemoUserSelected(eventSource)",
+    "headerLabel": "Demo users"
+  },
+  "instances": [
+    {
+      "instanceName": "label",
+      "objectInstanceGuid": "787a316c-8d8f-457b-a452-36d6c0b758d7",
+      "objectMasterGuid": "11ba27c0-a259-4df5-8752-2a7fd4f08242",
+      "attributes": {
+        "enabled": false,
+        "label": "Demo user"
+      },
+      "instances": []
+    },
+    {
+      "instanceName": "id",
+      "objectInstanceGuid": "252eb693-ea1f-40ed-afcb-56281f700ef5",
+      "objectMasterGuid": "11ba27c0-a259-4df5-8752-2a7fd4f08242",
+      "attributes": {
+        "enabled": false,
+        "label": "Id"
+      },
+      "instances": []
+    },
+    {
+      "instanceName": "appUrl",
+      "objectInstanceGuid": "8af516fe-4602-4cf6-82fb-99d2cae74470",
+      "objectMasterGuid": "11ba27c0-a259-4df5-8752-2a7fd4f08242",
+      "attributes": {
+        "enabled": false,
+        "label": "Meant for"
+      },
+      "instances": []
+    },
+    {
+      "instanceName": "configured",
+      "objectInstanceGuid": "86bd613c-2312-4d84-a514-c3339a8b3efe",
+      "objectMasterGuid": "3d463fd8-49d9-4094-8f0a-9ad8d28f653f",
+      "attributes": {
+        "enabled": false,
+        "label": "Key stored"
+      },
+      "instances": []
+    }
+  ],
+  "links": [],
+  "tags": [],
+  "tenantId": null,
+  "validFrom": null,
+  "validUntil": null
+}

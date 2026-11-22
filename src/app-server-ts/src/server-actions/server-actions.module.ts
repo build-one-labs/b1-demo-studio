@@ -4,6 +4,7 @@ import { Module } from '@nestjs/common';
 import { ApiModule } from '../api/api.module';
 
 import { DemoFactoryStudio } from './demo-factory/demo-factory.actions';
+import { DemoFactoryDemoUserEvents, DemoFactoryDemoUsers } from './demo-factory/demo-factory.demo-users';
 import {
   DemoFactoryHostEvents,
   DemoFactorySettingEvents,
@@ -17,6 +18,7 @@ import { DemoFactoryRunIngest } from './demo-factory/demo-factory.run-ingest';
 import { DemoFactorySeedService } from './demo-factory/demo-factory.seed';
 import { DemoFactoryStore } from './demo-factory/demo-factory.store';
 import { DemoFactoryTransfer } from './demo-factory/demo-factory.transfer';
+import { DemoFactoryUpload } from './demo-factory/demo-factory.upload.controller';
 import { PriceCalculation } from './samples/price-calculation';
 import { Weather } from './samples/weather';
 
@@ -36,12 +38,13 @@ const HANDLERS = [
   { provide: 'DemoFactoryMaterializer', useExisting: DemoFactoryMaterializer },
   { provide: 'DemoFactorySettingEvents', useExisting: DemoFactorySettingEvents },
   { provide: 'DemoFactoryStageEvents', useExisting: DemoFactoryStageEvents },
-  { provide: 'DemoFactoryHostEvents', useExisting: DemoFactoryHostEvents }
+  { provide: 'DemoFactoryHostEvents', useExisting: DemoFactoryHostEvents },
+  { provide: 'DemoFactoryDemoUserEvents', useExisting: DemoFactoryDemoUserEvents }
 ];
 
 @Module({
   imports: [HttpModule, ApiModule],
-  controllers: [Weather, PriceCalculation, DemoFactoryStudio, DemoFactoryMedia],
+  controllers: [Weather, PriceCalculation, DemoFactoryStudio, DemoFactoryMedia, DemoFactoryUpload],
   providers: [
     DemoFactoryHost,
     DemoFactoryStore,
@@ -53,6 +56,8 @@ const HANDLERS = [
     DemoFactorySettingEvents,
     DemoFactoryStageEvents,
     DemoFactoryHostEvents,
+    DemoFactoryDemoUsers,
+    DemoFactoryDemoUserEvents,
     ...HANDLERS
   ],
   exports: [

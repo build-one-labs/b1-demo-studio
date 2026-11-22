@@ -30,7 +30,8 @@ export const DSO = {
   setting: 'DemoFactorySettingDSO',
   stage: 'DemoFactoryStageDSO',
   host: 'DemoFactoryHostDSO',
-  job: 'DemoFactoryJobDSO'
+  job: 'DemoFactoryJobDSO',
+  demoUser: 'DemoFactoryDemoUserDSO'
 } as const;
 
 /** The Demo Creator's b1_agent objectMasterGuid — see DemoCreatorAgent.json. */
@@ -43,7 +44,16 @@ export interface DemoRow {
   schemaVersion: number;
   settings: Record<string, unknown>;
   setup: Record<string, unknown> | null;
+  /** The uploaded screen recording a video demo is cut from; null for a filmed demo. */
+  source: Record<string, unknown> | null;
   sceneCount: number;
+}
+
+/** A scene's range of the source video, in milliseconds. */
+export interface SceneClip {
+  startMs: number;
+  endMs: number;
+  voiceAtMs?: number;
 }
 
 export interface SceneRow {
@@ -52,10 +62,27 @@ export interface SceneRow {
   sceneId: string;
   sequence: number;
   title: string;
+  /** The application this scene runs in; empty = the demo's base URL. */
+  baseUrl?: string;
+  /** Empty for a clip scene of a video demo. */
   route: string;
   narration: string;
+  clip: SceneClip | null;
+  /** `clip` or `film`; empty = clip when there is a clip. */
+  mode?: SceneMode | 'auto' | '';
+  conversion?: SceneConversion | null;
   actions: unknown[];
   assertions: unknown[];
+}
+
+export type SceneMode = 'clip' | 'film';
+
+/** What the last conversion said about a scene. */
+export interface SceneConversion {
+  status: 'filmed' | 'failed';
+  message: string;
+  at?: string;
+  model?: string;
 }
 
 export interface StageRow {
@@ -81,7 +108,19 @@ export interface DemoDocument {
   description?: string;
   settings: Record<string, unknown>;
   setup?: Record<string, unknown>;
-  scenes: { id: string; title: string; route: string; narration: string; actions: unknown[]; assertions: unknown[] }[];
+  source?: Record<string, unknown>;
+  scenes: {
+    id: string;
+    title: string;
+    baseUrl?: string;
+    route?: string;
+    narration: string;
+    clip?: SceneClip;
+    mode?: SceneMode;
+    conversion?: SceneConversion;
+    actions: unknown[];
+    assertions: unknown[];
+  }[];
 }
 
 /** Call one of the studio's server actions; the result is the action's return value. */
@@ -157,14 +196,21 @@ export function assembleDocument(demo: DemoRow, scenes: SceneRow[]): DemoDocumen
     description: demo.description,
     settings: demo.settings,
     ...(demo.setup ? { setup: demo.setup } : {}),
+    ...(demo.source ? { source: demo.source } : {}),
     scenes: [...scenes]
       .filter((scene) => scene.demoId === demo.id)
       .sort((left, right) => left.sequence - right.sequence)
       .map((scene) => ({
         id: scene.sceneId,
         title: scene.title,
-        route: scene.route,
+        // Same rule as the server's rowsToDemo: empty means not set, and the
+        // schema refuses an empty URL or route.
+        ...(scene.baseUrl?.trim() ? { baseUrl: scene.baseUrl.trim() } : {}),
+        ...(scene.route ? { route: scene.route } : {}),
         narration: scene.narration,
+        ...(scene.clip ? { clip: scene.clip } : {}),
+        ...(scene.mode === 'clip' || scene.mode === 'film' ? { mode: scene.mode } : {}),
+        ...(scene.conversion ? { conversion: scene.conversion } : {}),
         actions: scene.actions ?? [],
         assertions: scene.assertions ?? []
       }))
@@ -182,7 +228,9 @@ export function blankDocument(id: string, title: string): DemoDocument {
       language: 'en',
       viewport: { width: 1920, height: 1080 },
       fps: 30,
-      baseUrl: { env: 'B1_BASE_URL', fallback: 'http://localhost:8080/' },
+      // The demo environment, whatever this host's B1_BASE_URL says (an empty
+      // variable name); a scene may name another application of its own.
+      baseUrl: { env: '', fallback: 'https://samples.demo.build.one/' },
       authStateEnv: 'B1_AUTH_STATE',
       headlessEnv: 'DEMO_HEADLESS',
       holdBeforeMs: 700,

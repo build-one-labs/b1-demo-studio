@@ -1,0 +1,152 @@
+{
+  "createdAt": "2026-11-21 14:45:27.560683",
+  "createdBy": "mp1kR5wQmWEa3mwRuVe86SkKtgdp8A4C",
+  "howToUse": "",
+  "label": "",
+  "objectDescription": "Form of the Import video dialog: the author's own screen recording of a B1 app is picked in the b1_file_upload (no auto upload); the client logic sends it in 8 MB chunks to /service/app/demo-factory/upload/{start,:id/chunk,:id/finish} — one request for the whole file does not get past Codespaces' port forwarding — showing progress in uploadStatus and putting the upload id into uploadId. Then \"Analyze & create demo\" calls import-video with the new demo's id, title and language. The analyze job cuts the recording into scenes at speech pauses and screen changes, transcribes the voice with ElevenLabs Speech-to-Text and saves the result as a video demo (scenes with clips of the recording instead of routes and browser actions).",
+  "objectMasterGuid": "02c3e2fe-57d8-4e28-8357-628de12b55a9",
+  "objectName": "DemoFactoryVideoImportForm",
+  "objectTypeGuid": "130726b3-7c42-4f22-a324-cc07f3d21feb",
+  "owner": "mp1kR5wQmWEa3mwRuVe86SkKtgdp8A4C",
+  "productGuid": "94328e98-6f1d-4d15-b86d-f62fff77d705",
+  "status": "Active",
+  "templateObject": false,
+  "attributes": {
+    "headerLabel": "Import screen recording"
+  },
+  "instances": [
+    {
+      "instanceName": "videoFieldset",
+      "objectInstanceGuid": "b58e8c92-a177-4e58-ba45-ebdff8ad3d34",
+      "objectMasterGuid": "4002bae8-5bac-45f1-82b3-0d91f7381296",
+      "attributes": {
+        "label": "1 · Screen recording"
+      },
+      "instances": [
+        {
+          "instanceName": "videoUpload",
+          "objectInstanceGuid": "371223b8-200d-4c76-9248-a1f521fbc90d",
+          "objectMasterGuid": "ff850f06-8884-477f-a078-dcf609e360ae",
+          "objectSequence": 1,
+          "attributes": {
+            "accept": "video/*,.mp4,.mov,.webm,.mkv,.m4v",
+            "autoUpload": false,
+            "eventUploadFileAdd": "#.onVideoSelected(eventSource, eventPayload)",
+            "excludeFromFilter": true,
+            "label": "Your recording of the app, with your voice explaining it (MP4, MOV, WebM, MKV — up to 4 GB)",
+            "maxFileSize": 4294967296,
+            "multiple": false,
+            "showCancelButton": false,
+            "showUploadButton": false
+          },
+          "instances": []
+        },
+        {
+          "instanceName": "uploadStatus",
+          "objectInstanceGuid": "93a0ca43-820d-4bc3-8e3c-5073dafa55e6",
+          "objectMasterGuid": "81756e31-509d-46ef-a774-1c52876e0a11",
+          "objectSequence": 2,
+          "attributes": {
+            "enabled": false,
+            "excludeFromFilter": true,
+            "label": "Upload",
+            "placeholder": "— choose the recording above —"
+          },
+          "instances": []
+        },
+        {
+          "instanceName": "uploadId",
+          "objectInstanceGuid": "4ce0ea33-719c-4a40-be28-1e8027ba201e",
+          "objectMasterGuid": "81756e31-509d-46ef-a774-1c52876e0a11",
+          "objectSequence": 3,
+          "attributes": {
+            "enabled": false,
+            "label": "Uploaded file",
+            "placeholder": "— upload the recording first —"
+          },
+          "instances": []
+        }
+      ]
+    },
+    {
+      "instanceName": "demoFieldset",
+      "objectInstanceGuid": "c4391bd6-90f6-4794-b85d-3908796a6221",
+      "objectMasterGuid": "4002bae8-5bac-45f1-82b3-0d91f7381296",
+      "attributes": {
+        "label": "2 · New demo"
+      },
+      "instances": [
+        {
+          "instanceName": "demoId",
+          "objectInstanceGuid": "2fb90e99-14c1-4773-885e-5146638a69f0",
+          "objectMasterGuid": "81756e31-509d-46ef-a774-1c52876e0a11",
+          "objectSequence": 1,
+          "attributes": {
+            "label": "Demo id — lowercase letters, digits and hyphens",
+            "required": true
+          },
+          "instances": []
+        },
+        {
+          "instanceName": "title",
+          "objectInstanceGuid": "acb9900f-1332-40b9-b03d-46285e683302",
+          "objectMasterGuid": "81756e31-509d-46ef-a774-1c52876e0a11",
+          "objectSequence": 2,
+          "attributes": {
+            "label": "Title"
+          },
+          "instances": []
+        },
+        {
+          "instanceName": "language",
+          "objectInstanceGuid": "f79ab376-4372-4193-8bd4-8a091bfe8a04",
+          "objectMasterGuid": "b1b73251-5116-37b7-e314-de2cc0dc4ddb",
+          "objectSequence": 3,
+          "attributes": {
+            "label": "Spoken language — auto detects it",
+            "optionsList": "auto,de,en,fr,es,it,nl"
+          },
+          "instances": []
+        }
+      ]
+    },
+    {
+      "instanceName": "videoImportHelp",
+      "objectInstanceGuid": "f41a3d6d-9f74-48de-9da1-f3b0be21f056",
+      "objectMasterGuid": "ec630cb7-644c-47e2-85a1-d8513048a915",
+      "attributes": {
+        "text": "The recording is cut into scenes where you pause and the screen changes; what you said becomes each scene's editable narration. Then Run full demo re-voices it, cuts the clips and renders the video.",
+        "variant": "caption"
+      },
+      "instances": []
+    },
+    {
+      "instanceName": "cancelButton",
+      "objectInstanceGuid": "3125b662-4cae-4da5-8e39-64aee55e967f",
+      "objectMasterGuid": "efc1a521-3c11-4af2-bfaa-83b1f9c07abf",
+      "attributes": {
+        "eventClick": "b1.closeScreen(eventSource.screen)",
+        "htmlClass": "p-button-text",
+        "label": "Cancel"
+      },
+      "instances": []
+    },
+    {
+      "instanceName": "analyzeButton",
+      "objectInstanceGuid": "b6a81fcf-4b25-4c2b-be37-79c2d64d4bc3",
+      "objectMasterGuid": "efc1a521-3c11-4af2-bfaa-83b1f9c07abf",
+      "attributes": {
+        "eventClick": "#.importVideo(eventSource)",
+        "label": "Analyze & create demo"
+      },
+      "instances": []
+    }
+  ],
+  "links": [],
+  "tags": [
+    "b7147f2a-a892-4d22-8d6d-00e0a3aa09d4"
+  ],
+  "tenantId": null,
+  "validFrom": null,
+  "validUntil": null
+}

@@ -3,7 +3,7 @@
   "createdBy": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
   "howToUse": "",
   "label": "",
-  "objectDescription": "Settings view of the native Demo Factory Studio (issue #17, step 3), opened from the Settings entry of DemoFactoryMenu: the runtime configuration grid (DemoFactorySettingDSO, values edited in place) on the left; on the right the recording sign-in (mint the auth state from a pasted session token) above what this host can do (DemoFactoryHostDSO). Saving a value or minting the auth state re-asks the stage verdicts (DemoFactoryStageDSO) and the host capabilities, because several settings decide what the host can run.",
+  "objectDescription": "Settings view of the native Demo Factory Studio, opened from the Settings entry of DemoFactoryMenu: the runtime configuration grid (DemoFactorySettingDSO, values edited in place) on the left; on the right the demo users — the accounts recordings sign in as (DemoFactoryDemoUserDSO in DemoFactoryDemoUsersGrid, edited in DemoFactoryDemoUserForm; their API keys live in the secret store) — above what this host can do (DemoFactoryHostDSO). Saving a value re-asks the stage verdicts (DemoFactoryStageDSO) and the host capabilities, because several settings decide what the host can run.",
   "objectMasterGuid": "20973f2d-d555-4fc2-812b-1385fe9d0ef9",
   "objectName": "DemoFactorySettingsScreen",
   "objectTypeGuid": "d188099d-8548-49f0-86e4-c4b28dda9ecc",
@@ -93,11 +93,14 @@
               },
               "instances": [
                 {
-                  "instanceName": "pane_auth",
+                  "instanceName": "pane_demo_user_form",
                   "objectInstanceGuid": "ae652d38-b5d3-43ad-8607-b23b8ec7f2ed",
                   "objectMasterGuid": "42d23280-0576-4959-b408-9360cf65764f",
-                  "objectSequence": 1,
-                  "attributes": {},
+                  "objectSequence": 2,
+                  "attributes": {
+                    "minSize": "15",
+                    "size": "42"
+                  },
                   "instances": [
                     {
                       "instanceName": "panel_auth",
@@ -105,15 +108,15 @@
                       "objectMasterGuid": "31572117-2fe3-4262-ba03-20a74c6b59ca",
                       "objectSequence": 1,
                       "attributes": {
-                        "headerLabel": "Recording sign-in",
+                        "headerLabel": "Add or change a demo user",
                         "panelType": "visual"
                       },
                       "instances": [
                         {
-                          "instanceName": "DemoFactoryAuthForm",
-                          "objectInstanceGuid": "6fa7a76a-c9f9-4e69-8f6e-d8d0451d620e",
-                          "objectMasterGuid": "1dd86e7d-3703-45fe-8ca9-8fadf9ae5ece",
-                          "objectSequence": 1,
+                          "instanceName": "DemoFactoryDemoUserForm",
+                          "objectInstanceGuid": "9bc03e0d-2dda-419d-b0b6-79056d6679c9",
+                          "objectMasterGuid": "589011a7-6c05-4a5f-8cff-47b224091407",
+                          "objectSequence": 3,
                           "attributes": {},
                           "instances": []
                         }
@@ -122,11 +125,14 @@
                   ]
                 },
                 {
-                  "instanceName": "pane_capabilities",
+                  "instanceName": "pane_host_info",
                   "objectInstanceGuid": "a9457554-7e0c-4b05-a6d8-69e0a22ce12b",
                   "objectMasterGuid": "42d23280-0576-4959-b408-9360cf65764f",
-                  "objectSequence": 2,
-                  "attributes": {},
+                  "objectSequence": 3,
+                  "attributes": {
+                    "minSize": "15",
+                    "size": "33"
+                  },
                   "instances": [
                     {
                       "instanceName": "panel_capabilities",
@@ -149,12 +155,51 @@
                       ]
                     }
                   ]
+                },
+                {
+                  "instanceName": "pane_demo_users",
+                  "objectInstanceGuid": "23a97c1c-69fb-4b75-81a1-a5efa8f25553",
+                  "objectMasterGuid": "42d23280-0576-4959-b408-9360cf65764f",
+                  "objectSequence": 1,
+                  "attributes": {
+                    "minSize": "15",
+                    "size": "25"
+                  },
+                  "instances": [
+                    {
+                      "instanceName": "panel_demo_users",
+                      "objectInstanceGuid": "1e5729c5-93cb-4e44-9e01-8cc7a376b147",
+                      "objectMasterGuid": "31572117-2fe3-4262-ba03-20a74c6b59ca",
+                      "objectSequence": 1,
+                      "attributes": {
+                        "headerLabel": "Demo users — who recordings sign in as",
+                        "panelType": "visual"
+                      },
+                      "instances": [
+                        {
+                          "instanceName": "DemoFactoryDemoUsersGrid",
+                          "objectInstanceGuid": "11f348a8-3d69-45c5-b313-32fa7b385a31",
+                          "objectMasterGuid": "7e375164-6c42-4cc7-b8d2-da753cc45adc",
+                          "objectSequence": 1,
+                          "attributes": {},
+                          "instances": []
+                        }
+                      ]
+                    }
+                  ]
                 }
               ]
             }
           ]
         }
       ]
+    },
+    {
+      "instanceName": "DemoFactoryDemoUserDSO",
+      "objectInstanceGuid": "9559aa8b-b346-4bee-916c-1299c2f5abda",
+      "objectMasterGuid": "ea51aceb-6460-480a-86a6-ee6c14e3461b",
+      "attributes": {},
+      "instances": []
     }
   ],
   "links": [
@@ -184,6 +229,13 @@
       "linkTypeGuid": "ac7518d7-ef25-faab-3714-cd9dc06f3864",
       "sourceObjectInstanceGuid": "84cbc090-0e33-4a0f-be1d-3e9a6c4b3ae0",
       "targetObjectInstanceGuid": "1277cc9b-d322-4822-a0a8-49aa32c4b810"
+    },
+    {
+      "linkGuid": "9065b666-3ce1-4f8a-a43f-b004bd308817",
+      "linkName": "Data",
+      "linkTypeGuid": "d37727fb-24ff-7ea3-0e14-a5d9d8526f38",
+      "sourceObjectInstanceGuid": "9559aa8b-b346-4bee-916c-1299c2f5abda",
+      "targetObjectInstanceGuid": "11f348a8-3d69-45c5-b313-32fa7b385a31"
     }
   ],
   "tags": [

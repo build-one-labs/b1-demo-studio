@@ -3,7 +3,7 @@
   "createdBy": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
   "howToUse": "",
   "label": "",
-  "objectDescription": "Toolbar of the demo search screen: New opens the create dialog through the grid (createNewRecord over TableIO → the grid's addRecordContainer), Import opens the demo.yaml import dialog, Ask the Demo Creator starts an agent conversation. Editing, export and the pipeline live on the demo's maintenance screen (issue #17, step 3).",
+  "objectDescription": "Toolbar of the demo search screen: New opens the create dialog through the grid (createNewRecord over TableIO → the grid's addRecordContainer), Import opens the demo.yaml import dialog, Import video turns the author's own screen recording into a video demo, Ask the Demo Creator starts an agent conversation. Editing, export and the pipeline live on the demo's maintenance screen (issue #17, step 3).",
   "objectMasterGuid": "544d6900-f904-4cf0-b5d5-f83ae61f4815",
   "objectName": "DemoFactoryDemoSearchToolbar",
   "objectTypeGuid": "c0f01216-5d6f-4923-b9ce-1f3049f9d2b5",
@@ -45,10 +45,24 @@
       "instances": []
     },
     {
+      "instanceName": "importVideo",
+      "objectInstanceGuid": "d3930a84-28a8-452c-9259-f1df067a975c",
+      "objectMasterGuid": "2a34c785-bbd7-439f-aacd-c5e24927f26c",
+      "objectSequence": 3,
+      "attributes": {
+        "actionParameter": "#.openVideoImport(eventSource)",
+        "actionType": "Run",
+        "label": "Import video",
+        "smallImage": "i-lucide-file-video",
+        "tooltip": "Turn your own screen recording of a B1 app into a demo — cut into scenes, narration from your voice"
+      },
+      "instances": []
+    },
+    {
       "instanceName": "askAgent",
       "objectInstanceGuid": "15a04843-483c-4a4c-b31e-07126f4ddd46",
       "objectMasterGuid": "2a34c785-bbd7-439f-aacd-c5e24927f26c",
-      "objectSequence": 3,
+      "objectSequence": 4,
       "attributes": {
         "actionParameter": "#.openAgent(eventSource)",
         "actionType": "Run",
@@ -62,10 +76,10 @@
       "instanceName": "helpAction",
       "objectInstanceGuid": "0d42f4e1-e4f7-4e5a-a690-951df8b60242",
       "objectMasterGuid": "2a34c785-bbd7-439f-aacd-c5e24927f26c",
-      "objectSequence": 4,
+      "objectSequence": 5,
       "attributes": {
-        "actionType": "Launch",
         "actionParameter": "DemoFactoryHelpScreen",
+        "actionType": "Launch",
         "label": "Hilfe",
         "smallImage": "i-lucide-circle-help",
         "tooltip": "Anleitung und Mein erstes Video öffnen"

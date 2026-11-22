@@ -38,7 +38,12 @@ describe('demo document <-> rows', () => {
       scenes: original.scenes.map((scene: Record<string, unknown>) => ({
         id: scene.id,
         title: scene.title,
-        route: scene.route,
+        // Optional scene fields round-trip when present and stay absent otherwise.
+        ...Object.fromEntries(
+          ['baseUrl', 'route', 'clip', 'mode', 'conversion']
+            .filter((key) => scene[key] !== undefined)
+            .map((key) => [key, scene[key]])
+        ),
         narration: scene.narration,
         actions: scene.actions ?? [],
         assertions: scene.assertions ?? []
@@ -170,5 +175,79 @@ describe('run manifest -> rows', () => {
     const { run } = manifestToRows({ ...manifest, createdAt: undefined }, context);
 
     expect(run.createdAt).toBe('2026-08-16T10-50-26-336Z');
+  });
+});
+
+describe('video demo <-> rows', () => {
+  const document = {
+    schemaVersion: 1,
+    id: 'crm-tour',
+    title: 'CRM Tour',
+    description: 'From the screen recording source.mp4.',
+    settings: { language: 'de' },
+    source: {
+      video: '20261121101500-abc123/source.mp4',
+      durationMs: 61_000,
+      width: 2560,
+      height: 1440,
+      language: 'de'
+    },
+    scenes: [
+      {
+        id: 'scene-01',
+        title: 'Kundenliste',
+        narration: 'Wir öffnen die Kundenliste.',
+        clip: { startMs: 0, endMs: 30_000 },
+        actions: [],
+        assertions: []
+      },
+      {
+        id: 'scene-02',
+        title: 'Szene 2',
+        narration: '',
+        clip: { startMs: 30_000, endMs: 61_000 },
+        actions: [],
+        assertions: []
+      }
+    ]
+  };
+
+  it('keeps the source and every clip, and writes no empty route back', () => {
+    const { demo, scenes } = demoToRows(document);
+    expect(demo.source).toEqual(document.source);
+    expect(scenes.map((scene) => scene.route)).toEqual(['', '']);
+    expect(rowsToDemo(demo, scenes)).toEqual(document);
+  });
+
+  it('keeps a converted scene: its own application, its mode and the conversion note', () => {
+    const converted = {
+      ...document,
+      scenes: [
+        {
+          ...document.scenes[0],
+          baseUrl: 'https://platform.demo.build.one',
+          route: '/screens/ChangeRequests',
+          mode: 'film' as const,
+          conversion: { status: 'filmed' as const, message: 'high confidence', at: '2026-11-21T17:00:00.000Z' },
+          actions: [{ action: 'click', target: { role: 'button', name: 'Open' } }]
+        },
+        document.scenes[1]
+      ]
+    };
+    const { demo, scenes } = demoToRows(converted);
+    expect(scenes[0]).toMatchObject({ baseUrl: 'https://platform.demo.build.one', mode: 'film' });
+    expect(scenes[1]).toMatchObject({ baseUrl: '', mode: '', conversion: null });
+    expect(rowsToDemo(demo, scenes)).toEqual(converted);
+  });
+
+  it('gives a filmed demo neither source nor clip', () => {
+    const { demo, scenes } = demoToRows({
+      ...document,
+      source: undefined,
+      scenes: [{ id: 'a', title: 'A', route: '/', narration: 'Text.', actions: [], assertions: [] }]
+    });
+    expect(demo.source).toBeNull();
+    expect(scenes[0].clip).toBeNull();
+    expect(rowsToDemo(demo, scenes).scenes[0]).not.toHaveProperty('clip');
   });
 });

@@ -3,7 +3,6 @@
   "root": {
     ".agents": "Codex skills (the b1- skills are synced in by the CLI)",
     ".b1": "Build.One's internal folder (the migrations ledger; everything else stays local)",
-    ".build": "Deployment configuration layers (until the stack is rendered from repository objects)",
     ".claude": "Claude Code settings and skills",
     ".codex": "Codex configuration (MCP servers)",
     ".devcontainer": "Workspace (Codespaces / dev container) definition",

@@ -1,0 +1,51 @@
+{
+  "createdAt": "2026-11-21 18:28:15.945525",
+  "createdBy": "mp1kR5wQmWEa3mwRuVe86SkKtgdp8A4C",
+  "howToUse": "",
+  "label": "",
+  "objectDescription": "Select over DemoFactoryDemoUserDSO for a demo's \"Sign in as\" (settings.demoUser): the demo user its recordings, conversions and resets sign in as. Empty = the host's own key.",
+  "objectMasterGuid": "8745f22a-5fe8-4774-983d-cf551740307e",
+  "objectName": "DemoFactoryDemoUserSelect",
+  "objectTypeGuid": "02ca8526-c2ec-4181-b1b3-af33aa0cae65",
+  "owner": "mp1kR5wQmWEa3mwRuVe86SkKtgdp8A4C",
+  "productGuid": "94328e98-6f1d-4d15-b86d-f62fff77d705",
+  "status": "Active",
+  "templateObject": false,
+  "attributes": {
+    "identifierSaveField": "settings.demoUser",
+    "keyField": "id",
+    "label": "Sign in as — the demo user recordings use (Settings → Demo users); empty: this host's own key",
+    "placeholder": "— this host's key —",
+    "selectDisplayField": "demoUserLabel"
+  },
+  "instances": [
+    {
+      "instanceName": "DemoFactoryDemoUserDSO",
+      "objectInstanceGuid": "508fc6d9-6e26-487f-ab7e-4a1e85f787c6",
+      "objectMasterGuid": "ea51aceb-6460-480a-86a6-ee6c14e3461b",
+      "attributes": {
+        "initialFetch": "#none",
+        "keyFields": "id"
+      },
+      "instances": []
+    }
+  ],
+  "links": [
+    {
+      "linkGuid": "91c2ef66-556a-4b5d-ab8e-98b4a810e37e",
+      "linkName": "Filter",
+      "linkTypeGuid": "ac7518d7-ef25-faab-3714-cd9dc06f3864",
+      "targetObjectInstanceGuid": "508fc6d9-6e26-487f-ab7e-4a1e85f787c6"
+    },
+    {
+      "linkGuid": "169eb29e-b941-4560-903a-bd7a4a738fd8",
+      "linkName": "Data",
+      "linkTypeGuid": "d37727fb-24ff-7ea3-0e14-a5d9d8526f38",
+      "sourceObjectInstanceGuid": "508fc6d9-6e26-487f-ab7e-4a1e85f787c6"
+    }
+  ],
+  "tags": [],
+  "tenantId": null,
+  "validFrom": null,
+  "validUntil": null
+}

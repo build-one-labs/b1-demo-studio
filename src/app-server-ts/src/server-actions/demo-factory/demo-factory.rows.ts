@@ -28,7 +28,8 @@ export const DSO = {
   setting: 'DemoFactorySettingDSO',
   stage: 'DemoFactoryStageDSO',
   host: 'DemoFactoryHostDSO',
-  job: 'DemoFactoryJobDSO'
+  job: 'DemoFactoryJobDSO',
+  demoUser: 'DemoFactoryDemoUserDSO'
 } as const;
 
 export interface DemoRow {
@@ -39,6 +40,8 @@ export interface DemoRow {
   settings: Record<string, unknown>;
   /** The un-filmed pre-take reset block, when the demo has one. */
   setup: Record<string, unknown> | null;
+  /** The uploaded screen recording a video demo is cut from — null for a filmed demo. */
+  source: DemoSource | null;
   sceneCount: number;
   invalid: boolean;
   invalidReason: string;
@@ -56,10 +59,46 @@ export interface SceneRow {
   sceneId: string;
   sequence: number;
   title: string;
+  /** The application this scene runs in when it is not the demo's own; empty = the demo's base URL. */
+  baseUrl: string;
+  /** Empty for a clip scene, which is cut from the source video instead of filmed. */
   route: string;
   narration: string;
+  /** The range of the demo's source video this scene shows; null for a filmed scene. */
+  clip: SceneClip | null;
+  /** `clip` (cut from the recording) or `film` (Playwright); empty = clip when there is a clip. */
+  mode: SceneMode | 'auto' | '';
+  /** What the last conversion said about this scene; null when it was never converted. */
+  conversion: SceneConversion | null;
   actions: unknown[];
   assertions: unknown[];
+}
+
+export type SceneMode = 'clip' | 'film';
+
+export interface SceneConversion {
+  status: 'filmed' | 'failed';
+  message: string;
+  at?: string;
+  model?: string;
+}
+
+/** A time range of the source video, in milliseconds. */
+export interface SceneClip {
+  startMs: number;
+  endMs: number;
+  /** Where in the clip the voice-over starts. */
+  voiceAtMs?: number;
+}
+
+/** `source` of a video demo, as `demo-factory/src/schema.mjs` defines it. */
+export interface DemoSource {
+  video: string;
+  durationMs?: number;
+  width?: number;
+  height?: number;
+  language?: string;
+  analyzedAt?: string;
 }
 
 export interface RunRow {
@@ -169,11 +208,16 @@ export interface DemoDocument {
   description?: string;
   settings: Record<string, unknown>;
   setup?: Record<string, unknown>;
+  source?: DemoSource;
   scenes: {
     id: string;
     title: string;
-    route: string;
+    baseUrl?: string;
+    route?: string;
     narration: string;
+    clip?: SceneClip;
+    mode?: SceneMode;
+    conversion?: SceneConversion;
     actions?: unknown[];
     assertions?: unknown[];
   }[];
@@ -201,6 +245,7 @@ export const demoToRows = (demo: DemoDocument, sourceHash = ''): { demo: DemoRow
     schemaVersion: demo.schemaVersion,
     settings: demo.settings,
     setup: demo.setup ?? null,
+    source: demo.source ?? null,
     sceneCount: demo.scenes?.length ?? 0,
     invalid: false,
     invalidReason: '',
@@ -214,8 +259,12 @@ export const demoToRows = (demo: DemoDocument, sourceHash = ''): { demo: DemoRow
     sceneId: scene.id,
     sequence: index + 1,
     title: scene.title,
-    route: scene.route,
+    baseUrl: scene.baseUrl ?? '',
+    route: scene.route ?? '',
     narration: scene.narration,
+    clip: scene.clip ?? null,
+    mode: scene.mode ?? '',
+    conversion: scene.conversion ?? null,
     actions: scene.actions ?? [],
     assertions: scene.assertions ?? []
   }))
@@ -240,14 +289,22 @@ export const rowsToDemo = (demo: DemoRow, scenes: SceneRow[]): DemoDocument => (
   description: demo.description,
   settings: demo.settings,
   ...(demo.setup ? { setup: demo.setup } : {}),
+  ...(demo.source ? { source: demo.source } : {}),
   scenes: [...scenes]
     .filter((scene) => scene.demoId === demo.id)
     .sort((left, right) => left.sequence - right.sequence)
     .map((scene) => ({
       id: scene.sceneId,
       title: scene.title,
-      route: scene.route,
+      // Empty means "not set": the schema refuses an empty URL or route, so
+      // they are left out rather than written as "".
+      ...(scene.baseUrl?.trim() ? { baseUrl: scene.baseUrl.trim() } : {}),
+      ...(scene.route ? { route: scene.route } : {}),
       narration: scene.narration,
+      ...(scene.clip ? { clip: scene.clip } : {}),
+      // `auto` (the Studio's word for "not set") and empty leave it to the clip.
+      ...(scene.mode === 'clip' || scene.mode === 'film' ? { mode: scene.mode } : {}),
+      ...(scene.conversion ? { conversion: scene.conversion } : {}),
       actions: scene.actions ?? [],
       assertions: scene.assertions ?? []
     }))

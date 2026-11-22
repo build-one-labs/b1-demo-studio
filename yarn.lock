@@ -190,6 +190,24 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@anthropic-ai/sdk@npm:^1.12.0":
+  version: 1.12.0
+  resolution: "@anthropic-ai/sdk@npm:1.12.0"
+  dependencies:
+    "@opentelemetry/api": "npm:^1.4.1"
+    json-schema-to-ts: "npm:^3.1.1"
+    standardwebhooks: "npm:^1.0.0"
+  peerDependencies:
+    zod: ^3.25.0 || ^4.0.0
+  peerDependenciesMeta:
+    zod:
+      optional: true
+  bin:
+    anthropic-ai-sdk: bin/cli
+  checksum: 10c0/4e534653387bb1a7712863985ab0b9a44446a5fb9be4a30a547e018ca176de45585529580abeb4728fa49bb0d1c7f2e2a214327b3ffcfd25b815d3b3cb44229b
+  languageName: node
+  linkType: hard
+
 "@apidevtools/json-schema-ref-parser@npm:^14.1.1":
   version: 14.2.0
   resolution: "@apidevtools/json-schema-ref-parser@npm:14.2.0"
@@ -5594,6 +5612,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@opentelemetry/api@npm:^1.4.1":
+  version: 1.10.0
+  resolution: "@opentelemetry/api@npm:1.10.0"
+  checksum: 10c0/c666f89d882e2e3ea3780b4e419de3ba7e00a80bf334269c3c8507a5e2b4e453e2bc8368f6230f894d789b206c14dde313ea6f51fa7bc629f0eff8480b5d356b
+  languageName: node
+  linkType: hard
+
 "@opentelemetry/semantic-conventions@npm:^1.39.0":
   version: 1.40.0
   resolution: "@opentelemetry/semantic-conventions@npm:1.40.0"
@@ -10785,6 +10810,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "app-server-ts@workspace:src/app-server-ts"
   dependencies:
+    "@anthropic-ai/sdk": "npm:^1.12.0"
     "@buildone/app-server-tslib": "npm:24.3.0-VG.530"
     "@buildone/swat-data": "npm:24.3.0-VG.530"
     "@nestjs/axios": "npm:^4.0.1"

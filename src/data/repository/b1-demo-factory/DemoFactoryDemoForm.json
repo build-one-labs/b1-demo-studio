@@ -3,7 +3,7 @@
   "createdBy": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
   "howToUse": "",
   "label": "",
-  "objectDescription": "Demo tab of the native Studio inspector: the demo's own settings over DemoFactoryDemoDSO — identity, where it records (base URL, viewport, fps, language, holds) and the whole settings block as JSON for anything the fields do not cover. Two columns: identity and recording left, the raw settings right. Replaces the Demo tab PR #16 added to the Vue component (issue #17, step 2).",
+  "objectDescription": "Demo tab of the native Studio inspector: the demo's own settings over DemoFactoryDemoDSO. Top row, two columns: Identity (title and id side by side, description) and Target application (base URL, its environment variable and the demo user recordings sign in as — settings.demoUser via DemoFactoryDemoUserSelect — side by side, and the repository reset switch). Below, full width: Recording in three columns (viewport, fps and language, holds). Last, collapsed: every setting as JSON for what the fields do not cover. Columns come from SimpleB1FormColumn separators inside flex row blocks, stacking on narrow screens.",
   "objectMasterGuid": "aff98969-906d-4c91-950f-e2f270a9b619",
   "objectName": "DemoFactoryDemoForm",
   "objectTypeGuid": "130726b3-7c42-4f22-a324-cc07f3d21feb",
@@ -16,200 +16,392 @@
   },
   "instances": [
     {
-      "instanceName": "demoIdentityBlock",
-      "objectInstanceGuid": "d9fb492b-cc37-47ce-8b76-d991d40abfcc",
+      "instanceName": "demoTopRow",
+      "objectInstanceGuid": "6110e62b-16c8-48e6-9dfe-5c5469c8ea28",
       "objectMasterGuid": "c5c097d5-52c4-4b2d-8e1a-90d3e4af5626",
       "objectSequence": 1,
-      "attributes": {},
+      "attributes": {
+        "htmlClass": "flex gap-4"
+      },
       "instances": [
         {
-          "instanceName": "identityFieldset",
-          "objectInstanceGuid": "154a2364-7063-4325-a688-12dc1d89497a",
-          "objectMasterGuid": "4002bae8-5bac-45f1-82b3-0d91f7381296",
+          "instanceName": "demoIdentityBlock",
+          "objectInstanceGuid": "d9fb492b-cc37-47ce-8b76-d991d40abfcc",
+          "objectMasterGuid": "c5c097d5-52c4-4b2d-8e1a-90d3e4af5626",
           "objectSequence": 1,
           "attributes": {
-            "label": "Identity"
+            "htmlClass": "flex-1 min-w-0"
           },
           "instances": [
             {
-              "instanceName": "title",
-              "objectInstanceGuid": "167a8ed5-9ae2-4eab-8a8f-959f02ff7270",
-              "objectMasterGuid": "81756e31-509d-46ef-a774-1c52876e0a11",
+              "instanceName": "identityFieldset",
+              "objectInstanceGuid": "154a2364-7063-4325-a688-12dc1d89497a",
+              "objectMasterGuid": "4002bae8-5bac-45f1-82b3-0d91f7381296",
               "objectSequence": 1,
               "attributes": {
-                "label": "Title",
-                "required": true
+                "label": "Identity"
               },
-              "instances": []
-            },
-            {
-              "instanceName": "id",
-              "objectInstanceGuid": "b26c51f6-5e97-4758-b96a-005d32a81ad6",
-              "objectMasterGuid": "81756e31-509d-46ef-a774-1c52876e0a11",
-              "objectSequence": 2,
-              "attributes": {
-                "enabled": false,
-                "label": "Demo id"
-              },
-              "instances": []
-            },
-            {
-              "instanceName": "description",
-              "objectInstanceGuid": "641a50ab-aeb5-45fb-a1fc-ce1c1460093a",
-              "objectMasterGuid": "531100c8-2ec2-4e63-9195-1e2663071e94",
-              "objectSequence": 3,
-              "attributes": {
-                "label": "Description",
-                "rows": 3
-              },
-              "instances": []
+              "instances": [
+                {
+                  "instanceName": "identityRow",
+                  "objectInstanceGuid": "ce7342e0-49b0-473a-afe4-92ce7f61a73d",
+                  "objectMasterGuid": "c5c097d5-52c4-4b2d-8e1a-90d3e4af5626",
+                  "objectSequence": 1,
+                  "attributes": {
+                    "htmlClass": "flex flex-wrap gap-4"
+                  },
+                  "instances": [
+                    {
+                      "instanceName": "identityTitleCol",
+                      "objectInstanceGuid": "c8ec156a-e5a8-4e05-9277-6799afc67810",
+                      "objectMasterGuid": "c5c097d5-52c4-4b2d-8e1a-90d3e4af5626",
+                      "objectSequence": 1,
+                      "attributes": {
+                        "htmlClass": "min-w-0"
+                      },
+                      "instances": [
+                        {
+                          "instanceName": "title",
+                          "objectInstanceGuid": "167a8ed5-9ae2-4eab-8a8f-959f02ff7270",
+                          "objectMasterGuid": "81756e31-509d-46ef-a774-1c52876e0a11",
+                          "objectSequence": 1,
+                          "attributes": {
+                            "label": "Title",
+                            "required": true
+                          },
+                          "instances": []
+                        }
+                      ]
+                    },
+                    {
+                      "instanceName": "identityColumnBreak",
+                      "objectInstanceGuid": "cc5b2476-938e-4471-a7a8-5eb3a3e00f6c",
+                      "objectMasterGuid": "4b2a1744-b061-4616-a5bd-ac8f9ebd5d01",
+                      "objectSequence": 2,
+                      "attributes": {},
+                      "instances": []
+                    },
+                    {
+                      "instanceName": "identityIdCol",
+                      "objectInstanceGuid": "2077ee7c-6957-46e5-a6ab-3b62918b1937",
+                      "objectMasterGuid": "c5c097d5-52c4-4b2d-8e1a-90d3e4af5626",
+                      "objectSequence": 2,
+                      "attributes": {
+                        "htmlClass": "min-w-0"
+                      },
+                      "instances": [
+                        {
+                          "instanceName": "id",
+                          "objectInstanceGuid": "b26c51f6-5e97-4758-b96a-005d32a81ad6",
+                          "objectMasterGuid": "81756e31-509d-46ef-a774-1c52876e0a11",
+                          "objectSequence": 1,
+                          "attributes": {
+                            "enabled": false,
+                            "label": "Demo id"
+                          },
+                          "instances": []
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "instanceName": "description",
+                  "objectInstanceGuid": "641a50ab-aeb5-45fb-a1fc-ce1c1460093a",
+                  "objectMasterGuid": "531100c8-2ec2-4e63-9195-1e2663071e94",
+                  "objectSequence": 2,
+                  "attributes": {
+                    "label": "Description",
+                    "rows": 3
+                  },
+                  "instances": []
+                }
+              ]
             }
           ]
         },
         {
-          "instanceName": "recordingFieldset",
-          "objectInstanceGuid": "38457def-b5c4-48a5-9bda-3c1b707ffe8e",
-          "objectMasterGuid": "4002bae8-5bac-45f1-82b3-0d91f7381296",
+          "instanceName": "demoTopColumnBreak",
+          "objectInstanceGuid": "d340af0e-81d7-4cf2-94cc-b67e77ba58f9",
+          "objectMasterGuid": "4b2a1744-b061-4616-a5bd-ac8f9ebd5d01",
           "objectSequence": 2,
+          "attributes": {},
+          "instances": []
+        },
+        {
+          "instanceName": "demoTargetBlock",
+          "objectInstanceGuid": "8e5faadf-42a3-44c5-aa9e-b71d415fa6aa",
+          "objectMasterGuid": "c5c097d5-52c4-4b2d-8e1a-90d3e4af5626",
+          "objectSequence": 1,
           "attributes": {
-            "label": "Recording"
+            "htmlClass": "flex-1 min-w-0"
           },
           "instances": [
             {
-              "instanceName": "settings.baseUrl.env",
-              "objectInstanceGuid": "6f0716ea-3a61-4546-bc70-1d42e395f72f",
-              "objectMasterGuid": "81756e31-509d-46ef-a774-1c52876e0a11",
+              "instanceName": "targetFieldset",
+              "objectInstanceGuid": "aa2ec9da-856d-41b3-b550-ccbc3ba640ac",
+              "objectMasterGuid": "4002bae8-5bac-45f1-82b3-0d91f7381296",
               "objectSequence": 1,
               "attributes": {
-                "label": "Base URL from environment variable"
+                "label": "Target application"
               },
-              "instances": []
-            },
-            {
-              "instanceName": "settings.baseUrl.fallback",
-              "objectInstanceGuid": "526e51e2-ad7a-4567-b4f9-8d106870288e",
-              "objectMasterGuid": "81756e31-509d-46ef-a774-1c52876e0a11",
-              "objectSequence": 2,
-              "attributes": {
-                "label": "Base URL fallback"
-              },
-              "instances": []
-            },
-            {
-              "instanceName": "settings.viewport.width",
-              "objectInstanceGuid": "81cffddc-e6d5-47d0-9950-4d9af76ef58e",
-              "objectMasterGuid": "81756e31-509d-46ef-a774-1c52876e0a11",
-              "objectSequence": 3,
-              "attributes": {
-                "dataType": "integer",
-                "label": "Viewport width",
-                "suffix": " px",
-                "useGrouping": false
-              },
-              "instances": []
-            },
-            {
-              "instanceName": "settings.viewport.height",
-              "objectInstanceGuid": "b300c365-56d2-4c28-b820-0f9aa74b14fc",
-              "objectMasterGuid": "81756e31-509d-46ef-a774-1c52876e0a11",
-              "objectSequence": 4,
-              "attributes": {
-                "dataType": "integer",
-                "label": "Viewport height",
-                "suffix": " px",
-                "useGrouping": false
-              },
-              "instances": []
-            },
-            {
-              "instanceName": "settings.fps",
-              "objectInstanceGuid": "eb049b69-cf2b-44b2-b30e-f4843b60e125",
-              "objectMasterGuid": "81756e31-509d-46ef-a774-1c52876e0a11",
-              "objectSequence": 5,
-              "attributes": {
-                "dataType": "integer",
-                "label": "Frames per second",
-                "useGrouping": false
-              },
-              "instances": []
-            },
-            {
-              "instanceName": "settings.language",
-              "objectInstanceGuid": "1ea33a9c-ba8c-415e-8a8e-e71b95d826f0",
-              "objectMasterGuid": "81756e31-509d-46ef-a774-1c52876e0a11",
-              "objectSequence": 6,
-              "attributes": {
-                "label": "Language"
-              },
-              "instances": []
-            },
-            {
-              "instanceName": "settings.holdBeforeMs",
-              "objectInstanceGuid": "ec8104c6-cb46-4363-9fa2-1310bd06e475",
-              "objectMasterGuid": "81756e31-509d-46ef-a774-1c52876e0a11",
-              "objectSequence": 7,
-              "attributes": {
-                "dataType": "integer",
-                "label": "Hold before a scene",
-                "suffix": " ms",
-                "useGrouping": false
-              },
-              "instances": []
-            },
-            {
-              "instanceName": "settings.holdAfterMs",
-              "objectInstanceGuid": "20a5f57e-3bb5-48f7-9ee9-af87fb486ccf",
-              "objectMasterGuid": "81756e31-509d-46ef-a774-1c52876e0a11",
-              "objectSequence": 8,
-              "attributes": {
-                "dataType": "integer",
-                "label": "Hold after a scene",
-                "suffix": " ms",
-                "useGrouping": false
-              },
-              "instances": []
+              "instances": [
+                {
+                  "instanceName": "settings.baseUrl.fallback",
+                  "objectInstanceGuid": "526e51e2-ad7a-4567-b4f9-8d106870288e",
+                  "objectMasterGuid": "81756e31-509d-46ef-a774-1c52876e0a11",
+                  "objectSequence": 1,
+                  "attributes": {
+                    "label": "Base URL — the application the demo records",
+                    "placeholder": "https://samples.demo.build.one/"
+                  },
+                  "instances": []
+                },
+                {
+                  "instanceName": "targetRow",
+                  "objectInstanceGuid": "2f2dc64a-d3d5-477e-8422-618707d64522",
+                  "objectMasterGuid": "c5c097d5-52c4-4b2d-8e1a-90d3e4af5626",
+                  "objectSequence": 1,
+                  "attributes": {
+                    "htmlClass": "flex flex-wrap gap-4"
+                  },
+                  "instances": [
+                    {
+                      "instanceName": "targetEnvCol",
+                      "objectInstanceGuid": "e9df83ca-20ed-47e4-80ec-0b9e42cba4c9",
+                      "objectMasterGuid": "c5c097d5-52c4-4b2d-8e1a-90d3e4af5626",
+                      "objectSequence": 1,
+                      "attributes": {
+                        "htmlClass": "flex-1 min-w-0"
+                      },
+                      "instances": [
+                        {
+                          "instanceName": "settings.baseUrl.env",
+                          "objectInstanceGuid": "6f0716ea-3a61-4546-bc70-1d42e395f72f",
+                          "objectMasterGuid": "81756e31-509d-46ef-a774-1c52876e0a11",
+                          "objectSequence": 1,
+                          "attributes": {
+                            "label": "Overridden by environment variable",
+                            "placeholder": "empty: never, e.g. B1_BASE_URL"
+                          },
+                          "instances": []
+                        }
+                      ]
+                    },
+                    {
+                      "instanceName": "targetColumnBreak",
+                      "objectInstanceGuid": "e7f5defa-d6eb-4555-aacd-74bfdc673e6c",
+                      "objectMasterGuid": "4b2a1744-b061-4616-a5bd-ac8f9ebd5d01",
+                      "objectSequence": 2,
+                      "attributes": {},
+                      "instances": []
+                    },
+                    {
+                      "instanceName": "targetUserCol",
+                      "objectInstanceGuid": "20cac0da-75af-4af9-8e44-dd19092cff55",
+                      "objectMasterGuid": "c5c097d5-52c4-4b2d-8e1a-90d3e4af5626",
+                      "objectSequence": 1,
+                      "attributes": {
+                        "htmlClass": "flex-1 min-w-0"
+                      },
+                      "instances": [
+                        {
+                          "instanceName": "settings.demoUser",
+                          "objectInstanceGuid": "ddddd8cc-cdd6-4cce-95db-551cebbb1bae",
+                          "objectMasterGuid": "8745f22a-5fe8-4774-983d-cf551740307e",
+                          "objectSequence": 1,
+                          "attributes": {
+                            "identifierSaveField": "settings.demoUser",
+                            "label": "Sign in as"
+                          },
+                          "instances": []
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "instanceName": "settings.resetRepository",
+                  "objectInstanceGuid": "fd3b6a4a-042a-4033-a747-a4d0582ae9f3",
+                  "objectMasterGuid": "b1b73251-5116-37b7-e314-e22c70d3ce3c",
+                  "objectSequence": 1,
+                  "attributes": {
+                    "label": "Reset repository before recording"
+                  },
+                  "instances": []
+                }
+              ]
             }
           ]
         }
       ]
     },
     {
-      "instanceName": "demoColumnBreak",
-      "objectInstanceGuid": "4c3e560d-9f39-4b56-b8c8-49ccd6f7bada",
-      "objectMasterGuid": "4b2a1744-b061-4616-a5bd-ac8f9ebd5d01",
+      "instanceName": "recordingFieldset",
+      "objectInstanceGuid": "38457def-b5c4-48a5-9bda-3c1b707ffe8e",
+      "objectMasterGuid": "4002bae8-5bac-45f1-82b3-0d91f7381296",
       "objectSequence": 2,
-      "attributes": {},
-      "instances": []
-    },
-    {
-      "instanceName": "demoSettingsBlock",
-      "objectInstanceGuid": "8d3508d8-fcc9-4fa8-b001-7e62b0ea6c37",
-      "objectMasterGuid": "c5c097d5-52c4-4b2d-8e1a-90d3e4af5626",
-      "objectSequence": 3,
-      "attributes": {},
+      "attributes": {
+        "label": "Recording"
+      },
       "instances": [
         {
-          "instanceName": "settingsFieldset",
-          "objectInstanceGuid": "6256a336-ae46-46d3-8a35-581246d74fc0",
-          "objectMasterGuid": "4002bae8-5bac-45f1-82b3-0d91f7381296",
+          "instanceName": "recordingRow",
+          "objectInstanceGuid": "41ae1cbd-d19e-4daa-89a3-354082941312",
+          "objectMasterGuid": "c5c097d5-52c4-4b2d-8e1a-90d3e4af5626",
           "objectSequence": 1,
           "attributes": {
-            "label": "Settings (the whole block)"
+            "htmlClass": "flex flex-wrap gap-4"
           },
           "instances": [
             {
-              "instanceName": "settings",
-              "objectInstanceGuid": "3b728a54-2be5-4dfc-9c3a-a863770d9779",
-              "objectMasterGuid": "531100c8-2ec2-4e63-9195-1e2663071e94",
+              "instanceName": "recordingViewportCol",
+              "objectInstanceGuid": "1ee66ec9-43a6-4535-babb-7de130693aea",
+              "objectMasterGuid": "c5c097d5-52c4-4b2d-8e1a-90d3e4af5626",
               "objectSequence": 1,
               "attributes": {
-                "dataType": "json",
-                "label": "Settings as JSON",
-                "rows": 22
+                "htmlClass": "flex-1 min-w-0"
               },
+              "instances": [
+                {
+                  "instanceName": "settings.viewport.width",
+                  "objectInstanceGuid": "81cffddc-e6d5-47d0-9950-4d9af76ef58e",
+                  "objectMasterGuid": "81756e31-509d-46ef-a774-1c52876e0a11",
+                  "objectSequence": 1,
+                  "attributes": {
+                    "dataType": "integer",
+                    "label": "Viewport width",
+                    "suffix": " px",
+                    "useGrouping": false
+                  },
+                  "instances": []
+                },
+                {
+                  "instanceName": "settings.viewport.height",
+                  "objectInstanceGuid": "b300c365-56d2-4c28-b820-0f9aa74b14fc",
+                  "objectMasterGuid": "81756e31-509d-46ef-a774-1c52876e0a11",
+                  "objectSequence": 2,
+                  "attributes": {
+                    "dataType": "integer",
+                    "label": "Viewport height",
+                    "suffix": " px",
+                    "useGrouping": false
+                  },
+                  "instances": []
+                }
+              ]
+            },
+            {
+              "instanceName": "recordingColumnBreak1",
+              "objectInstanceGuid": "271fec0b-f51c-4aae-8fec-806e69015746",
+              "objectMasterGuid": "4b2a1744-b061-4616-a5bd-ac8f9ebd5d01",
+              "objectSequence": 2,
+              "attributes": {},
               "instances": []
+            },
+            {
+              "instanceName": "recordingFormatCol",
+              "objectInstanceGuid": "8415b9a3-442f-4927-bd59-1574f8409dcb",
+              "objectMasterGuid": "c5c097d5-52c4-4b2d-8e1a-90d3e4af5626",
+              "objectSequence": 3,
+              "attributes": {
+                "htmlClass": "flex-1 min-w-0"
+              },
+              "instances": [
+                {
+                  "instanceName": "settings.fps",
+                  "objectInstanceGuid": "eb049b69-cf2b-44b2-b30e-f4843b60e125",
+                  "objectMasterGuid": "81756e31-509d-46ef-a774-1c52876e0a11",
+                  "objectSequence": 1,
+                  "attributes": {
+                    "dataType": "integer",
+                    "label": "Frames per second",
+                    "useGrouping": false
+                  },
+                  "instances": []
+                },
+                {
+                  "instanceName": "settings.language",
+                  "objectInstanceGuid": "1ea33a9c-ba8c-415e-8a8e-e71b95d826f0",
+                  "objectMasterGuid": "81756e31-509d-46ef-a774-1c52876e0a11",
+                  "objectSequence": 2,
+                  "attributes": {
+                    "label": "Language"
+                  },
+                  "instances": []
+                }
+              ]
+            },
+            {
+              "instanceName": "recordingColumnBreak2",
+              "objectInstanceGuid": "a9c480b4-263a-4954-b7ab-ae94ccae4d71",
+              "objectMasterGuid": "4b2a1744-b061-4616-a5bd-ac8f9ebd5d01",
+              "objectSequence": 4,
+              "attributes": {},
+              "instances": []
+            },
+            {
+              "instanceName": "recordingHoldCol",
+              "objectInstanceGuid": "ac242dfd-2f00-421d-ad34-1f6c0cedad27",
+              "objectMasterGuid": "c5c097d5-52c4-4b2d-8e1a-90d3e4af5626",
+              "objectSequence": 5,
+              "attributes": {
+                "htmlClass": "flex-1 min-w-0"
+              },
+              "instances": [
+                {
+                  "instanceName": "settings.holdBeforeMs",
+                  "objectInstanceGuid": "ec8104c6-cb46-4363-9fa2-1310bd06e475",
+                  "objectMasterGuid": "81756e31-509d-46ef-a774-1c52876e0a11",
+                  "objectSequence": 1,
+                  "attributes": {
+                    "dataType": "integer",
+                    "label": "Hold before a scene",
+                    "suffix": " ms",
+                    "useGrouping": false
+                  },
+                  "instances": []
+                },
+                {
+                  "instanceName": "settings.holdAfterMs",
+                  "objectInstanceGuid": "20a5f57e-3bb5-48f7-9ee9-af87fb486ccf",
+                  "objectMasterGuid": "81756e31-509d-46ef-a774-1c52876e0a11",
+                  "objectSequence": 2,
+                  "attributes": {
+                    "dataType": "integer",
+                    "label": "Hold after a scene",
+                    "suffix": " ms",
+                    "useGrouping": false
+                  },
+                  "instances": []
+                }
+              ]
             }
           ]
+        }
+      ]
+    },
+    {
+      "instanceName": "settingsFieldset",
+      "objectInstanceGuid": "6256a336-ae46-46d3-8a35-581246d74fc0",
+      "objectMasterGuid": "4002bae8-5bac-45f1-82b3-0d91f7381296",
+      "objectSequence": 3,
+      "attributes": {
+        "collapsed": true,
+        "label": "Advanced — every setting as JSON (narration, branding, cursor, …)"
+      },
+      "instances": [
+        {
+          "instanceName": "settings",
+          "objectInstanceGuid": "3b728a54-2be5-4dfc-9c3a-a863770d9779",
+          "objectMasterGuid": "531100c8-2ec2-4e63-9195-1e2663071e94",
+          "objectSequence": 1,
+          "attributes": {
+            "dataType": "json",
+            "label": "Settings as JSON",
+            "rows": 22
+          },
+          "instances": []
         }
       ]
     }

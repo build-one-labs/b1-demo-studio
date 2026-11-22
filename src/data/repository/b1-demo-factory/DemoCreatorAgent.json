@@ -57,6 +57,14 @@
       "objectSequence": 5,
       "attributes": {},
       "instances": []
+    },
+    {
+      "instanceName": "b1-linear",
+      "objectInstanceGuid": "48298b6d-336b-4ab6-ae17-54b2d377f1fb",
+      "objectMasterGuid": "2baf91a2-49c0-4d06-ade8-f411112a3c52",
+      "objectSequence": 6,
+      "attributes": {},
+      "instances": []
     }
   ],
   "links": [],
