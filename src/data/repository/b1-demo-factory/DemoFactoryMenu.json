@@ -71,20 +71,6 @@
         "tooltip": "Runtime configuration, recording sign-in and what this host can run"
       },
       "instances": []
-    },
-    {
-      "instanceName": "helpAction",
-      "objectInstanceGuid": "909ba3f9-6462-4d6d-b69d-459750b9ca62",
-      "objectMasterGuid": "2a34c785-bbd7-439f-aacd-c5e24927f26c",
-      "objectSequence": 5,
-      "attributes": {
-        "actionParameter": "DemoFactoryHelpScreen",
-        "actionType": "Launch",
-        "label": "Hilfe",
-        "smallImage": "i-lucide-circle-help",
-        "tooltip": "Anleitung und Mein erstes Video öffnen"
-      },
-      "instances": []
     }
   ],
   "links": [],

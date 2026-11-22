@@ -13,6 +13,7 @@
   "templateObject": false,
   "attributes": {
     "colorScheme": "light",
+    "helpScreen": "DemoFactoryHelpScreen",
     "logoLarge": "/b1-logo.png",
     "logoSmall": "/b1-logo.png",
     "mainLayoutScreen": "taskbarMainLayout",
