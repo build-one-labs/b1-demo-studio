@@ -12,6 +12,7 @@
   "status": "Active",
   "templateObject": false,
   "attributes": {
+    "globalSearchFilter": "[{\"field\":\"title\",\"operator\":\"contains\",\"value\":\"{{searchTerm}}\"},{\"field\":\"id\",\"operator\":\"contains\",\"value\":\"{{searchTerm}}\"},{\"field\":\"description\",\"operator\":\"contains\",\"value\":\"{{searchTerm}}\"}]",
     "keyFields": "id",
     "resourceName": "app/demo-factory/reel"
   },

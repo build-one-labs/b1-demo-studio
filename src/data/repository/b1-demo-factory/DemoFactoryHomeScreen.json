@@ -21,8 +21,9 @@
       "objectInstanceGuid": "e43eb175-2c2e-4edd-8763-445a1621e70c",
       "objectMasterGuid": "31572117-2fe3-4262-ba03-20a74c6b59ca",
       "attributes": {
-        "htmlClass": "h-full min-h-0 overflow-y-auto",
-        "panelType": "structural"
+        "headerLabel": "Alle Demos",
+        "htmlClass": "h-full min-h-0",
+        "panelType": "visual"
       },
       "instances": [
         {
