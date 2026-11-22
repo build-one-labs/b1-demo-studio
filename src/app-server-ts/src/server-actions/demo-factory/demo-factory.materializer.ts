@@ -57,6 +57,14 @@ export class DemoFactoryMaterializer implements IServerEventsHandler<DemoRow | S
   /** Demos whose deletion is cascading to their scenes right now — see onBeforeDelete. */
   private readonly deletingDemos = new Set<string>();
 
+  /**
+   * The materialization in flight per demo. One commit of several scene rows
+   * runs a hook per row, and those may run at once; each writes the same
+   * demo.yaml and then validates it, so two overlapping ones can validate —
+   * or leave behind — a file the other half-wrote. They queue here instead.
+   */
+  private readonly materializing = new Map<string, Promise<unknown>>();
+
   constructor(
     private readonly store: DemoFactoryStore,
     private readonly cls: ClsService
@@ -267,7 +275,21 @@ export class DemoFactoryMaterializer implements IServerEventsHandler<DemoRow | S
     removedSceneIds: Set<string> = new Set()
   ): Promise<{ written: boolean; hash: string | null }> {
     assertSafeId(demoId, 'demo id');
+    const previous = this.materializing.get(demoId) ?? Promise.resolve();
+    const run = previous.catch(() => undefined).then(() => this.writeDocument(demoId, pending, removedSceneIds));
+    this.materializing.set(demoId, run);
+    try {
+      return await run;
+    } finally {
+      if (this.materializing.get(demoId) === run) this.materializing.delete(demoId);
+    }
+  }
 
+  private async writeDocument(
+    demoId: string,
+    pending: DemoRow | SceneRow | undefined,
+    removedSceneIds: Set<string>
+  ): Promise<{ written: boolean; hash: string | null }> {
     const document = await this.assemble(demoId, pending, removedSceneIds);
     if (document.scenes.length === 0) return { written: false, hash: null };
 
