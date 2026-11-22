@@ -218,19 +218,54 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey));
 </script>
 
 <style scoped>
+/*
+ * Colours follow the app theme (PrimeVue's dark-mode selector is `.app-dark` on <html>):
+ * the room, the cards and the text use PrimeVue's tokens. The film strip itself
+ * stays dark in both themes, as film does, so it and the projector keep fixed
+ * colours (--film*, --edge, --on-film).
+ */
 .reel-room {
   --film: #121214;
   --film-edge: #1c1c20;
   --sprocket: #f4efe6;
-  --amber: #f5b33c;
-  --ink: #f3f1ec;
-  --muted: #a7a39a;
-  min-height: 100%;
+  --edge: #f5b33c;
+  --on-film: #e4e0d7;
+  --ink: var(--p-text-color, #334155);
+  --muted: var(--p-text-muted-color, #64748b);
+  --accent: #b86e00;
+  --accent-soft: rgb(184 110 0 / 45%);
+  --card: var(--p-surface-50, #f8fafc);
+  --card-border: var(--p-content-border-color, #e2e8f0);
+  --button-border: var(--p-content-border-color, #e2e8f0);
+  --ok: #15803d;
+  --info: #1d4ed8;
+  --bad: #b91c1c;
+  --room: var(--p-content-background, #fff);
+
+  box-sizing: border-box;
+  flex: 1 1 auto;
+  height: 100%;
+  min-height: 0;
+  overflow-y: auto;
   padding: 28px 28px 40px;
   color: var(--ink);
-  background: radial-gradient(1200px 500px at 15% -10%, rgb(245 179 60 / 12%), transparent 60%),
-    radial-gradient(900px 400px at 100% 0%, rgb(18 102 241 / 14%), transparent 60%), #0a0b0f;
+  background: radial-gradient(1200px 500px at 15% -10%, rgb(245 179 60 / 8%), transparent 60%),
+    radial-gradient(900px 400px at 100% 0%, rgb(18 102 241 / 7%), transparent 60%), var(--room);
   border-radius: 12px;
+}
+
+.app-dark .reel-room {
+  --ink: #f3f1ec;
+  --muted: #a7a39a;
+  --accent: #f5b33c;
+  --accent-soft: rgb(245 179 60 / 45%);
+  --card: rgb(255 255 255 / 4%);
+  --card-border: rgb(255 255 255 / 14%);
+  --button-border: rgb(255 255 255 / 18%);
+  --ok: #7ee2a8;
+  --info: #8fb8ff;
+  --bad: #ff8a80;
+  --room: #0a0b0f;
 }
 
 .reel-head {
@@ -249,7 +284,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey));
     monospace;
   letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: var(--amber);
+  color: var(--accent);
 }
 
 .reel-title {
@@ -287,8 +322,8 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey));
   width: 36px;
   height: 36px;
   color: var(--ink);
-  background: rgb(255 255 255 / 6%);
-  border: 1px solid rgb(255 255 255 / 12%);
+  background: var(--card);
+  border: 1px solid var(--button-border);
   border-radius: 999px;
   cursor: pointer;
 }
@@ -301,19 +336,17 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey));
 .reel {
   margin-bottom: 22px;
   padding: 16px 16px 18px;
-  background: linear-gradient(180deg, rgb(255 255 255 / 5%), rgb(255 255 255 / 2%));
-  border: 1px solid rgb(255 255 255 / 14%);
+  background: var(--card);
+  border: 1px solid var(--card-border);
   border-radius: 12px;
-  box-shadow:
-    0 0 0 1px rgb(0 0 0 / 60%),
-    0 14px 30px -18px rgb(0 0 0 / 90%);
+  box-shadow: 0 14px 30px -20px rgb(0 0 0 / 45%);
   transition: border-color 200ms ease;
   animation: reel-in 500ms ease-out both;
   animation-delay: var(--delay);
 }
 
 .reel:hover {
-  border-color: rgb(245 179 60 / 45%);
+  border-color: var(--accent-soft);
 }
 
 @keyframes reel-in {
@@ -343,7 +376,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey));
 }
 
 .reel-name:hover {
-  color: var(--amber);
+  color: var(--accent);
 }
 
 .reel-badge {
@@ -359,11 +392,11 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey));
 }
 
 .reel-badge--run {
-  color: #7ee2a8;
+  color: var(--ok);
 }
 
 .reel-badge--source {
-  color: #8fb8ff;
+  color: var(--info);
 }
 
 .reel-badge--none {
@@ -371,7 +404,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey));
 }
 
 .reel-badge--invalid {
-  color: #ff8a80;
+  color: var(--bad);
 }
 
 .reel-facts {
@@ -399,14 +432,14 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey));
 
 .reel-play {
   color: #1a1305;
-  background: var(--amber);
+  background: #f5b33c;
   border: 0;
 }
 
 .reel-open {
   color: var(--ink);
   background: transparent;
-  border: 1px solid rgb(255 255 255 / 18%);
+  border: 1px solid var(--button-border);
 }
 
 /* The strip: film base with a row of sprocket holes along both edges. */
@@ -499,7 +532,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey));
 
 .frame--empty .frame-blank {
   font-size: 12px;
-  color: var(--muted);
+  color: #8a877f;
 }
 
 .frame figcaption {
@@ -515,14 +548,14 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey));
     Menlo,
     monospace;
   letter-spacing: 0.14em;
-  color: var(--amber);
+  color: var(--edge);
   opacity: 0.85;
 }
 
 .frame-title {
   overflow: hidden;
   font-size: 12px;
-  color: #d9d5cc;
+  color: var(--on-film);
   white-space: nowrap;
   text-overflow: ellipsis;
 }
@@ -552,13 +585,13 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey));
   justify-content: space-between;
   padding: 10px 14px;
   font-weight: 600;
-  color: var(--ink);
+  color: #f3f1ec;
   background: #101014;
 }
 
 .projector-screen header button {
   font-size: 18px;
-  color: var(--ink);
+  color: #f3f1ec;
   background: none;
   border: 0;
   cursor: pointer;
