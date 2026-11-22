@@ -85,3 +85,15 @@ function format(ms: number): string {
   return `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`;
 }
 </script>
+
+<style>
+/*
+ * `b1-media-player--fit` (set through htmlClass) keeps the video, its controls
+ * and the download links inside a dialog: the video takes at most about half
+ * the viewport height, letterboxed rather than cropped.
+ */
+.b1-media-player--fit video {
+  max-height: min(55vh, 640px);
+  object-fit: contain;
+}
+</style>

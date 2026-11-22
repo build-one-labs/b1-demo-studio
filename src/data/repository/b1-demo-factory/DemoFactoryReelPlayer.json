@@ -42,7 +42,9 @@
           "objectInstanceGuid": "862947e7-9fb9-46a7-a09c-dc955f318491",
           "objectMasterGuid": "30a3eb57-2b01-4ecd-80c9-cee7349ead52",
           "objectSequence": 1,
-          "attributes": {},
+          "attributes": {
+            "htmlClass": "b1-media-player--fit"
+          },
           "instances": []
         }
       ]

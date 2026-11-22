@@ -29,15 +29,31 @@
         Hier entstehen Produktvideos aus einem Bauplan: Szenen beschreiben, die Factory nimmt sie in der echten App auf,
         spricht den Text ein und schneidet das Video. Unten siehst du jede Demo als Filmstreifen.
       </p>
+      <!-- Same labels, tooltips and order as the toolbar of the Demos screen (DemoFactoryDemoSearchToolbar). -->
       <div class="welcome-actions">
-        <button type="button" class="welcome-button welcome-button--primary" @click="open('DemoFactoryDemoCreate')">
-          <Icon name="lucide-plus" aria-hidden="true" /> Neues Demo
+        <button
+          type="button"
+          class="welcome-button welcome-button--primary"
+          title="Create a demo — as a copy of the selected one, or from the blank starter"
+          @click="open('DemoFactoryDemoCreate')"
+        >
+          <Icon name="lucide-plus" aria-hidden="true" /> New demo
         </button>
-        <button type="button" class="welcome-button" @click="open('DemoFactoryVideoImportScreen')">
-          <Icon name="lucide-file-video" aria-hidden="true" /> Aus Video erstellen
+        <button
+          type="button"
+          class="welcome-button"
+          title="Import a demo.yaml"
+          @click="open('DemoFactoryImportScreen')"
+        >
+          <Icon name="lucide-upload" aria-hidden="true" /> Import
         </button>
-        <button type="button" class="welcome-button" @click="open('DemoFactoryImportScreen')">
-          <Icon name="lucide-upload" aria-hidden="true" /> YAML importieren
+        <button
+          type="button"
+          class="welcome-button"
+          title="Turn your own screen recording of a B1 app into a demo — cut into scenes, narration from your voice"
+          @click="open('DemoFactoryVideoImportScreen')"
+        >
+          <Icon name="lucide-file-video" aria-hidden="true" /> Import video
         </button>
       </div>
     </div>
