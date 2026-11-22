@@ -38,11 +38,13 @@ import { DemoFactoryTransfer } from './demo-factory.transfer';
  * Server actions behind the Demo Factory Studio screen.
  *
  * What is left here is what cannot be a data source: starting, watching and
- * cancelling a pipeline job. Everything the screen *shows* — demos, scenes,
- * runs, settings, the host's capabilities — is a `b1_data_source_temporary` in
- * the `b1-demo-factory` module now, read and written by the framework's own
- * data-source machinery; the services beside this file keep those in step with
- * the files the pipeline reads and writes.
+ * cancelling a pipeline job. Everything the screen *shows* is a data source of
+ * the `b1-demo-factory` module, read and written by the framework's own
+ * data-source machinery: demos, scenes, demo users, jobs and runs are
+ * `b1_data_source_embedded` over app tables (`drizzle/schema/demoFactory.table.ts`),
+ * settings, stages and the host's capabilities clob shape rows filled from this
+ * process. The services beside this file keep those in step with the files the
+ * pipeline reads and writes.
  *
  * Two deliberate differences from the Studio's original standalone server:
  *
@@ -219,8 +221,8 @@ export class DemoFactoryStudio {
   /**
    * Mirror the job into its data source — on transitions only.
    *
-   * Never per log line: a clob commit rewrites the whole array, and a render
-   * logs several hundred of them. The live tail stays on `jobStatus`; what the
+   * Never per log line: a render logs several hundred of them, and every write
+   * is an entity change each open Studio screen refreshes on. The live tail stays on `jobStatus`; what the
    * data source adds is a history that survives this process, which the tail
    * does not.
    */

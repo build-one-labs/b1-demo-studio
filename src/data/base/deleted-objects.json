@@ -1,0 +1,42 @@
+[
+  {
+    "objectMasterGuid": "9e5a1d69-57d5-4182-b47e-685a96d3137d",
+    "objectName": "DemoFactoryCaptionDSO",
+    "deletedAt": "2026-11-22T10:51:09.122Z"
+  },
+  {
+    "objectMasterGuid": "5a803abc-1dd7-4f2a-be30-d0bc10d18d9c",
+    "objectName": "DemoFactoryDemoDSO",
+    "deletedAt": "2026-11-22T10:51:56.925Z"
+  },
+  {
+    "objectMasterGuid": "ea51aceb-6460-480a-86a6-ee6c14e3461b",
+    "objectName": "DemoFactoryDemoUserDSO",
+    "deletedAt": "2026-11-22T10:51:57.727Z"
+  },
+  {
+    "objectMasterGuid": "53f97661-3b0d-4299-a028-7fe894b02667",
+    "objectName": "DemoFactoryJobDSO",
+    "deletedAt": "2026-11-22T10:50:33.999Z"
+  },
+  {
+    "objectMasterGuid": "de3d761d-add2-4e8a-8bee-83375c1fb3d9",
+    "objectName": "DemoFactoryNarrationDSO",
+    "deletedAt": "2026-11-22T10:51:30.664Z"
+  },
+  {
+    "objectMasterGuid": "49b67af7-2346-40c3-8ba3-ff546ed534cd",
+    "objectName": "DemoFactoryRunDSO",
+    "deletedAt": "2026-11-22T10:51:29.760Z"
+  },
+  {
+    "objectMasterGuid": "2189c867-4a1d-428e-8a0d-980a35c0fe32",
+    "objectName": "DemoFactoryRunSceneDSO",
+    "deletedAt": "2026-11-22T10:51:30.201Z"
+  },
+  {
+    "objectMasterGuid": "fed9022e-8527-46e7-9c60-4c7332436725",
+    "objectName": "DemoFactorySceneDSO",
+    "deletedAt": "2026-11-22T10:51:57.312Z"
+  }
+]

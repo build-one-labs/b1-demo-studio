@@ -132,7 +132,7 @@ export class DemoFactoryTransfer {
     const wantedSceneIds = new Set(rows.scenes.map((row) => row.id));
 
     // Carry the row's bookkeeping fields over: the materializer's own hook
-    // stamps updatedAt and sourceHash on this very write, and sceneCount is
+    // stamps editedAt and sourceHash on this very write, and sceneCount is
     // brought up to date by its after-batch pass.
     const demoRow: DemoRow = existingDemo
       ? {
@@ -151,7 +151,7 @@ export class DemoFactoryTransfer {
     // From here the demo row is already in the store, so a scene commit that
     // throws would leave a demo without scenes behind. That is not merely
     // incomplete: it can never validate or run, and `reconcileDemos` reads its
-    // `updatedAt` as a Studio edit and keeps it in front of the demo.yaml it
+    // `editedAt` as a Studio edit and keeps it in front of the demo.yaml it
     // shadows — so an import that failed once would go on hiding the file it
     // was importing. Undo the row instead and let the caller see the error.
     let removed: SceneRow[] = [];

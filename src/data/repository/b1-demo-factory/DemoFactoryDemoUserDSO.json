@@ -1,22 +1,22 @@
 {
-  "createdAt": "2026-11-21 18:23:04.020121",
+  "createdAt": "2026-11-22 10:51:43.114724",
   "createdBy": "mp1kR5wQmWEa3mwRuVe86SkKtgdp8A4C",
   "howToUse": "",
   "label": "",
-  "objectDescription": "Demo users of the Demo Factory: the accounts Playwright signs in as in the target applications (a demo picks one in settings.demoUser). One row per user — id, label, the application it is meant for. The user's API key is never in this payload: save-demo-user writes it to the secret store (organization level, demo-factory-user-<id>), and DemoFactoryDemoUserEvents fills `configured` on every read.",
-  "objectMasterGuid": "ea51aceb-6460-480a-86a6-ee6c14e3461b",
+  "objectDescription": "Demo users of the Demo Factory, in the app table demo_factory_demo_users: the accounts Playwright signs in as in the target applications (a demo picks one in settings.demoUser). One row per user: id, label, the application it is meant for. The user's API key is never in this table: save-demo-user writes it to the secret store (organization level, demo-factory-user-<id>), and `configured` is looked up there on every read. keyFields=id.",
+  "objectMasterGuid": "f9d5ae52-95e2-495d-b362-7ac60e2a043b",
   "objectName": "DemoFactoryDemoUserDSO",
-  "objectTypeGuid": "7f9b0fa6-4d9d-486e-a87c-9c8936822da0",
+  "objectTypeGuid": "e3bb310f-b827-4b6c-8aeb-06ecc394cab1",
   "owner": "mp1kR5wQmWEa3mwRuVe86SkKtgdp8A4C",
   "productGuid": "94328e98-6f1d-4d15-b86d-f62fff77d705",
   "status": "Active",
   "templateObject": false,
   "attributes": {
-    "data": "032b0947-bd5d-43d1-9fec-7f951adb5ebb",
     "defaultOrderBy": "label",
     "keyFields": "id",
     "serverEventsHandler": "DemoFactoryDemoUserEvents",
-    "serverType": "app"
+    "serverType": "app",
+    "sourceTables": "demoFactoryDemoUsers"
   },
   "instances": [],
   "links": [],

@@ -20,7 +20,7 @@
     {
       "instanceName": "DemoFactoryDemoDSO",
       "objectInstanceGuid": "bbaeb5f9-1a4c-43eb-9484-3f950305d123",
-      "objectMasterGuid": "5a803abc-1dd7-4f2a-be30-d0bc10d18d9c",
+      "objectMasterGuid": "42fa78c9-1170-40d0-b553-8660264c4c7d",
       "attributes": {
         "createRecordScreen": "DemoFactoryDemoCreate",
         "maintenanceScreen": "DemoFactoryDemoMaintenance"

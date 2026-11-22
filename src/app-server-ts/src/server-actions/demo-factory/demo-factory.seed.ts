@@ -41,17 +41,18 @@ import type { Request } from 'express';
  * on every app-server start.
  *
  * This exists because "the data source is the source of truth" and "a new
- * workspace has the repository, not the database" are both true at once:
+ * environment has the repository, not the database" are both true at once:
  *
- * - The blueprint database is **not** re-imported from `src/data` in a
- *   workspace (`IMPORT_DATA=false` in the workspace compose file), so a demo
- *   that arrives as a `demo.yaml` — a fresh clone, a `git pull`, a brand-new
- *   blueprint database on a deployment — has no row until something creates it.
+ * - The demo rows are app-table data (`demo_factory_demos`, `…_scenes`), which
+ *   nothing imports from the repository, so a demo that arrives as a
+ *   `demo.yaml` — a fresh clone, a `git pull`, a brand-new app database on a
+ *   deployment — has no row until something creates it.
  * - `demo-factory/output` is gitignored, so a new Codespace has none of the run
  *   directories the database still remembers.
  *
  * So this is a reconcile, not a seed. A blind re-seed would be worse than
- * nothing: the blueprint database is shared between Codespaces, and overwriting
+ * nothing: the database outlives the files (a redeploy brings the image's
+ * `demo.yaml` files back, a Codespace may share its database), and overwriting
  * every demo row from the files on disk would throw away edits made in the
  * Studio. A demo is therefore only refreshed from its file while nobody has
  * touched it here.
@@ -284,7 +285,7 @@ export class DemoFactorySeedService implements OnModuleInit {
    *   is imported whole. This is the fresh-database / new-demo case;
    * - **row matches the file's hash** — nothing to do;
    * - **row differs from the file** — the file moved on. If the row was never
-   *   written through the Studio (`updatedAt` is null) the file wins, because
+   *   written through the Studio (`editedAt` is null) the file wins, because
    *   the row is just a stale import of it. If it *was* edited here, the row
    *   wins and is flagged `driftedFromFile`, so the screen can offer to reload
    *   rather than silently discarding somebody's work.
@@ -316,19 +317,19 @@ export class DemoFactorySeedService implements OnModuleInit {
       // would hide the file it shares an id with, permanently and silently.
       const hasScenes = existingScenes.some((row) => row.demoId === id);
 
-      if (current && current.updatedAt !== null && hasScenes) {
+      if (current && current.editedAt !== null && hasScenes) {
         if (!current.driftedFromFile) {
           updatedDemos.push({ ...current, driftedFromFile: true });
           this.logger.warn(`${id} was edited in the Studio and its demo.yaml has changed — keeping the Studio version`);
         }
         continue;
       }
-      if (current && current.updatedAt !== null && !hasScenes) {
+      if (current && current.editedAt !== null && !hasScenes) {
         this.logger.warn(`${id} has no scenes — refreshing it from demo.yaml`);
       }
 
       const rows = demoToRows(document, hash);
-      if (current) updatedDemos.push({ ...rows.demo, updatedAt: current.updatedAt });
+      if (current) updatedDemos.push({ ...rows.demo, editedAt: current.editedAt });
       else createdDemos.push(rows.demo);
       sceneRows.push(...rows.scenes);
       refreshedDemoIds.add(id);

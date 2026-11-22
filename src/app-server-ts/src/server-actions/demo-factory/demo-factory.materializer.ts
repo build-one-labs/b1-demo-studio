@@ -108,7 +108,7 @@ export class DemoFactoryMaterializer implements IServerEventsHandler<DemoRow | S
    * document is assembled from the stored rows with that record substituted in.
    * Throwing here aborts the whole commit.
    *
-   * A demo row written from the screen is also stamped: `updatedAt` marks it as
+   * A demo row written from the screen is also stamped: `editedAt` marks it as
    * edited here (which is what protects it from being overwritten by its file
    * on the next reseed) and `sourceHash` is brought up to the file this write
    * produced, so the file the Studio itself wrote is never mistaken for drift.
@@ -126,7 +126,7 @@ export class DemoFactoryMaterializer implements IServerEventsHandler<DemoRow | S
     // Display only — see onAfterFetch.
     const { demoUserLabel: _shown, ...row } = record as DemoRow & { demoUserLabel?: string };
     const { hash } = await this.materialize(row.id, row);
-    return { ...row, updatedAt: new Date().toISOString(), sourceHash: hash ?? row.sourceHash };
+    return { ...row, editedAt: new Date().toISOString(), sourceHash: hash ?? row.sourceHash };
   }
 
   /**
@@ -170,61 +170,80 @@ export class DemoFactoryMaterializer implements IServerEventsHandler<DemoRow | S
   // ---- After hooks: write the final document ------------------------------
 
   async onAfterCreate(records: (DemoRow | SceneRow)[]): Promise<void> {
-    await this.afterSceneBatch(records);
+    await this.afterSceneBatch(records, 'written');
   }
 
   async onAfterUpdate(records: (DemoRow | SceneRow)[]): Promise<void> {
-    await this.afterSceneBatch(records);
+    await this.afterSceneBatch(records, 'written');
   }
 
   async onAfterDelete(records: (DemoRow | SceneRow)[]): Promise<void> {
-    await this.afterSceneBatch(records);
+    await this.afterSceneBatch(records, 'deleted');
   }
 
   /**
-   * After a batch of scene rows has landed, write each affected demo's file from
-   * what is now stored, and bring the demo row's `sceneCount` and `sourceHash`
-   * up to date.
+   * After a batch of scene rows has been written, write each affected demo's
+   * file from the stored rows with the batch applied, and bring the demo row's
+   * `sceneCount`, `sourceHash` and `editedAt` up to date.
    *
    * The before-hook sees records one at a time, so with a batch (a copied demo's
    * scenes, a reorder) the file it last validated held only the last record on
    * top of the old rows. This pass is what makes the file the whole batch.
    *
-   * The demo-row update goes through the demo hook, which stamps `updatedAt` —
+   * The batch is applied here rather than read back: the data service runs this
+   * hook inside the write's transaction, and the store reads on a connection of
+   * its own, which does not see the batch until the transaction commits. The
+   * records handed in are exactly the rows the transaction wrote or deleted.
+   *
+   * The demo row is written as an internal write, with `editedAt` stamped here:
    * a scene edit *is* an edit of the demo, and must protect it from a reseed
-   * exactly as a title change would.
+   * exactly as a title change would — but going through the demo hook would
+   * materialize once more, from rows that do not yet hold the batch.
    *
    * Nothing here throws: the batch is persisted, and an error now would report a
    * failure over rows that are already saved. It is logged, and the next
    * `startJob` materializes again and surfaces anything still wrong.
    */
-  private async afterSceneBatch(records: (DemoRow | SceneRow)[]): Promise<void> {
+  private async afterSceneBatch(records: (DemoRow | SceneRow)[], kind: 'written' | 'deleted'): Promise<void> {
     if (this.internal) return;
-    const demoIds = new Set(
-      records.filter((record): record is SceneRow => 'sceneId' in record).map((scene) => scene.demoId)
-    );
-    for (const demoId of demoIds) {
+    const scenes = records.filter((record): record is SceneRow => Boolean(record) && 'sceneId' in record);
+    for (const demoId of new Set(scenes.map((scene) => scene.demoId))) {
       if (this.deletingDemos.has(demoId)) continue;
       try {
-        const [demos, scenes] = await Promise.all([
-          this.store.read<DemoRow>(DSO.demo),
-          this.store.read<SceneRow>(DSO.scene)
-        ]);
-        const demo = demos.find((row) => row.id === demoId);
+        const demo = (await this.store.read<DemoRow>(DSO.demo)).find((row) => row.id === demoId);
         if (!demo) continue;
-        const { hash } = await this.materialize(demoId);
-        await this.store.commit(DSO.demo, {
-          updatedRecords: [
-            {
-              ...demo,
-              sceneCount: scenes.filter((scene) => scene.demoId === demoId).length,
-              sourceHash: hash ?? demo.sourceHash
-            }
-          ]
-        });
+        const batch = scenes.filter((scene) => scene.demoId === demoId);
+        const { hash, sceneCount } =
+          kind === 'written'
+            ? await this.materialize(demoId, batch)
+            : await this.materialize(demoId, undefined, new Set(batch.map((scene) => scene.id)));
+        await this.asInternalWrite(() =>
+          this.store.commit(DSO.demo, {
+            updatedRecords: [
+              {
+                ...stripDisplay(demo),
+                sceneCount,
+                sourceHash: hash ?? demo.sourceHash,
+                editedAt: new Date().toISOString()
+              }
+            ]
+          })
+        );
       } catch (error) {
         this.logger.warn(`Could not write ${demoId} after its scenes changed: ${(error as Error).message}`);
       }
+    }
+  }
+
+  /** Run `work` with this class's own hooks standing aside — see INTERNAL_WRITE. */
+  private async asInternalWrite<T>(work: () => Promise<T>): Promise<T> {
+    if (!this.cls.isActive()) return this.cls.run(() => this.asInternalWrite(work));
+    const previous: unknown = this.cls.get(INTERNAL_WRITE);
+    this.cls.set(INTERNAL_WRITE, true);
+    try {
+      return await work();
+    } finally {
+      this.cls.set(INTERNAL_WRITE, previous);
     }
   }
 
@@ -248,7 +267,9 @@ export class DemoFactoryMaterializer implements IServerEventsHandler<DemoRow | S
     }
     const { written, hash } = await this.materialize(demoId);
     if (written && hash && hash !== demo.sourceHash) {
-      await this.store.commit(DSO.demo, { updatedRecords: [{ ...demo, sourceHash: hash }] });
+      await this.asInternalWrite(() =>
+        this.store.commit(DSO.demo, { updatedRecords: [{ ...stripDisplay(demo), sourceHash: hash }] })
+      );
     }
     return written;
   }
@@ -271,9 +292,9 @@ export class DemoFactoryMaterializer implements IServerEventsHandler<DemoRow | S
    */
   async materialize(
     demoId: string,
-    pending?: DemoRow | SceneRow,
+    pending?: DemoRow | SceneRow | SceneRow[],
     removedSceneIds: Set<string> = new Set()
-  ): Promise<{ written: boolean; hash: string | null }> {
+  ): Promise<{ written: boolean; hash: string | null; sceneCount: number }> {
     assertSafeId(demoId, 'demo id');
     const previous = this.materializing.get(demoId) ?? Promise.resolve();
     const run = previous.catch(() => undefined).then(() => this.writeDocument(demoId, pending, removedSceneIds));
@@ -287,17 +308,18 @@ export class DemoFactoryMaterializer implements IServerEventsHandler<DemoRow | S
 
   private async writeDocument(
     demoId: string,
-    pending: DemoRow | SceneRow | undefined,
+    pending: DemoRow | SceneRow | SceneRow[] | undefined,
     removedSceneIds: Set<string>
-  ): Promise<{ written: boolean; hash: string | null }> {
+  ): Promise<{ written: boolean; hash: string | null; sceneCount: number }> {
     const document = await this.assemble(demoId, pending, removedSceneIds);
-    if (document.scenes.length === 0) return { written: false, hash: null };
+    const sceneCount = document.scenes.length;
+    if (sceneCount === 0) return { written: false, hash: null, sceneCount };
 
     const file = safeChildPath(this.demosRoot, demoId, 'demo.yaml');
     const previous = await readFile(file, 'utf8').catch(() => null);
 
     if (previous !== null && this.sameDocument(previous, document)) {
-      return { written: false, hash: hashDocument(previous) };
+      return { written: false, hash: hashDocument(previous), sceneCount };
     }
 
     // The shipped demos bring their directory with them in the image; one
@@ -328,13 +350,13 @@ export class DemoFactoryMaterializer implements IServerEventsHandler<DemoRow | S
     }
 
     this.logger.log(`Materialized ${demoId}`);
-    return { written: true, hash: hashDocument(text) };
+    return { written: true, hash: hashDocument(text), sceneCount };
   }
 
-  /** The document the data sources currently describe, with a pending change applied. */
+  /** The document the data sources currently describe, with pending changes applied. */
   private async assemble(
     demoId: string,
-    pending?: DemoRow | SceneRow,
+    pending?: DemoRow | SceneRow | SceneRow[],
     removedSceneIds: Set<string> = new Set()
   ): Promise<ReturnType<typeof rowsToDemo>> {
     const [demos, scenes] = await Promise.all([
@@ -342,14 +364,15 @@ export class DemoFactoryMaterializer implements IServerEventsHandler<DemoRow | S
       this.store.read<SceneRow>(DSO.scene)
     ]);
 
-    const pendingDemo = pending && !('sceneId' in pending) ? pending : undefined;
-    const pendingScene = pending && 'sceneId' in pending ? pending : undefined;
+    const pendingDemo = pending && !Array.isArray(pending) && !('sceneId' in pending) ? pending : undefined;
+    const pendingScenes = Array.isArray(pending) ? pending : pending && 'sceneId' in pending ? [pending] : [];
 
     const demo = pendingDemo?.id === demoId ? pendingDemo : demos.find((row) => row.id === demoId);
     if (!demo) throw new Error(`Unknown demo: ${demoId}`);
 
     const merged = scenes.filter((scene) => scene.demoId === demoId && !removedSceneIds.has(scene.id));
-    if (pendingScene && pendingScene.demoId === demoId) {
+    for (const pendingScene of pendingScenes) {
+      if (pendingScene.demoId !== demoId) continue;
       const index = merged.findIndex((scene) => scene.id === pendingScene.id);
       if (index >= 0) merged[index] = pendingScene;
       else merged.push(pendingScene);
@@ -407,4 +430,10 @@ const sortKeys = (value: unknown): unknown => {
     );
   }
   return value;
+};
+
+/** A demo row without the columns `onAfterFetch` adds for display. */
+const stripDisplay = (demo: DemoRow): DemoRow => {
+  const { demoUserLabel: _shown, ...row } = demo as DemoRow & { demoUserLabel?: string };
+  return row;
 };

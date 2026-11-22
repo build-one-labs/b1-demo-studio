@@ -78,7 +78,12 @@ export async function createDemo(eventSource: ObjectInstance): Promise<void> {
   }
 }
 
-/** The scene rows of one demo, straight from the scene data source's clob endpoint. */
+/**
+ * The scene rows of one demo, straight from the scene data source.
+ *
+ * `filter` is not optional on a table-backed data source, and `top: -1` lifts
+ * its default page of 100 rows.
+ */
 async function scenesOf(demoId: string): Promise<SceneRow[]> {
   const query = encodeURIComponent(
     JSON.stringify({
@@ -86,7 +91,8 @@ async function scenesOf(demoId: string): Promise<SceneRow[]> {
       filters: { logic: 'and', filters: [{ field: 'demoId', operator: 'eq', value: demoId }] }
     })
   );
-  const response = await fetch(`/service/app/data/clob/${DSO.scene}?queryInformation=${query}`);
+  const filter = encodeURIComponent(JSON.stringify({ top: -1, orderBy: 'sequence' }));
+  const response = await fetch(`/service/app/data/${DSO.scene}?queryInformation=${query}&filter=${filter}`);
   if (!response.ok) throw new Error(`Could not read the scenes of ${demoId} (${response.status})`);
   const body = (await response.json()) as { records?: SceneRow[] } | SceneRow[];
   return Array.isArray(body) ? body : (body.records ?? []);

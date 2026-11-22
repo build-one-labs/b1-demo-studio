@@ -222,10 +222,17 @@ run id identifies a run; the prefix in front of it does not.
 A deployed stack of this repository is a complete video workbench. The pieces
 that make that true:
 
-- **Demos live in data sources.** The clob-backed Studio data sources are the
-  source of truth; `demos/<id>/demo.yaml` is materialized from them before
-  every run. New demos created in a deployed Studio persist in the blueprint
-  database and survive redeploys.
+- **Demos live in the app database.** The Studio's records — demos, scenes,
+  demo users, jobs and runs — are rows of app tables (`demo_factory_*`, see
+  `src/drizzle/schema/demoFactory.table.ts`) behind embedded data sources of the
+  same names the screens use. They are the source of truth;
+  `demos/<id>/demo.yaml` is materialized from them before every run, and a
+  `demo.yaml` that has no row yet (a demo shipped in the image) is imported on
+  start. Being data rather than blueprint content, they are neither exported to
+  git nor touched by the data import a deployed app server runs at start, so a
+  demo created in a deployed Studio survives redeploys. Only the settings,
+  stage and host rows stay clob payloads: their values are this process's live
+  state, and the payload holds nothing but their shape.
 - **Runs and the narration cache live on a volume.** The standalone deployment
   config mounts `demo_factory_data` at `/data/demo-factory` and points
   `DEMO_OUTPUT_DIR` and `DEMO_CACHE_DIR` into it. On top of that, the

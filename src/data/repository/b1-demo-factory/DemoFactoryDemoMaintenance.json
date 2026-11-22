@@ -20,14 +20,14 @@
     {
       "instanceName": "DemoFactoryDemoDSO",
       "objectInstanceGuid": "01d34fde-cef7-4b44-84e9-d45e3418aa73",
-      "objectMasterGuid": "5a803abc-1dd7-4f2a-be30-d0bc10d18d9c",
+      "objectMasterGuid": "42fa78c9-1170-40d0-b553-8660264c4c7d",
       "attributes": {},
       "instances": []
     },
     {
       "instanceName": "DemoFactorySceneDSO",
       "objectInstanceGuid": "fba1e211-b2c4-451f-8400-b558220b602a",
-      "objectMasterGuid": "fed9022e-8527-46e7-9c60-4c7332436725",
+      "objectMasterGuid": "d1fdbadd-142e-4ff3-8c98-f6d20cb971be",
       "attributes": {
         "initialFetch": ""
       },
@@ -269,7 +269,7 @@
     {
       "instanceName": "DemoFactoryRunDSO",
       "objectInstanceGuid": "00f9ae4b-4f67-49ee-a9aa-bf6c3fda2c3f",
-      "objectMasterGuid": "49b67af7-2346-40c3-8ba3-ff546ed534cd",
+      "objectMasterGuid": "a70b95cb-7376-42ad-8a08-985731bd96fd",
       "attributes": {
         "initialFetch": "",
         "maintenanceScreen": "DemoFactoryRunMaintenance"
