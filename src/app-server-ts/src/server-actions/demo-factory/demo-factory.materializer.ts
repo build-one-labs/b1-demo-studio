@@ -7,6 +7,7 @@ import { spawn } from 'node:child_process';
 import { mkdir, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
+import { RequestContext } from '@buildone/app-server-tslib/modules';
 import { IServerEventsHandler } from '@buildone/app-server-tslib/utils';
 import { Injectable, Logger } from '@nestjs/common';
 import { ClsService } from 'nestjs-cls';
@@ -67,7 +68,8 @@ export class DemoFactoryMaterializer implements IServerEventsHandler<DemoRow | S
 
   constructor(
     private readonly store: DemoFactoryStore,
-    private readonly cls: ClsService
+    private readonly cls: ClsService,
+    private readonly ctx: RequestContext
   ) {}
 
   private get internal(): boolean {
@@ -96,8 +98,25 @@ export class DemoFactoryMaterializer implements IServerEventsHandler<DemoRow | S
 
   // ---- Before hooks: validate, and stamp the demo row -----------------------
 
+  /**
+   * A created demo row also gets its owner: the signed-in user, unless the
+   * caller already named one (a video import, whose row is written by the job
+   * after the request that started it). The seed's internal writes are left
+   * alone, so a demo from the repository's files has no owner.
+   */
   async onBeforeCreate(record: DemoRow | SceneRow): Promise<DemoRow | SceneRow> {
-    return this.onBeforeUpdate(record);
+    const stamped = await this.onBeforeUpdate(record);
+    if (this.internal || 'sceneId' in stamped || stamped.owner) return stamped;
+    return { ...stamped, owner: this.currentUserEmail() };
+  }
+
+  /** The signed-in user's e-mail, empty when there is none (seed, tooling). */
+  private currentUserEmail(): string {
+    try {
+      return (this.ctx.user as { email?: string } | undefined)?.email ?? '';
+    } catch {
+      return '';
+    }
   }
 
   /**

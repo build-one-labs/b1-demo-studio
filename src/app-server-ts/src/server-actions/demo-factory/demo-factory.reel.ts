@@ -40,6 +40,8 @@ export interface ReelDemo {
   recordedAt: string | null;
   editedAt: string | null;
   invalid: boolean;
+  /** E-mail of the user who created the demo; empty for one from the repository's files. */
+  owner: string;
 }
 
 const MEDIA = '/service/app/demo-factory/media';
@@ -110,7 +112,8 @@ export const buildReel = (demos: DemoRow[], scenes: SceneRow[], runs: RunRow[], 
         durationMs: run?.durationMs ?? demo.source?.durationMs ?? null,
         recordedAt: run?.recordedAt ?? run?.createdAt ?? null,
         editedAt: demo.editedAt,
-        invalid: demo.invalid
+        invalid: demo.invalid,
+        owner: demo.owner ?? ''
       };
     })
     // Footage first — the reel opens on pictures — then by title.

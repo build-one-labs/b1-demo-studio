@@ -15,6 +15,7 @@
         {{ demo.sceneCount }} {{ demo.sceneCount === 1 ? 'Szene' : 'Szenen' }}
         <template v-if="demo.durationMs"> · {{ formatDuration(demo.durationMs) }}</template>
         <template v-if="demo.recordedAt"> · aufgenommen {{ formatDate(demo.recordedAt) }}</template>
+        <template v-if="demo.owner"> · {{ demo.owner }}</template>
       </span>
       <span class="reel-actions">
         <button v-if="demo.videoUrl" class="reel-play" type="button" @click.stop="projecting = true">
@@ -95,6 +96,7 @@ interface ReelDemo {
   durationMs: number | null;
   recordedAt: string | null;
   invalid: boolean;
+  owner: string;
 }
 
 const props = defineProps<{

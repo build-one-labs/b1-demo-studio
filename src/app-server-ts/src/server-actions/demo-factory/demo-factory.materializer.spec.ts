@@ -8,6 +8,7 @@ import { DemoFactoryMaterializer, INTERNAL_WRITE } from './demo-factory.material
 import { DemoRow, demoToRows, DSO, SceneRow } from './demo-factory.rows';
 
 import type { DemoFactoryStore } from './demo-factory.store';
+import type { RequestContext } from '@buildone/app-server-tslib/modules';
 import type { ClsService } from 'nestjs-cls';
 
 /**
@@ -41,6 +42,9 @@ const activeCls = (): ClsService => {
   } as unknown as ClsService;
 };
 
+/** The request context of a signed-in user. */
+const user = (email: string) => ({ user: { email } }) as unknown as RequestContext;
+
 const rows = demoToRows({
   schemaVersion: 1,
   id: 'demo',
@@ -59,7 +63,7 @@ describe('DemoFactoryMaterializer after a scene batch', () => {
     const cls = activeCls();
     const frozen = frozenStore(rows.demo, rows.scenes, cls);
     commits = frozen.commits;
-    materializer = new DemoFactoryMaterializer(frozen.store, cls);
+    materializer = new DemoFactoryMaterializer(frozen.store, cls, user('ada@example.com'));
     // Never the repository's own demos/, and never the CLI: the schema is not under test here.
     Object.assign(materializer as unknown as Record<string, unknown>, {
       demosRoot: root,
@@ -113,5 +117,38 @@ describe('DemoFactoryMaterializer after a scene batch', () => {
     await materializer.onAfterDelete([undefined as unknown as SceneRow]);
 
     expect(commits).toEqual([]);
+  });
+});
+
+/** A materializer for a signed-in user. */
+const create = (cls: ClsService) =>
+  new DemoFactoryMaterializer(frozenStore(rows.demo, rows.scenes, cls).store, cls, user('ada@example.com'));
+
+describe('DemoFactoryMaterializer when a demo row is created', () => {
+  it('makes the signed-in user the owner of a demo created from the screen or an import', async () => {
+    const cls = activeCls();
+    const materializer = create(cls);
+    Object.assign(materializer as unknown as Record<string, unknown>, {
+      materialize: async () => ({ written: true, hash: 'sha256:x', sceneCount: 2 })
+    });
+    const created = (await materializer.onBeforeCreate({ ...rows.demo, id: 'new' })) as DemoRow;
+    expect(created.owner).toBe('ada@example.com');
+  });
+
+  it('keeps an owner the caller already named', async () => {
+    const cls = activeCls();
+    const materializer = create(cls);
+    Object.assign(materializer as unknown as Record<string, unknown>, {
+      materialize: async () => ({ written: true, hash: 'sha256:x', sceneCount: 2 })
+    });
+    const created = (await materializer.onBeforeCreate({ ...rows.demo, owner: 'grace@example.com' })) as DemoRow;
+    expect(created.owner).toBe('grace@example.com');
+  });
+
+  it('leaves a demo the seed imports from its file without an owner', async () => {
+    const cls = activeCls();
+    cls.set(INTERNAL_WRITE, true);
+    const created = (await create(cls).onBeforeCreate(rows.demo)) as DemoRow;
+    expect(created.owner).toBe('');
   });
 });

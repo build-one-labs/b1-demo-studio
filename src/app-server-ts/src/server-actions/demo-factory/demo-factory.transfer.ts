@@ -118,7 +118,7 @@ export class DemoFactoryTransfer {
    * 3. scene deletes — last, when the replacement scenes are already in place,
    *    so the remaining document is the intended one.
    */
-  async saveDocument(document: DemoDocument): Promise<{ demoId: string; scenes: number }> {
+  async saveDocument(document: DemoDocument, owner = ''): Promise<{ demoId: string; scenes: number }> {
     assertSafeId(document.id, 'demo id');
     const rows = demoToRows(document);
 
@@ -133,7 +133,8 @@ export class DemoFactoryTransfer {
 
     // Carry the row's bookkeeping fields over: the materializer's own hook
     // stamps editedAt and sourceHash on this very write, and sceneCount is
-    // brought up to date by its after-batch pass.
+    // brought up to date by its after-batch pass. A replaced demo keeps its
+    // owner; a new one gets `owner`, or the signed-in user from the hook.
     const demoRow: DemoRow = existingDemo
       ? {
           ...existingDemo,
@@ -145,7 +146,7 @@ export class DemoFactoryTransfer {
           source: rows.demo.source,
           sceneCount: rows.demo.sceneCount
         }
-      : rows.demo;
+      : { ...rows.demo, owner };
     await this.store.commit(DSO.demo, existingDemo ? { updatedRecords: [demoRow] } : { createdRecords: [demoRow] });
 
     // From here the demo row is already in the store, so a scene commit that

@@ -145,6 +145,13 @@ export class DemoFactoryStudio {
 
   private job: JobState = idleJob();
 
+  /**
+   * Who started the current job. A video import's demo row is written when
+   * the job exits, after the request that started it, so its owner is taken
+   * here rather than from the request context then.
+   */
+  private jobOwner = '';
+
   /** One live look at a time — each opens a browser. */
   private inspecting = false;
 
@@ -374,6 +381,7 @@ export class DemoFactoryStudio {
     extraEnv: Record<string, string> = {}
   ): Promise<{ job: JobState }> {
     const startedAt = new Date().toISOString();
+    this.jobOwner = (this.ctx.user as { email?: string } | undefined)?.email ?? '';
     this.job = {
       id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
       action,
@@ -488,7 +496,7 @@ export class DemoFactoryStudio {
             `Run Convert again (the result is kept at ${file}).`
         );
       }
-      const { scenes } = await this.transfer.saveDocument(document);
+      const { scenes } = await this.transfer.saveDocument(document, this.jobOwner);
       if (verb === 'created') {
         this.appendLog(`Demo ${demoId} created with ${scenes} scene${scenes === 1 ? '' : 's'}.`, 'stdout');
       } else {
