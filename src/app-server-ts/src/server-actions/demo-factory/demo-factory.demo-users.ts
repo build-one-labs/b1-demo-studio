@@ -25,8 +25,6 @@ export interface DemoUserRow {
   /** Whether the secret store holds the user's key — filled on every read, never stored. */
   configured: boolean;
   updatedAt: string | null;
-  /** The label again, under the name the "Sign in as" select displays — filled on read. */
-  demoUserLabel?: string;
 }
 
 export const DEMO_USER_ID_PATTERN = /^[\da-z][\da-z-]{0,48}$/;
@@ -116,7 +114,6 @@ export class DemoFactoryDemoUserEvents implements IServerEventsHandler<DemoUserR
     await Promise.all(
       records.map(async (record) => {
         record.configured = Boolean(await this.users.apiKey(record.id));
-        record.demoUserLabel = record.label || record.id;
       })
     );
   }
@@ -129,8 +126,13 @@ export class DemoFactoryDemoUserEvents implements IServerEventsHandler<DemoUserR
     return this.stored(record);
   }
 
-  /** Only what the row holds: `configured` and `demoUserLabel` are read-time answers. */
-  private stored({ demoUserLabel: _shown, ...record }: DemoUserRow): DemoUserRow {
-    return { ...record, configured: false };
+  /**
+   * Only what the row holds: `configured` is a read-time answer. The label falls back to the id,
+   * because the "Sign in as" select displays it and sorts by it — on a table, only a stored column
+   * can be sorted by.
+   */
+  private stored(record: DemoUserRow & { demoUserLabel?: string }): DemoUserRow {
+    const { demoUserLabel: _shown, ...row } = record;
+    return { ...row, label: row.label?.trim() || row.id, configured: false };
   }
 }
