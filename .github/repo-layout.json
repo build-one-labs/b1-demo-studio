@@ -19,6 +19,7 @@
     "prettier.config.js": "Prettier configuration",
     "README.md": "Repository overview",
     "src": "Application code",
+    "translations.config.json": "Scope of b1 translations inventory/check: the b1-demo-factory app, locales en and de",
     "yarn.lock": "Dependency lockfile"
   },
   "src": {

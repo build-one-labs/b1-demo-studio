@@ -27,17 +27,26 @@
       v-else
       class="flex items-center justify-center rounded border border-dashed border-surface-300 p-8 text-sm text-muted-color dark:border-surface-600"
     >
-      {{ record ? 'This run has no rendered video.' : 'No run selected.' }}
+      {{
+        record
+          ? translate('b1App.B1MediaPlayer.noVideo', 'This run has no rendered video.')
+          : translate('b1App.B1MediaPlayer.noRun', 'No run selected.')
+      }}
     </div>
     <div v-if="src" class="flex flex-wrap items-center gap-3 text-sm text-muted-color">
       <span>{{ format(currentTimeMs.value) }} / {{ format(mediaDurationMs.value) }}</span>
-      <a :href="downloadUrl(src)" class="text-primary" download>Download video</a>
-      <a v-if="captions" :href="downloadUrl(captions)" class="text-primary" download>Download captions</a>
+      <a :href="downloadUrl(src)" class="text-primary" download>{{
+        translate('b1App.B1MediaPlayer.downloadVideo', 'Download video')
+      }}</a>
+      <a v-if="captions" :href="downloadUrl(captions)" class="text-primary" download>{{
+        translate('b1App.B1MediaPlayer.downloadCaptions', 'Download captions')
+      }}</a>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { translate } from '@buildone/web-core';
 import { computed, toRef, useTemplateRef, watch } from 'vue';
 
 import type { MediaPlayer } from '~/types/object/mediaPlayer.types';
@@ -85,3 +94,15 @@ function format(ms: number): string {
   return `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`;
 }
 </script>
+
+<style>
+/*
+ * `b1-media-player--fit` (set through htmlClass) keeps the video, its controls
+ * and the download links inside a dialog: the video takes at most about half
+ * the viewport height, letterboxed rather than cropped.
+ */
+.b1-media-player--fit video {
+  max-height: min(55vh, 640px);
+  object-fit: contain;
+}
+</style>

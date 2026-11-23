@@ -21,9 +21,9 @@
       "objectMasterGuid": "2a34c785-bbd7-439f-aacd-c5e24927f26c",
       "objectSequence": 1,
       "attributes": {
-        "actionParameter": "saveChanges",
-        "actionTarget": "TABLEIO",
-        "actionType": "PUBLISH",
+        "actionParameter": "#.saveDemo(eventSource)",
+        "actionTarget": "",
+        "actionType": "Run",
         "label": "Save",
         "smallImage": "i-lucide-save",
         "tooltip": "Save the demo — the server validates the document before anything lands"
@@ -55,20 +55,6 @@
         "label": "Edit with Demo Agent",
         "smallImage": "i-lucide-message-square",
         "tooltip": "Save demo settings and open a chat with this demo and the selected scene as context"
-      },
-      "instances": []
-    },
-    {
-      "instanceName": "helpAction",
-      "objectInstanceGuid": "c0fd6608-14ee-464b-9e1c-eff8f84459d5",
-      "objectMasterGuid": "2a34c785-bbd7-439f-aacd-c5e24927f26c",
-      "objectSequence": 4,
-      "attributes": {
-        "actionType": "Launch",
-        "actionParameter": "DemoFactoryHelpScreen",
-        "label": "Hilfe",
-        "smallImage": "i-lucide-circle-help",
-        "tooltip": "Anleitung und Mein erstes Video öffnen"
       },
       "instances": []
     },

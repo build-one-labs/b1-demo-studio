@@ -1,0 +1,7 @@
+{
+  "tags": ["b1-demo-factory"],
+  "objects": [],
+  "data": ["node_modules/@buildone/swat-data", "src/data"],
+  "localeDir": "src/web-app/public/i18n",
+  "locales": ["en", "de"]
+}

@@ -16,7 +16,7 @@
     "keyField": "id",
     "label": "Sign in as — the demo user recordings use (Settings → Demo users); empty: this host's own key",
     "placeholder": "— this host's key —",
-    "selectDisplayField": "demoUserLabel"
+    "selectDisplayField": "label"
   },
   "instances": [
     {

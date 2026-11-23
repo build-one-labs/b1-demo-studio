@@ -6,11 +6,20 @@
  * path that runs the schema validation — either as a copy of the demo selected
  * in the search grid or from the blank starter document.
  */
-import { closeScreen, displayError, displaySuccess, displayWarning, type ObjectInstance } from '@buildone/web-core';
+import {
+  closeScreen,
+  displayError,
+  displaySuccess,
+  displayWarning,
+  launchScreen,
+  translate,
+  type ObjectInstance
+} from '@buildone/web-core';
 
 import {
   DEMO_ID_PATTERN,
   DSO,
+  MAINTENANCE_SCREEN,
   assembleDocument,
   blankDocument,
   SEARCH_SCREEN,
@@ -32,27 +41,38 @@ const FORM = 'DemoFactoryDemoCreateForm';
 export function onInitialize(eventSource: ObjectInstance): void {
   const form = formOf(eventSource, FORM);
   const source = selectedDemo(openScreen(SEARCH_SCREEN));
-  form?.setSystemValue('startFrom', source ? `${source.title} (${source.id})` : 'Blank demo');
+  form?.setSystemValue(
+    'startFrom',
+    source
+      ? `${source.title} (${source.id})`
+      : translate('b1App.messages.DemoFactoryDemoCreate.blankDemo', 'Blank demo')
+  );
 }
 
 export async function createDemo(eventSource: ObjectInstance): Promise<void> {
   const form = formOf(eventSource, FORM);
   const screen = screenOfObject(form);
   if (!screen || !form) {
-    displayError('The new-demo form was not found.');
+    displayError(translate('b1App.messages.DemoFactoryDemoCreate.formNotFound', 'The new-demo form was not found.'));
     return;
   }
   const id = String(form.getValue('id') ?? '').trim();
   const title = String(form.getValue('title') ?? '').trim() || id;
   if (!DEMO_ID_PATTERN.test(id)) {
-    displayWarning('A demo id is lowercase letters, digits and hyphens.');
+    displayWarning(
+      translate('b1App.messages.DemoFactoryDemoCreate.invalidId', 'A demo id is lowercase letters, digits and hyphens.')
+    );
     return;
   }
 
+  // Opened from the overview, the search list may not be open: then the ids
+  // come from the data source, since save-demo would replace a demo of this id.
   const search = openScreen(SEARCH_SCREEN);
-  const demoRows = dsoOf<DemoRow>(search, DSO.demo)?.records.value ?? [];
-  if (demoRows.some((row) => row.id === id)) {
-    displayWarning('A demo with this id already exists.');
+  const demoIds = search
+    ? (dsoOf<DemoRow>(search, DSO.demo)?.records.value ?? []).map((row) => row.id)
+    : await demoIdsInStore();
+  if (demoIds.includes(id)) {
+    displayWarning(translate('b1App.messages.DemoFactoryDemoCreate.demoExists', 'A demo with this id already exists.'));
     return;
   }
 
@@ -72,10 +92,28 @@ export async function createDemo(eventSource: ObjectInstance): Promise<void> {
     await callStudio('save-demo', { document });
     closeScreen(screen);
     await refreshDemos(search, id);
-    displaySuccess(`Demo ${id} created.`);
+    displaySuccess(
+      translate('b1App.messages.DemoFactoryDemoCreate.demoCreated', 'Demo {demoId} created.', { demoId: id })
+    );
+    if (!search) await launchScreen(MAINTENANCE_SCREEN, { repositionTo: id });
   } catch (error) {
     displayError(errorMessage(error));
   }
+}
+
+/** Every demo id, straight from the demo data source. */
+async function demoIdsInStore(): Promise<string[]> {
+  const query = encodeURIComponent(JSON.stringify({ fieldlist: 'id', filters: { logic: 'and', filters: [] } }));
+  const filter = encodeURIComponent(JSON.stringify({ top: -1 }));
+  const response = await fetch(`/service/app/data/${DSO.demo}?queryInformation=${query}&filter=${filter}`);
+  if (!response.ok)
+    throw new Error(
+      translate('b1App.messages.DemoFactoryDemoCreate.demosReadFailed', 'Could not read the demos ({status})', {
+        status: response.status
+      })
+    );
+  const body = (await response.json()) as { records?: DemoRow[] } | DemoRow[];
+  return (Array.isArray(body) ? body : (body.records ?? [])).map((row) => row.id);
 }
 
 /**
@@ -93,7 +131,17 @@ async function scenesOf(demoId: string): Promise<SceneRow[]> {
   );
   const filter = encodeURIComponent(JSON.stringify({ top: -1, orderBy: 'sequence' }));
   const response = await fetch(`/service/app/data/${DSO.scene}?queryInformation=${query}&filter=${filter}`);
-  if (!response.ok) throw new Error(`Could not read the scenes of ${demoId} (${response.status})`);
+  if (!response.ok)
+    throw new Error(
+      translate(
+        'b1App.messages.DemoFactoryDemoCreate.scenesReadFailed',
+        'Could not read the scenes of {demoId} ({status})',
+        {
+          demoId,
+          status: response.status
+        }
+      )
+    );
   const body = (await response.json()) as { records?: SceneRow[] } | SceneRow[];
   return Array.isArray(body) ? body : (body.records ?? []);
 }

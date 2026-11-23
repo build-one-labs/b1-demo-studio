@@ -1,0 +1,25 @@
+{
+  "createdAt": "2026-11-22 12:10:28.953305",
+  "createdBy": "mp1kR5wQmWEa3mwRuVe86SkKtgdp8A4C",
+  "howToUse": "",
+  "label": "",
+  "objectDescription": "Read-only: every demo with one frame per scene, for the Studio overview. Served by the app server controller demo-factory/reel (demo-factory.reel.controller.ts), assembled from the demo, scene, run and run-scene data sources.",
+  "objectMasterGuid": "16879257-4968-4db6-9b19-5356504b8c8b",
+  "objectName": "DemoFactoryReelDSO",
+  "objectTypeGuid": "92e2f2a6-f223-464f-82c1-1ec9746d5fa5",
+  "owner": "mp1kR5wQmWEa3mwRuVe86SkKtgdp8A4C",
+  "productGuid": "94328e98-6f1d-4d15-b86d-f62fff77d705",
+  "status": "Active",
+  "templateObject": false,
+  "attributes": {
+    "globalSearchFilter": "[{\"field\":\"title\",\"operator\":\"contains\",\"value\":\"{{searchTerm}}\"},{\"field\":\"id\",\"operator\":\"contains\",\"value\":\"{{searchTerm}}\"},{\"field\":\"description\",\"operator\":\"contains\",\"value\":\"{{searchTerm}}\"}]",
+    "keyFields": "id",
+    "resourceName": "app/demo-factory/reel"
+  },
+  "instances": [],
+  "links": [],
+  "tags": [],
+  "tenantId": null,
+  "validFrom": null,
+  "validUntil": null
+}

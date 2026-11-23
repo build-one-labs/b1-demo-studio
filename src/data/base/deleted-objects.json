@@ -25,6 +25,11 @@
     "deletedAt": "2026-11-22T10:51:30.664Z"
   },
   {
+    "objectMasterGuid": "056a9481-f2ba-4582-83bd-85e3b11fd9d5",
+    "objectName": "DemoFactoryReelComponent",
+    "deletedAt": "2026-11-22T12:11:04.201Z"
+  },
+  {
     "objectMasterGuid": "49b67af7-2346-40c3-8ba3-ff546ed534cd",
     "objectName": "DemoFactoryRunDSO",
     "deletedAt": "2026-11-22T10:51:29.760Z"

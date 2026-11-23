@@ -67,7 +67,8 @@
       "objectSequence": 5,
       "attributes": {
         "enabled": false,
-        "label": "Key"
+        "label": "Key",
+        "translationName": "sceneKey"
       },
       "instances": []
     }

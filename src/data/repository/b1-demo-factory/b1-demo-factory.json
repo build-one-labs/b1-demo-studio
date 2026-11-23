@@ -13,16 +13,19 @@
   "templateObject": false,
   "attributes": {
     "colorScheme": "light",
+    "helpScreen": "DemoFactoryHelpScreen",
     "logoLarge": "/b1-logo.png",
     "logoSmall": "/b1-logo.png",
-    "mainLayoutScreen": "taskbarMainLayout"
+    "mainLayoutScreen": "taskbarMainLayout",
+    "stylesheets": "[\"/app-styles/demo-factory.css\"]",
+    "theme": "Demo Factory"
   },
   "instances": [
     {
-      "objectInstanceGuid": "eaddb83e-95c0-4c9a-b9a4-d8ea890f396c",
-      "objectMasterGuid": "a315e3c4-c7e0-41f0-8675-edfa2c3efc70",
       "instanceName": "home",
       "layoutPosition": "",
+      "objectInstanceGuid": "eaddb83e-95c0-4c9a-b9a4-d8ea890f396c",
+      "objectMasterGuid": "a315e3c4-c7e0-41f0-8675-edfa2c3efc70",
       "objectSequence": 1,
       "attributes": {},
       "instances": []

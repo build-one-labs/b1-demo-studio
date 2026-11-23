@@ -51,6 +51,12 @@ export interface DemoRow {
   driftedFromFile: boolean;
   /** Null until the Studio writes the row; that is what makes a reseed safe. */
   editedAt: string | null;
+  /**
+   * E-mail of the user who created the demo, set by the materializer when the
+   * row is created. Not part of the demo document: it stays with the row, and
+   * a demo seeded from the repository's files has none.
+   */
+  owner: string;
 }
 
 export interface SceneRow {
@@ -251,7 +257,8 @@ export const demoToRows = (demo: DemoDocument, sourceHash = ''): { demo: DemoRow
     invalidReason: '',
     sourceHash,
     driftedFromFile: false,
-    editedAt: null
+    editedAt: null,
+    owner: ''
   },
   scenes: (demo.scenes ?? []).map((scene, index) => ({
     id: sceneKey(demo.id, scene.id),

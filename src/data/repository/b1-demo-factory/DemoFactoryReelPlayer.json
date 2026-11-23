@@ -1,0 +1,75 @@
+{
+  "createdAt": "2026-11-22 12:39:43.513389",
+  "createdBy": "mp1kR5wQmWEa3mwRuVe86SkKtgdp8A4C",
+  "howToUse": "",
+  "label": "",
+  "objectDescription": "Modal player of the Studio overview: opened by \"Abspielen\" on a DemoFactoryReelCard with repositionTo = the run id, it plays that run's video in the b1_media_player DemoFactoryRunPlayer over DemoFactoryRunDSO (keyFields runId; the instance clears foreignFields and initialFetch, as in DemoFactoryRunMaintenance).",
+  "objectMasterGuid": "3c9e5926-4aeb-45b1-810e-0458432cbb57",
+  "objectName": "DemoFactoryReelPlayer",
+  "objectTypeGuid": "d188099d-8548-49f0-86e4-c4b28dda9ecc",
+  "owner": "mp1kR5wQmWEa3mwRuVe86SkKtgdp8A4C",
+  "productGuid": "94328e98-6f1d-4d15-b86d-f62fff77d705",
+  "status": "Active",
+  "templateObject": false,
+  "attributes": {
+    "icon": "i-lucide-play",
+    "maximizable": true,
+    "screenMode": "modal",
+    "title": "{{demoId}} — Video"
+  },
+  "instances": [
+    {
+      "instanceName": "DemoFactoryRunDSO",
+      "objectInstanceGuid": "a3f799b3-2e0a-4ce9-96a6-bcf2b0a394ab",
+      "objectMasterGuid": "a70b95cb-7376-42ad-8a08-985731bd96fd",
+      "attributes": {
+        "foreignFields": "",
+        "initialFetch": ""
+      },
+      "instances": []
+    },
+    {
+      "instanceName": "panel_player",
+      "objectInstanceGuid": "dd0fa758-77c1-43d0-bd64-8a1cd1a41d4d",
+      "objectMasterGuid": "31572117-2fe3-4262-ba03-20a74c6b59ca",
+      "attributes": {
+        "panelMenu": "",
+        "panelType": "structural"
+      },
+      "instances": [
+        {
+          "instanceName": "DemoFactoryRunPlayer",
+          "objectInstanceGuid": "862947e7-9fb9-46a7-a09c-dc955f318491",
+          "objectMasterGuid": "30a3eb57-2b01-4ecd-80c9-cee7349ead52",
+          "objectSequence": 1,
+          "attributes": {
+            "htmlClass": "b1-media-player--fit"
+          },
+          "instances": []
+        }
+      ]
+    }
+  ],
+  "links": [
+    {
+      "linkGuid": "3246b55b-524e-4954-b202-ce0836697ffc",
+      "linkName": "Primary",
+      "linkTypeGuid": "c21ecef7-8939-4534-b458-66945464b796",
+      "targetObjectInstanceGuid": "a3f799b3-2e0a-4ce9-96a6-bcf2b0a394ab",
+      "targetObjectInstanceName": "DemoFactoryRunDSO"
+    },
+    {
+      "linkGuid": "801eb9c4-8944-45c2-a897-79f85788ad01",
+      "linkName": "Data",
+      "linkTypeGuid": "d37727fb-24ff-7ea3-0e14-a5d9d8526f38",
+      "sourceObjectInstanceGuid": "a3f799b3-2e0a-4ce9-96a6-bcf2b0a394ab",
+      "sourceObjectInstanceName": "DemoFactoryRunDSO",
+      "targetObjectInstanceGuid": "862947e7-9fb9-46a7-a09c-dc955f318491",
+      "targetObjectInstanceName": "DemoFactoryRunPlayer"
+    }
+  ],
+  "tags": [],
+  "tenantId": null,
+  "validFrom": null,
+  "validUntil": null
+}

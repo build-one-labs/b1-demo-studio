@@ -12,6 +12,7 @@ import {
   displayError,
   displaySuccess,
   displayWarning,
+  translate,
   type ObjectInstance
 } from '@buildone/web-core';
 
@@ -49,7 +50,12 @@ export async function saveDemoUser(eventSource: ObjectInstance): Promise<void> {
   if (!form) return;
   const id = fieldText(form, 'id');
   if (!/^[\da-z][\da-z-]*$/.test(id)) {
-    displayWarning('A demo user id is lowercase letters, digits and hyphens, e.g. samples-demo.');
+    displayWarning(
+      translate(
+        'b1App.messages.DemoFactorySettingsScreen.invalidUserId',
+        'A demo user id is lowercase letters, digits and hyphens, e.g. samples-demo.'
+      )
+    );
     return;
   }
   try {
@@ -61,8 +67,22 @@ export async function saveDemoUser(eventSource: ObjectInstance): Promise<void> {
     });
     form.setSystemValue('apiKey', '');
     await dsoOf(eventSource.screen, DSO.demoUser)?.fetchRecords();
-    if (configured) displaySuccess(`Demo user ${id} saved; its key is in the secret store.`);
-    else displayWarning(`Demo user ${id} saved, but no key is stored for it yet.`);
+    if (configured)
+      displaySuccess(
+        translate(
+          'b1App.messages.DemoFactorySettingsScreen.userSaved',
+          'Demo user {id} saved; its key is in the secret store.',
+          { id }
+        )
+      );
+    else
+      displayWarning(
+        translate(
+          'b1App.messages.DemoFactorySettingsScreen.userSavedNoKey',
+          'Demo user {id} saved, but no key is stored for it yet.',
+          { id }
+        )
+      );
   } catch (error) {
     displayError(errorMessage(error), { life: 10_000 });
   }
@@ -72,15 +92,27 @@ export function deleteDemoUser(eventSource: ObjectInstance): void {
   const form = formOf(eventSource, USER_FORM);
   const id = fieldText(form, 'id');
   if (!id) {
-    displayWarning('Select the demo user to delete.');
+    displayWarning(
+      translate('b1App.messages.DemoFactorySettingsScreen.selectUserToDelete', 'Select the demo user to delete.')
+    );
     return;
   }
   displayConfirmationModal({
-    header: 'Delete demo user',
-    message: `Delete demo user "${id}" and its API key in the secret store? Demos that sign in as it stop at their next recording until they name another one.`,
+    header: translate('b1App.messages.DemoFactorySettingsScreen.deleteHeader', 'Delete demo user'),
+    message: translate(
+      'b1App.messages.DemoFactorySettingsScreen.deleteMessage',
+      'Delete demo user "{id}" and its API key in the secret store? Demos that sign in as it stop at their next recording until they name another one.',
+      { id }
+    ),
     icon: 'pi pi-exclamation-triangle',
-    acceptProps: { label: 'Delete', severity: 'danger' },
-    rejectProps: { label: 'Keep it', outlined: true },
+    acceptProps: {
+      label: translate('b1App.messages.DemoFactorySettingsScreen.deleteAccept', 'Delete'),
+      severity: 'danger'
+    },
+    rejectProps: {
+      label: translate('b1App.messages.DemoFactorySettingsScreen.deleteReject', 'Keep it'),
+      outlined: true
+    },
     accept: async () => {
       try {
         const { stillNamedBy } = await callStudio<{ stillNamedBy: string[] }>('delete-demo-user', { id });
@@ -88,8 +120,12 @@ export function deleteDemoUser(eventSource: ObjectInstance): void {
         await dsoOf(eventSource.screen, DSO.demoUser)?.fetchRecords();
         displaySuccess(
           stillNamedBy.length
-            ? `Deleted ${id}. Still named by: ${stillNamedBy.join(', ')} — pick another demo user there.`
-            : `Deleted ${id}.`
+            ? translate(
+                'b1App.messages.DemoFactorySettingsScreen.userDeletedStillNamed',
+                'Deleted {id}. Still named by: {demos} — pick another demo user there.',
+                { id, demos: stillNamedBy.join(', ') }
+              )
+            : translate('b1App.messages.DemoFactorySettingsScreen.userDeleted', 'Deleted {id}.', { id })
         );
       } catch (error) {
         displayError(errorMessage(error));

@@ -22,6 +22,7 @@ import {
   displayInfo,
   displaySuccess,
   displayWarning,
+  translate,
   type ObjectInstance
 } from '@buildone/web-core';
 
@@ -146,7 +147,12 @@ export async function onVideoSelected(eventSource: ObjectInstance, eventPayload:
   const file = Array.from(eventPayload?.files ?? []).at(-1);
   if (!form || !file) return;
   if (uploading) {
-    displayWarning('A recording is still uploading — wait until it is done.');
+    displayWarning(
+      translate(
+        'b1App.messages.DemoFactoryVideoImportScreen.stillUploading',
+        'A recording is still uploading — wait until it is done.'
+      )
+    );
     return;
   }
   uploading = true;
@@ -157,20 +163,42 @@ export async function onVideoSelected(eventSource: ObjectInstance, eventPayload:
       const percent = Math.floor(fraction * 100);
       if (percent === shown) return;
       shown = percent;
-      form.setValue('uploadStatus', `Uploading ${file.name} … ${percent} %`);
+      form.setValue(
+        'uploadStatus',
+        translate('b1App.messages.DemoFactoryVideoImportScreen.uploadProgress', 'Uploading {fileName} … {percent} %', {
+          fileName: file.name,
+          percent
+        })
+      );
     });
     form.setValue('uploadId', answer.uploadId);
+    const megabytes = (answer.sizeBytes / 1024 / 1024).toLocaleString(document.documentElement.lang || undefined, {
+      minimumFractionDigits: 1,
+      maximumFractionDigits: 1
+    });
     form.setValue(
       'uploadStatus',
-      `${answer.originalName} — ${(answer.sizeBytes / 1024 / 1024).toFixed(1)} MB uploaded`
+      translate('b1App.messages.DemoFactoryVideoImportScreen.uploaded', '{fileName} — {size} MB uploaded', {
+        fileName: answer.originalName,
+        size: megabytes
+      })
     );
     const name = answer.originalName || file.name;
     if (!String(form.getValue('demoId') ?? '').trim()) form.setValue('demoId', slugOf(name));
     if (!String(form.getValue('title') ?? '').trim()) form.setValue('title', name.replace(/\.[^.]+$/, ''));
-    displaySuccess(`${name} uploaded.`);
+    displaySuccess(
+      translate('b1App.messages.DemoFactoryVideoImportScreen.uploadDone', '{fileName} uploaded.', { fileName: name })
+    );
   } catch (error) {
     form.setValue('uploadStatus', '');
-    displayError(`Upload failed — ${errorMessage(error)}`, { life: 10_000 });
+    displayError(
+      translate('b1App.messages.DemoFactoryVideoImportScreen.uploadFailed', 'Upload failed — {reason}', {
+        reason: errorMessage(error)
+      }),
+      {
+        life: 10_000
+      }
+    );
   } finally {
     uploading = false;
   }
@@ -180,7 +208,9 @@ export async function importVideo(eventSource: ObjectInstance): Promise<void> {
   const form = formOf(eventSource, FORM);
   const screen = screenOfObject(form);
   if (!screen || !form) {
-    displayError('The import form was not found.');
+    displayError(
+      translate('b1App.messages.DemoFactoryVideoImportScreen.formNotFound', 'The import form was not found.')
+    );
     return;
   }
   const uploadId = String(form.getValue('uploadId') ?? '').trim();
@@ -188,20 +218,31 @@ export async function importVideo(eventSource: ObjectInstance): Promise<void> {
   const title = String(form.getValue('title') ?? '').trim();
   const language = String(form.getValue('language') ?? '').trim();
   if (uploading) {
-    displayWarning('Wait until the recording is uploaded.');
+    displayWarning(
+      translate('b1App.messages.DemoFactoryVideoImportScreen.waitForUpload', 'Wait until the recording is uploaded.')
+    );
     return;
   }
   if (!uploadId) {
-    displayWarning('Upload the screen recording first.');
+    displayWarning(
+      translate('b1App.messages.DemoFactoryVideoImportScreen.uploadMissing', 'Upload the screen recording first.')
+    );
     return;
   }
   if (!DEMO_ID_PATTERN.test(demoId)) {
-    displayWarning('A demo id is lowercase letters, digits and hyphens.');
+    displayWarning(
+      translate(
+        'b1App.messages.DemoFactoryVideoImportScreen.invalidId',
+        'A demo id is lowercase letters, digits and hyphens.'
+      )
+    );
     return;
   }
   const search = openScreen(SEARCH_SCREEN);
   if ((dsoOf<DemoRow>(search, DSO.demo)?.records.value ?? []).some((row) => row.id === demoId)) {
-    displayWarning('A demo with this id already exists.');
+    displayWarning(
+      translate('b1App.messages.DemoFactoryVideoImportScreen.demoExists', 'A demo with this id already exists.')
+    );
     return;
   }
 
@@ -217,7 +258,15 @@ export async function importVideo(eventSource: ObjectInstance): Promise<void> {
     return;
   }
   closeScreen(screen);
-  displayInfo('Analyzing the recording — cutting scenes and transcribing your voice…', { life: 6000 });
+  displayInfo(
+    translate(
+      'b1App.messages.DemoFactoryVideoImportScreen.analyzing',
+      'Analyzing the recording — cutting scenes and transcribing your voice…'
+    ),
+    {
+      life: 6000
+    }
+  );
   await watchAnalysis(demoId);
 }
 
@@ -235,14 +284,35 @@ async function watchAnalysis(demoId: string): Promise<void> {
     if (job.status === 'complete') {
       await refreshDemos(openScreen(SEARCH_SCREEN), demoId);
       const created = [...job.logs].reverse().find((line) => line.text.startsWith(`Demo ${demoId} created`))?.text;
-      displaySuccess(`${created ?? `Demo ${demoId} created.`} Open it to review the scenes and narration.`, {
-        life: 8000
-      });
+      displaySuccess(
+        created
+          ? translate(
+              'b1App.messages.DemoFactoryVideoImportScreen.analysisDoneWithLog',
+              '{created} Open it to review the scenes and narration.',
+              { created }
+            )
+          : translate(
+              'b1App.messages.DemoFactoryVideoImportScreen.analysisDone',
+              'Demo {demoId} created. Open it to review the scenes and narration.',
+              { demoId }
+            ),
+        { life: 8000 }
+      );
     } else {
       const last = [...job.logs].reverse().find((line) => line.stream === 'stderr')?.text;
-      displayError(last ? `The analysis failed — ${last}` : 'The analysis failed — see the pipeline log.', {
-        life: 10_000
-      });
+      displayError(
+        last
+          ? translate(
+              'b1App.messages.DemoFactoryVideoImportScreen.analysisFailedWithReason',
+              'The analysis failed — {reason}',
+              { reason: last }
+            )
+          : translate(
+              'b1App.messages.DemoFactoryVideoImportScreen.analysisFailed',
+              'The analysis failed — see the pipeline log.'
+            ),
+        { life: 10_000 }
+      );
     }
     return;
   }

@@ -1,1 +1,52 @@
-[]
+[
+  {
+    "dataSourceGuid": "42fa78c9-1170-40d0-b553-8660264c4c7d",
+    "dataSourceName": "DemoFactoryDemoDSO",
+    "icon": "i-lucide-user",
+    "id": "8caf2f8a-3865-4035-9ea9-de0501feab5c",
+    "isDefault": false,
+    "isSystem": true,
+    "label": "Meine Demos",
+    "scope": "global",
+    "sequence": 10,
+    "criteria": {
+      "version": 1,
+      "filters": {
+        "logic": "and",
+        "filters": [
+          {
+            "field": "owner",
+            "operator": "eq",
+            "value": "{{session.email}}"
+          }
+        ]
+      }
+    },
+    "description": null
+  },
+  {
+    "dataSourceGuid": "16879257-4968-4db6-9b19-5356504b8c8b",
+    "dataSourceName": "DemoFactoryReelDSO",
+    "icon": "i-lucide-user",
+    "id": "a5cb15b8-7403-44c5-9326-66ac30ebecd9",
+    "isDefault": false,
+    "isSystem": true,
+    "label": "Meine Demos",
+    "scope": "global",
+    "sequence": 10,
+    "criteria": {
+      "version": 1,
+      "filters": {
+        "logic": "and",
+        "filters": [
+          {
+            "field": "owner",
+            "operator": "eq",
+            "value": "{{session.email}}"
+          }
+        ]
+      }
+    },
+    "description": null
+  }
+]

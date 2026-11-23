@@ -1,0 +1,46 @@
+{
+  "createdAt": "2026-11-22 14:08:37.901159",
+  "createdBy": "mp1kR5wQmWEa3mwRuVe86SkKtgdp8A4C",
+  "howToUse": "",
+  "label": "",
+  "objectDescription": "This repository's refinements of b1-stack-workspace: the Demo Factory Studio speaks German and English, so the workspace offers exactly those languages (B1_SUPPORTED_LOCALES on the app server and the web app), as the standalone stack does.",
+  "objectMasterGuid": "fd6f5dbb-fa37-4309-b49e-4c08da1997cc",
+  "objectName": "app-stack-workspace",
+  "objectTypeGuid": "8908f9a5-cfc0-4001-ac5b-7a14c0295221",
+  "owner": "mp1kR5wQmWEa3mwRuVe86SkKtgdp8A4C",
+  "productGuid": "df5d0f1a-7d37-44ea-8021-e868ac4a5aec",
+  "status": "Active",
+  "templateObject": false,
+  "attributes": {
+    "stackRef": "b1-stack-workspace"
+  },
+  "instances": [
+    {
+      "instanceName": "app_server_ts",
+      "objectInstanceGuid": "c586f89a-8092-4745-9a5f-1b417518e4d0",
+      "objectMasterGuid": "70623cb6-98f3-460b-a266-223ef6cc1e51",
+      "attributes": {
+        "env": {
+          "B1_SUPPORTED_LOCALES": "${B1_SUPPORTED_LOCALES:-en,de}"
+        }
+      },
+      "instances": []
+    },
+    {
+      "instanceName": "web-app",
+      "objectInstanceGuid": "6173647f-4e40-49fc-bee5-9119e34320f4",
+      "objectMasterGuid": "acb8a695-54d9-473e-aafb-611517cae654",
+      "attributes": {
+        "env": {
+          "B1_SUPPORTED_LOCALES": "${B1_SUPPORTED_LOCALES:-en,de}"
+        }
+      },
+      "instances": []
+    }
+  ],
+  "links": [],
+  "tags": [],
+  "tenantId": null,
+  "validFrom": null,
+  "validUntil": null
+}

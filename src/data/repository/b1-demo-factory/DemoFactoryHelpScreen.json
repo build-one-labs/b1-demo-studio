@@ -3,7 +3,7 @@
   "createdBy": "826P3ka4e3tv3TtnuALAXLlK2vX4moWL",
   "howToUse": "",
   "label": "",
-  "objectDescription": "German user guide in a B1 window, rendered through b1_native_component.",
+  "objectDescription": "The Demo Factory Studio's user guide, the app's helpScreen: the user menu's Help entry opens it as a floating window beside the screen it describes. Renders DemoFactoryHelp.vue (Help kit, English and German).",
   "objectMasterGuid": "6a777bd0-6ac3-4aa6-b9ac-c9075dc8edb3",
   "objectName": "DemoFactoryHelpScreen",
   "objectTypeGuid": "d188099d-8548-49f0-86e4-c4b28dda9ecc",
@@ -12,10 +12,11 @@
   "status": "Active",
   "templateObject": false,
   "attributes": {
-    "title": "Demo Factory – Hilfe",
+    "htmlClass": "flex flex-col h-full p-0",
     "icon": "i-lucide-circle-help",
-    "screenMode": "modal",
-    "maximizable": true
+    "maximizable": true,
+    "screenMode": "floating",
+    "title": "Demo Factory Help"
   },
   "instances": [
     {
@@ -24,7 +25,8 @@
       "objectMasterGuid": "31572117-2fe3-4262-ba03-20a74c6b59ca",
       "objectSequence": 1,
       "attributes": {
-        "panelType": "visual"
+        "htmlClass": "flex-1 min-h-0",
+        "panelType": "structural"
       },
       "instances": [
         {

@@ -22,7 +22,8 @@
       "objectMasterGuid": "11ba27c0-a259-4df5-8752-2a7fd4f08242",
       "objectSequence": 1,
       "attributes": {
-        "label": "Scene"
+        "label": "Scene",
+        "translationName": "captionScene"
       },
       "instances": []
     },

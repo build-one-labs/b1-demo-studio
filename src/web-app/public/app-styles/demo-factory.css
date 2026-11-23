@@ -1,0 +1,60 @@
+/*
+ * Stylesheet of the b1-demo-factory app (its b1_app `stylesheets`), loaded on
+ * its pages only, after the bundled CSS. Served as is: plain CSS, no Tailwind.
+ *
+ * The app's colours come from its theme, "Demo Factory" (src/web-app/src/themes/
+ * demoFactory.ts). This file covers what a theme cannot reach: framework markup
+ * that names a Tailwind colour instead of a design token.
+ */
+
+/* Grid link columns (visualizationType LINK) are `text-blue-500`: the theme's primary instead. */
+.text-blue-500 {
+  color: var(--p-primary-color);
+}
+
+.text-blue-500:hover {
+  color: var(--p-primary-hover-color);
+}
+
+/*
+ * The framework's Tailwind greys (`text-neutral-*`, e.g. the sidebar's labels)
+ * carry a blue tint in this web app and are compiled into the classes, not read
+ * from variables. The theme's surfaces are warm stone, so the text greys follow
+ * it. These rules are unlayered and so beat the layered utilities, including
+ * their `dark:` variants, which are restated for the dark scheme.
+ */
+.text-neutral-300 {
+  color: #d6d3d1;
+}
+
+.text-neutral-400 {
+  color: #a8a29e;
+}
+
+.text-neutral-500 {
+  color: #78716c;
+}
+
+.text-neutral-600 {
+  color: #57534e;
+}
+
+.text-neutral-700 {
+  color: #44403c;
+}
+
+.text-neutral-800 {
+  color: #292524;
+}
+
+.app-dark .dark\:text-neutral-300 {
+  color: #d6d3d1;
+}
+
+.app-dark .dark\:text-neutral-400 {
+  color: #a8a29e;
+}
+
+.app-dark .dark\:text-neutral-500 {
+  color: #78716c;
+}

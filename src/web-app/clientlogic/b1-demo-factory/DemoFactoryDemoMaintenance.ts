@@ -16,6 +16,7 @@ import {
   displayInfo,
   displaySuccess,
   displayWarning,
+  translate,
   type Form,
   type ObjectInstance
 } from '@buildone/web-core';
@@ -96,17 +97,29 @@ export function deleteDemo(eventSource: ObjectInstance): void {
   const demo = selectedDemo(screen);
   if (!screen || !demo) return;
   displayConfirmationModal({
-    header: 'Delete demo',
-    message: `Delete "${demo.title}" with all its scenes? This cannot be undone.`,
+    header: translate('b1App.messages.DemoFactoryDemoMaintenance.deleteHeader', 'Delete demo'),
+    message: translate(
+      'b1App.messages.DemoFactoryDemoMaintenance.deleteMessage',
+      'Delete "{title}" with all its scenes? This cannot be undone.',
+      { title: demo.title }
+    ),
     icon: 'pi pi-exclamation-triangle',
-    acceptProps: { label: 'Delete', severity: 'danger' },
-    rejectProps: { label: 'Keep it', outlined: true },
+    acceptProps: {
+      label: translate('b1App.messages.DemoFactoryDemoMaintenance.deleteAccept', 'Delete'),
+      severity: 'danger'
+    },
+    rejectProps: {
+      label: translate('b1App.messages.DemoFactoryDemoMaintenance.deleteReject', 'Keep it'),
+      outlined: true
+    },
     accept: async () => {
       try {
         await callStudio('delete-demo', { demoId: demo.id });
         closeScreen(screen);
         await refreshDemos(openScreen(SEARCH_SCREEN));
-        displaySuccess(`Deleted ${demo.id}.`);
+        displaySuccess(
+          translate('b1App.messages.DemoFactoryDemoMaintenance.demoDeleted', 'Deleted {demoId}.', { demoId: demo.id })
+        );
       } catch (error) {
         displayError(errorMessage(error));
       }
@@ -149,7 +162,9 @@ export async function duplicateScene(eventSource: ObjectInstance): Promise<void>
   const scenes = dsoOf<SceneRow>(screen, DSO.scene);
   if (!demo || !scenes) return;
   if (!scene) {
-    displayWarning('Select the scene to duplicate.');
+    displayWarning(
+      translate('b1App.messages.DemoFactoryDemoMaintenance.selectSceneToDuplicate', 'Select the scene to duplicate.')
+    );
     return;
   }
   const rows = scenes.records.value;
@@ -199,15 +214,76 @@ function freshSceneId(rows: SceneRow[], base: string): string {
  * server-side (demo-factory.lib.ts) and this only relays it, so a stage is
  * never started on a guess.
  */
-/** Validate and await form commits before starting any stage that reads the definition. */
-async function savePendingChanges(eventSource: ObjectInstance): Promise<boolean> {
+// ---- The two settings forms --------------------------------------------------
+
+/** Both edit the open demo's row: the Demo tab and the Voice-over tab. */
+const SETTINGS_FORMS = ['DemoFactoryDemoForm', 'DemoFactoryVoiceoverForm'] as const;
+
+type Json = Record<string, unknown>;
+
+/** A plain copy — the records are Vue proxies, which structuredClone refuses. */
+const copy = <T>(value: T): T => JSON.parse(JSON.stringify(value)) as T;
+
+const isObject = (value: unknown): value is Json =>
+  typeof value === 'object' && value !== null && !Array.isArray(value);
+
+/**
+ * `target` with every value `edited` changed against `base` — leaf by leaf,
+ * so a change deep inside `settings` does not carry the rest of `settings`
+ * along. A key the edit removed is removed.
+ */
+function applyEdits(target: Json, base: Json, edited: Json): Json {
+  for (const key of new Set([...Object.keys(base), ...Object.keys(edited)])) {
+    const before = base[key];
+    const after = edited[key];
+    if (isObject(before) && isObject(after)) {
+      target[key] = applyEdits(isObject(target[key]) ? (target[key] as Json) : {}, before, after);
+    } else if (JSON.stringify(before) !== JSON.stringify(after)) {
+      if (after === undefined) Reflect.deleteProperty(target, key);
+      else target[key] = copy(after);
+    }
+  }
+  return target;
+}
+
+/**
+ * Merge the edits of both settings forms into each of them, before they commit.
+ *
+ * A form commits its whole record, and both forms hold their own copy of the
+ * demo row. Saved one after the other, the second commit wrote its untouched
+ * copy of `settings` over the first: a demo user chosen on the Demo tab was
+ * lost as soon as the Voice-over form saved too. So the edits of both are
+ * applied onto the stored row, and both forms get the merged record; whichever
+ * commits, it commits everything.
+ */
+function mergeSettingsForms(forms: Form[], stored: Json): void {
+  let merged = copy(stored);
+  for (const form of forms) merged = applyEdits(merged, stored, form.formData.value ?? {});
+  for (const form of forms) form.formData.value = copy(merged);
+}
+
+/** The Save button: both settings forms, merged, validated and committed. */
+export async function saveDemo(eventSource: ObjectInstance): Promise<void> {
+  await savePendingChanges(eventSource, false);
+}
+
+/**
+ * Validate and await form commits — before starting any stage that reads the
+ * definition (`beforePipeline`), and for the Save button.
+ */
+async function savePendingChanges(eventSource: ObjectInstance, beforePipeline = true): Promise<boolean> {
   const screen = screenOf(eventSource);
-  const forms = ['DemoFactoryDemoForm', 'DemoFactoryVoiceoverForm']
-    .map((name) => screen?.getObject<Form>(name))
-    .filter((form): form is Form => !!form);
+  const forms = SETTINGS_FORMS.map((name) => screen?.getObject<Form>(name)).filter((form): form is Form => !!form);
+  const stored = selectedDemo(screen) as unknown as Json | undefined;
+  if (stored && forms.some((form) => form.hasPendingChanges())) mergeSettingsForms(forms, stored);
   for (const form of forms) {
     if (!(await form.validate())) {
-      displayWarning('Please correct the demo settings before starting the pipeline.');
+      displayWarning(
+        translate(
+          'b1App.messages.DemoFactoryDemoMaintenance.correctSettings',
+          'Please correct the demo settings before starting the pipeline.'
+        )
+      );
       return false;
     }
   }
@@ -215,7 +291,14 @@ async function savePendingChanges(eventSource: ObjectInstance): Promise<boolean>
     if (!form.hasPendingChanges()) continue;
     await form.saveChanges();
     if (form.hasPendingChanges()) {
-      displayWarning('Changes could not be saved. The pipeline has not been started.');
+      displayWarning(
+        beforePipeline
+          ? translate(
+              'b1App.messages.DemoFactoryDemoMaintenance.saveFailed',
+              'Changes could not be saved. The pipeline has not been started.'
+            )
+          : translate('b1App.messages.DemoFactoryDemoMaintenance.saveFailedOnly', 'Changes could not be saved.')
+      );
       return false;
     }
   }
@@ -228,19 +311,40 @@ export async function runStage(eventSource: ObjectInstance, stage: string, allSc
   if (!demo) return;
   const verdict = dsoOf<StageRow>(screen, DSO.stage)?.records.value.find((row) => row.id === stage);
   if (verdict && !verdict.allowed) {
-    displayWarning(verdict.blockedReason || `${verdict.label} is not available on this host.`, { life: 6000 });
+    displayWarning(
+      verdict.blockedReason ||
+        translate(
+          'b1App.messages.DemoFactoryDemoMaintenance.stageUnavailable',
+          '{stage} is not available on this host.',
+          { stage: verdict.label }
+        ),
+      { life: 6000 }
+    );
     return;
   }
   const scene = selectedScene(screen);
   if (stage === 'record' && !allScenes && !scene) {
-    displayWarning('Select a scene, or use Record all scenes.');
+    displayWarning(
+      translate(
+        'b1App.messages.DemoFactoryDemoMaintenance.selectSceneToRecord',
+        'Select a scene, or use Record all scenes.'
+      )
+    );
     return;
   }
   const scenes = stage === 'record' && !allScenes && scene ? [scene.sceneId] : [];
   try {
     if (!(await savePendingChanges(eventSource))) return;
     await callStudio('start-job', { action: stage, demoId: demo.id, scenes });
-    displayInfo(`${verdict?.label ?? stage} started for ${demo.id}.`, { life: 2500 });
+    displayInfo(
+      translate('b1App.messages.DemoFactoryDemoMaintenance.stageStarted', '{stage} started for {demoId}.', {
+        stage: verdict?.label ?? stage,
+        demoId: demo.id
+      }),
+      {
+        life: 2500
+      }
+    );
     await watchJob(eventSource);
   } catch (error) {
     displayError(errorMessage(error));
@@ -258,21 +362,38 @@ export function convertVideoDemo(eventSource: ObjectInstance): void {
   const demo = selectedDemo(screen);
   if (!screen || !demo) return;
   if (!demo.source) {
-    displayWarning('Only a demo imported from a screen recording can be converted.');
+    displayWarning(
+      translate(
+        'b1App.messages.DemoFactoryDemoMaintenance.convertNeedsVideo',
+        'Only a demo imported from a screen recording can be converted.'
+      )
+    );
     return;
   }
   displayConfirmationModal({
-    header: 'Convert to filmed scenes',
-    message:
-      'Claude reads each clip scene of the recording and writes the clicks and inputs that repeat it in the live application; a trial run checks them. Scenes that pass are filmed from then on, the others stay clips of your recording. The trial runs act in the live application as the signed-in demo user — what a scene sends or saves is really sent, once per trial — so convert against a demo environment, not production data. Each scene opens its route (or the start page) in its application: set those first if they matter. This takes a few minutes and calls the Anthropic API.',
+    header: translate('b1App.messages.DemoFactoryDemoMaintenance.convertHeader', 'Convert to filmed scenes'),
+    message: translate(
+      'b1App.messages.DemoFactoryDemoMaintenance.convertMessage',
+      'Claude reads each clip scene of the recording and writes the clicks and inputs that repeat it in the live application; a trial run checks them. Scenes that pass are filmed from then on, the others stay clips of your recording. The trial runs act in the live application as the signed-in demo user — what a scene sends or saves is really sent, once per trial — so convert against a demo environment, not production data. Each scene opens its route (or the start page) in its application: set those first if they matter. This takes a few minutes and calls the Anthropic API.'
+    ),
     icon: 'pi pi-sparkles',
-    acceptProps: { label: 'Convert' },
-    rejectProps: { label: 'Not now', outlined: true },
+    acceptProps: { label: translate('b1App.messages.DemoFactoryDemoMaintenance.convertAccept', 'Convert') },
+    rejectProps: {
+      label: translate('b1App.messages.DemoFactoryDemoMaintenance.convertReject', 'Not now'),
+      outlined: true
+    },
     accept: async () => {
       try {
         if (!(await savePendingChanges(eventSource))) return;
         await callStudio('convert-video', { demoId: demo.id });
-        displayInfo(`Converting ${demo.id} — see the pipeline log.`, { life: 4000 });
+        displayInfo(
+          translate(
+            'b1App.messages.DemoFactoryDemoMaintenance.converting',
+            'Converting {demoId} — see the pipeline log.',
+            { demoId: demo.id }
+          ),
+          { life: 4000 }
+        );
         await watchJob(eventSource);
         await dsoOf(screen, DSO.scene)?.fetchRecords();
       } catch (error) {
@@ -294,16 +415,25 @@ export async function renderSelectedRun(eventSource: ObjectInstance): Promise<vo
   const screen = screenOf(eventSource);
   const run = dsoOf<SelectedRun>(screen, DSO.run)?.selectedRecord.value;
   if (!run || run.demoId !== selectedDemo(screen)?.id) {
-    displayWarning('Select the run to render.');
+    displayWarning(
+      translate('b1App.messages.DemoFactoryDemoMaintenance.selectRunToRender', 'Select the run to render.')
+    );
     return;
   }
   if (!run.recordedAt) {
-    displayWarning('Record the scenes before rendering this run.');
+    displayWarning(
+      translate(
+        'b1App.messages.DemoFactoryDemoMaintenance.recordBeforeRender',
+        'Record the scenes before rendering this run.'
+      )
+    );
     return;
   }
   try {
     await callStudio('start-job', { action: 'render', demoId: run.demoId, runId: run.runId });
-    displayInfo('Rendering the selected run.', { life: 2500 });
+    displayInfo(translate('b1App.messages.DemoFactoryDemoMaintenance.renderingRun', 'Rendering the selected run.'), {
+      life: 2500
+    });
     await watchJob(eventSource);
   } catch (error) {
     displayError(errorMessage(error));
@@ -314,7 +444,9 @@ export function openRunArtefact(eventSource: ObjectInstance, field: 'videoUrl' |
   const screen = screenOf(eventSource);
   const run = dsoOf<SelectedRun>(screen, DSO.run)?.selectedRecord.value;
   if (!run || run.demoId !== selectedDemo(screen)?.id || !run[field]) {
-    displayWarning('Select a run with a rendered video.');
+    displayWarning(
+      translate('b1App.messages.DemoFactoryDemoMaintenance.selectRenderedRun', 'Select a run with a rendered video.')
+    );
     return;
   }
   window.open(run[field], '_blank', 'noopener');
@@ -323,7 +455,9 @@ export function openRunArtefact(eventSource: ObjectInstance, field: 'videoUrl' |
 export async function cancelJob(): Promise<void> {
   try {
     await callStudio('cancel-job');
-    displayInfo('Cancelling the job…', { life: 2500 });
+    displayInfo(translate('b1App.messages.DemoFactoryDemoMaintenance.cancellingJob', 'Cancelling the job…'), {
+      life: 2500
+    });
   } catch (error) {
     displayError(errorMessage(error));
   }
@@ -349,14 +483,23 @@ async function watchJob(eventSource: ObjectInstance): Promise<void> {
 
     await Promise.all([dsoOf(screen, DSO.run)?.fetchRecords(), dsoOf(screen, DSO.demo)?.fetchRecords()]);
     if (job.status === 'complete') {
-      displaySuccess('Job complete.');
+      displaySuccess(translate('b1App.messages.DemoFactoryDemoMaintenance.jobComplete', 'Job complete.'));
     } else if (job.status === 'failed') {
       // The tail is long and the log may be collapsed; the last stderr line is
       // usually the whole diagnosis.
       const last = [...job.logs].reverse().find((line) => line.stream === 'stderr')?.text;
-      displayError(last ? `Job failed — ${last}` : 'Job failed — see the pipeline log.', { life: 8000 });
+      displayError(
+        last
+          ? translate('b1App.messages.DemoFactoryDemoMaintenance.jobFailedWithReason', 'Job failed — {reason}', {
+              reason: last
+            })
+          : translate('b1App.messages.DemoFactoryDemoMaintenance.jobFailed', 'Job failed — see the pipeline log.'),
+        { life: 8000 }
+      );
     } else {
-      displayWarning(`Job ${job.status}.`);
+      displayWarning(
+        translate('b1App.messages.DemoFactoryDemoMaintenance.jobEnded', 'Job {status}.', { status: job.status })
+      );
     }
     return;
   }

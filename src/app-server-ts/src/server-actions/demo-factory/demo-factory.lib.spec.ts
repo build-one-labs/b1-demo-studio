@@ -1,4 +1,11 @@
-import { assertSafeId, buildJobCommand, newUploadId, stageBlockedReason, UPLOAD_ID_PATTERN } from './demo-factory.lib';
+import {
+  assertSafeId,
+  buildJobCommand,
+  newUploadId,
+  stageBlockedReason,
+  stageBlockedReasons,
+  UPLOAD_ID_PATTERN
+} from './demo-factory.lib';
 
 describe('render job selection', () => {
   const runId = '2026-10-01T10-50-19-979Z--b9f42092';
@@ -80,6 +87,12 @@ describe('video import', () => {
     expect(stageBlockedReason('all', host, { filmsInBrowser: false })).toBeNull();
     expect(stageBlockedReason('record', host)).toMatch(/no browser/);
     expect(stageBlockedReason('all', { ...host, canRecord: true })).toMatch(/API key/);
+  });
+
+  it("leaves the host's missing key out of the screen's verdict: a demo user brings its own", () => {
+    const keyless = { ...host, canRecord: true, canRender: true, canAuthenticate: false };
+    expect(stageBlockedReasons(keyless).all).toBeNull();
+    expect(stageBlockedReason('all', keyless)).toMatch(/API key/);
   });
 
   it('needs ffmpeg to analyze and to cut clips', () => {

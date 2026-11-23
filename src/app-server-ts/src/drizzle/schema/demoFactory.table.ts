@@ -101,7 +101,13 @@ export const demoFactoryDemos = pgTable('demo_factory_demos', {
    * bumps a column of that name on every update, the seed's own included, and
    * this one must stay null until a person edits the demo.
    */
-  editedAt: text('edited_at')
+  editedAt: text('edited_at'),
+  /**
+   * E-mail of the user who created the demo — set on creation (a new demo, a
+   * YAML import, a video import), never changed by a later write. Empty for a
+   * demo imported from the repository's own files, which no user created.
+   */
+  owner: text().notNull().default('')
 });
 
 export const demoFactoryScenes = pgTable(

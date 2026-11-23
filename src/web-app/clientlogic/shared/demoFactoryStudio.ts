@@ -22,6 +22,9 @@ const CLASS = 'demo-factory-studio';
 /** Screen and data-source names the studio screens agree on. */
 export const SEARCH_SCREEN = 'DemoFactoryDemoSearch';
 export const MAINTENANCE_SCREEN = 'DemoFactoryDemoMaintenance';
+/** The overview (first menu entry): its card view lists the demos through REEL_DSO. */
+export const HOME_SCREEN = 'DemoFactoryHomeScreen';
+export const REEL_DSO = 'reelDSO';
 export const DSO = {
   demo: 'DemoFactoryDemoDSO',
   scene: 'DemoFactorySceneDSO',
@@ -176,6 +179,10 @@ export const selectedScene = (screen: Screen | undefined): SceneRow | undefined 
 
 /** Reload the demo list (its Join cascades to the scenes) and put the cursor on one demo. */
 export async function refreshDemos(screen: Screen | undefined, repositionTo?: string): Promise<void> {
+  // The overview lists the demos too, and its welcome panel counts them; both
+  // follow every change wherever it came from.
+  void dsoOf(openScreen(HOME_SCREEN), REEL_DSO)?.fetchRecords();
+  window.dispatchEvent(new CustomEvent('demo-factory:demos-changed'));
   const demos = dsoOf<DemoRow>(screen, DSO.demo);
   if (!demos) return;
   await demos.fetchRecords();

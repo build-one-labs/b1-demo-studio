@@ -40,10 +40,20 @@
       "instances": []
     },
     {
+      "instanceName": "owner",
+      "objectInstanceGuid": "cc1ca2bc-fc7e-4670-abe3-395cc6d8b64c",
+      "objectMasterGuid": "11ba27c0-a259-4df5-8752-2a7fd4f08242",
+      "objectSequence": 3,
+      "attributes": {
+        "label": "Owner"
+      },
+      "instances": []
+    },
+    {
       "instanceName": "sceneCount",
       "objectInstanceGuid": "13ca31fa-7a38-4e58-88f6-48499df01dd6",
       "objectMasterGuid": "11ba27c0-a259-4df5-8752-2a7fd4f08242",
-      "objectSequence": 3,
+      "objectSequence": 4,
       "attributes": {
         "align": "right",
         "dataType": "integer",
@@ -55,7 +65,7 @@
       "instanceName": "invalid",
       "objectInstanceGuid": "abee1a2e-40c7-4676-918f-43e06b80c33a",
       "objectMasterGuid": "3d463fd8-49d9-4094-8f0a-9ad8d28f653f",
-      "objectSequence": 4,
+      "objectSequence": 5,
       "attributes": {
         "label": "Invalid"
       },
@@ -65,7 +75,7 @@
       "instanceName": "editedAt",
       "objectInstanceGuid": "19a28286-7cb3-4bbd-95df-d54a97ac42e9",
       "objectMasterGuid": "6ce7a38a-5e9e-456f-a816-34cfcbf84de9",
-      "objectSequence": 5,
+      "objectSequence": 6,
       "attributes": {
         "dataType": "datetime",
         "label": "Edited"

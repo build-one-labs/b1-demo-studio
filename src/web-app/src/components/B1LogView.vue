@@ -21,13 +21,21 @@
       </span>
       <span v-if="snapshot?.step && (!compact || running)" class="text-muted-color">{{ stageLabel }}</span>
       <span v-if="compact && progress" class="truncate text-muted-color">{{ progress }}</span>
-      <span v-if="!compact && snapshot?.exitCode != null" class="text-muted-color">exit {{ snapshot.exitCode }}</span>
+      <span v-if="!compact && snapshot?.exitCode != null" class="text-muted-color">{{
+        translate('b1App.B1LogView.exitCode', 'exit {code}', { code: snapshot.exitCode })
+      }}</span>
       <span v-if="error" class="text-red-500">{{ error }}</span>
       <span v-if="compact" class="ml-auto inline-flex items-center gap-2">
-        <Button label="View log" icon="pi pi-list" text size="small" @click="openLog" />
+        <Button
+          :label="translate('b1App.B1LogView.viewLog', 'View log')"
+          icon="pi pi-list"
+          text
+          size="small"
+          @click="openLog"
+        />
         <Button
           v-if="running"
-          label="Cancel job"
+          :label="translate('b1App.B1LogView.cancelJob', 'Cancel job')"
           icon="pi pi-stop"
           severity="danger"
           outlined
@@ -39,22 +47,28 @@
       <span v-else class="ml-auto inline-flex items-center gap-2 text-muted-color">
         <label class="inline-flex cursor-pointer items-center gap-1">
           <Checkbox v-model="autoScroll" binary size="small" />
-          <span>Follow</span>
+          <span>{{ translate('b1App.B1LogView.follow', 'Follow') }}</span>
         </label>
-        <Button label="Refresh" icon="pi pi-refresh" text size="small" @click="poll" />
+        <Button
+          :label="translate('b1App.B1LogView.refresh', 'Refresh')"
+          icon="pi pi-refresh"
+          text
+          size="small"
+          @click="poll"
+        />
       </span>
     </div>
     <pre
       v-if="!compact"
       ref="tailRef"
       class="b1-log-view-tail m-0 min-h-0 flex-1 overflow-auto rounded border border-surface-200 bg-surface-950 p-3 font-mono text-xs leading-relaxed text-surface-100 dark:border-surface-700"
-    ><template v-if="lines.length === 0">Ready.</template><template v-for="(line, index) in lines" :key="index"><span :class="line.stream === 'stderr' ? 'text-red-300' : ''">{{ line.text }}</span>
+    ><template v-if="lines.length === 0">{{ translate('b1App.B1LogView.ready', 'Ready.') }}</template><template v-for="(line, index) in lines" :key="index"><span :class="line.stream === 'stderr' ? 'text-red-300' : ''">{{ line.text }}</span>
 </template></pre>
   </div>
 </template>
 
 <script setup lang="ts">
-import { displayError, invokeServerTask, type Tabbar } from '@buildone/web-core';
+import { displayError, invokeServerTask, translate, type Tabbar } from '@buildone/web-core';
 import { computed, onBeforeUnmount, onMounted, ref, useTemplateRef, watch } from 'vue';
 
 import type { LogSnapshot, LogView } from '~/types/object/logView.types';
@@ -76,11 +90,11 @@ const running = computed(() => snapshot.value?.status === 'running');
 const stageLabel = computed(
   () =>
     ({
-      validate: 'Validating',
-      prepare: 'Generating voiceover',
-      record: 'Recording',
-      render: 'Rendering',
-      all: 'Full demo'
+      validate: translate('b1App.B1LogView.stageValidate', 'Validating'),
+      prepare: translate('b1App.B1LogView.stagePrepare', 'Generating voiceover'),
+      record: translate('b1App.B1LogView.stageRecord', 'Recording'),
+      render: translate('b1App.B1LogView.stageRender', 'Rendering'),
+      all: translate('b1App.B1LogView.stageAll', 'Full demo')
     })[snapshot.value?.step ?? ''] || snapshot.value?.step
 );
 const progress = computed(() => {
@@ -127,17 +141,19 @@ const lines = computed(() => {
 const statusLabel = computed(() => {
   switch (snapshot.value?.status) {
     case undefined:
-      return 'Connecting…';
+      return translate('b1App.B1LogView.statusConnecting', 'Connecting…');
     case 'idle':
-      return 'No active job';
+      return translate('b1App.B1LogView.statusIdle', 'No active job');
     case 'running':
-      return 'Running';
+      return translate('b1App.B1LogView.statusRunning', 'Running');
     case 'complete':
-      return 'Complete';
+      return translate('b1App.B1LogView.statusComplete', 'Complete');
     case 'failed':
-      return 'Failed';
+      return translate('b1App.B1LogView.statusFailed', 'Failed');
+    case 'cancelled':
+      return translate('b1App.B1LogView.statusCancelled', 'cancelled');
     default:
-      return snapshot.value?.status ?? 'Connecting…';
+      return snapshot.value?.status ?? translate('b1App.B1LogView.statusConnecting', 'Connecting…');
   }
 });
 
@@ -166,7 +182,10 @@ function source(): { name: string; methodName: string } | null {
 async function poll(): Promise<void> {
   const action = source();
   if (!action) {
-    error.value = 'No log source configured (logSource = service/class/method).';
+    error.value = translate(
+      'b1App.B1LogView.noLogSource',
+      'No log source configured (logSource = service/class/method).'
+    );
     return;
   }
   try {

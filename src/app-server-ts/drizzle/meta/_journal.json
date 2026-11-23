@@ -113,6 +113,13 @@
       "when": 1795344515701,
       "tag": "0015_gh_27_demo_factory_app_tables",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1795350339571,
+      "tag": "0016_gh_30_demo_factory_demo_owner",
+      "breakpoints": true
     }
   ]
 }
