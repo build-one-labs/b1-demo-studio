@@ -214,12 +214,68 @@ function freshSceneId(rows: SceneRow[], base: string): string {
  * server-side (demo-factory.lib.ts) and this only relays it, so a stage is
  * never started on a guess.
  */
-/** Validate and await form commits before starting any stage that reads the definition. */
-async function savePendingChanges(eventSource: ObjectInstance): Promise<boolean> {
+// ---- The two settings forms --------------------------------------------------
+
+/** Both edit the open demo's row: the Demo tab and the Voice-over tab. */
+const SETTINGS_FORMS = ['DemoFactoryDemoForm', 'DemoFactoryVoiceoverForm'] as const;
+
+type Json = Record<string, unknown>;
+
+/** A plain copy — the records are Vue proxies, which structuredClone refuses. */
+const copy = <T>(value: T): T => JSON.parse(JSON.stringify(value)) as T;
+
+const isObject = (value: unknown): value is Json =>
+  typeof value === 'object' && value !== null && !Array.isArray(value);
+
+/**
+ * `target` with every value `edited` changed against `base` — leaf by leaf,
+ * so a change deep inside `settings` does not carry the rest of `settings`
+ * along. A key the edit removed is removed.
+ */
+function applyEdits(target: Json, base: Json, edited: Json): Json {
+  for (const key of new Set([...Object.keys(base), ...Object.keys(edited)])) {
+    const before = base[key];
+    const after = edited[key];
+    if (isObject(before) && isObject(after)) {
+      target[key] = applyEdits(isObject(target[key]) ? (target[key] as Json) : {}, before, after);
+    } else if (JSON.stringify(before) !== JSON.stringify(after)) {
+      if (after === undefined) Reflect.deleteProperty(target, key);
+      else target[key] = copy(after);
+    }
+  }
+  return target;
+}
+
+/**
+ * Merge the edits of both settings forms into each of them, before they commit.
+ *
+ * A form commits its whole record, and both forms hold their own copy of the
+ * demo row. Saved one after the other, the second commit wrote its untouched
+ * copy of `settings` over the first: a demo user chosen on the Demo tab was
+ * lost as soon as the Voice-over form saved too. So the edits of both are
+ * applied onto the stored row, and both forms get the merged record; whichever
+ * commits, it commits everything.
+ */
+function mergeSettingsForms(forms: Form[], stored: Json): void {
+  let merged = copy(stored);
+  for (const form of forms) merged = applyEdits(merged, stored, form.formData.value ?? {});
+  for (const form of forms) form.formData.value = copy(merged);
+}
+
+/** The Save button: both settings forms, merged, validated and committed. */
+export async function saveDemo(eventSource: ObjectInstance): Promise<void> {
+  await savePendingChanges(eventSource, false);
+}
+
+/**
+ * Validate and await form commits — before starting any stage that reads the
+ * definition (`beforePipeline`), and for the Save button.
+ */
+async function savePendingChanges(eventSource: ObjectInstance, beforePipeline = true): Promise<boolean> {
   const screen = screenOf(eventSource);
-  const forms = ['DemoFactoryDemoForm', 'DemoFactoryVoiceoverForm']
-    .map((name) => screen?.getObject<Form>(name))
-    .filter((form): form is Form => !!form);
+  const forms = SETTINGS_FORMS.map((name) => screen?.getObject<Form>(name)).filter((form): form is Form => !!form);
+  const stored = selectedDemo(screen) as unknown as Json | undefined;
+  if (stored && forms.some((form) => form.hasPendingChanges())) mergeSettingsForms(forms, stored);
   for (const form of forms) {
     if (!(await form.validate())) {
       displayWarning(
@@ -236,10 +292,12 @@ async function savePendingChanges(eventSource: ObjectInstance): Promise<boolean>
     await form.saveChanges();
     if (form.hasPendingChanges()) {
       displayWarning(
-        translate(
-          'b1App.messages.DemoFactoryDemoMaintenance.saveFailed',
-          'Changes could not be saved. The pipeline has not been started.'
-        )
+        beforePipeline
+          ? translate(
+              'b1App.messages.DemoFactoryDemoMaintenance.saveFailed',
+              'Changes could not be saved. The pipeline has not been started.'
+            )
+          : translate('b1App.messages.DemoFactoryDemoMaintenance.saveFailedOnly', 'Changes could not be saved.')
       );
       return false;
     }

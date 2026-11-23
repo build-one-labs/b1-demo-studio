@@ -21,9 +21,9 @@
       "objectMasterGuid": "2a34c785-bbd7-439f-aacd-c5e24927f26c",
       "objectSequence": 1,
       "attributes": {
-        "actionParameter": "saveChanges",
-        "actionTarget": "TABLEIO",
-        "actionType": "PUBLISH",
+        "actionParameter": "#.saveDemo(eventSource)",
+        "actionTarget": "",
+        "actionType": "Run",
         "label": "Save",
         "smallImage": "i-lucide-save",
         "tooltip": "Save the demo — the server validates the document before anything lands"

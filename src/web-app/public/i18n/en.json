@@ -916,7 +916,8 @@
         "jobComplete": "Job complete.",
         "jobFailedWithReason": "Job failed — {reason}",
         "jobFailed": "Job failed — see the pipeline log.",
-        "jobEnded": "Job {status}."
+        "jobEnded": "Job {status}.",
+        "saveFailedOnly": "Changes could not be saved."
       },
       "DemoFactoryAgentScreen": {
         "conversationIdMissing": "The conversation was created but its id was not returned",

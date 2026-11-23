@@ -142,8 +142,16 @@ export class DemoFactoryMaterializer implements IServerEventsHandler<DemoRow | S
       return record;
     }
 
-    // Display only — see onAfterFetch.
-    const { demoUserLabel: _shown, ...row } = record as DemoRow & { demoUserLabel?: string };
+    // Display only — see onAfterFetch. `label` is what the "Sign in as" select
+    // copies into the record it edits (its display field); a demo has no label.
+    const {
+      demoUserLabel: _shown,
+      label: _label,
+      ...row
+    } = record as DemoRow & {
+      demoUserLabel?: string;
+      label?: string;
+    };
     const { hash } = await this.materialize(row.id, row);
     return { ...row, editedAt: new Date().toISOString(), sourceHash: hash ?? row.sourceHash };
   }
