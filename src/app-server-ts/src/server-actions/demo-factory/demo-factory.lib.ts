@@ -254,12 +254,19 @@ export const stageBlockedReason = (
   return null;
 };
 
-/** The blocked reason for every stage, for a screen that wants to explain itself. */
+/**
+ * The blocked reason for every stage, for a screen that wants to explain itself.
+ *
+ * This is the host's verdict, without a demo, so it leaves out the one rule
+ * that depends on the demo: a demo with a demo user signs in with that user's
+ * key, and the host's own key does not matter. Counting it here blocked Run
+ * full demo in the Studio on every host without a key of its own, before the
+ * demo's settings were even saved; `start-job` checks it per demo instead.
+ */
 export const stageBlockedReasons = (host: HostCapabilities): Record<StageAction, string | null> =>
-  Object.fromEntries(JOB_ACTIONS.map((action) => [action, stageBlockedReason(action, host)])) as Record<
-    StageAction,
-    string | null
-  >;
+  Object.fromEntries(
+    JOB_ACTIONS.map((action) => [action, stageBlockedReason(action, host, { hasDemoUser: true })])
+  ) as Record<StageAction, string | null>;
 
 /** An upload's id: a timestamp and a random suffix, lowercase, safe as a directory name. */
 export const UPLOAD_ID_PATTERN = /^[\da-z][\da-z-]*$/;
